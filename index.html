@@ -1223,7 +1223,7 @@ function renderPipeline() {
 
   const steps = [
     { num: '1단계', label: '콜드 DM', count: totalDMs, sub: '발송 총합' },
-    { num: '2단계', label: '긍정회신', count: allCreators.filter(s => computeStatus(s) === '긍정회신').length, sub: '수동 등록' },
+    { num: '2단계', label: '긍정회신', count: allCreators.filter(s => { const meta = creatorMeta[s.instagram] || {}; return (meta.status || getAutoStatus(s)) === '긍정회신'; }).length, sub: '수동 등록' },
     { num: '3단계', label: '폼 제출', count: formCount, sub: '협업 신청' },
     { num: '4단계', label: '제품 출고', count: shipped, sub: '발송 완료' },
     { num: '5단계', label: '가이드 전달', count: guideSent, sub: '브리프 전달' },
