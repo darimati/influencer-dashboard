@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인플루언서 소싱 대시보드</title>
+<style>
+:root{
+  --bg:#f5f5f7;--surface:#fff;--surface2:#f8f8fa;--border:#e5e5ea;
+  --text:#1d1d1f;--muted:#86868b;--accent:#007aff;--accent-light:#e8f0fe;
+  --green:#34c759;--green-light:#e8faf0;--red:#ff3b30;--red-light:#ffecea;
+  --orange:#ff9500;--orange-light:#fff4e6;--purple:#af52de;--purple-light:#f5eeff;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  --mono:'SF Mono','Menlo',monospace;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* Header */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.header h1{font-size:18px;font-weight:700;flex:1}
+.header .sync-btn{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font)}
+.header .sync-btn:hover{opacity:.9}
+.header .sync-btn:disabled{opacity:.5;cursor:not-allowed}
+.header .last-sync{font-size:12px;color:var(--muted)}
+
+/* Tabs */
+.tabs{display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto}
+.tab{padding:12px 20px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* Main */
+.main{padding:24px;max-width:1400px;margin:0 auto}
+
+/* Cards */
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+
+/* Stat Cards */
+.stat{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow)}
+.stat .label{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat .value{font-size:28px;font-weight:700;margin:4px 0}
+.stat .sub{font-size:13px;color:var(--muted)}
+
+/* Progress Bar */
+.progress-wrap{margin-top:8px}
+.progress-bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.progress-fill.green{background:var(--green)}
+.progress-fill.orange{background:var(--orange)}
+.progress-fill.red{background:var(--red)}
+.progress-fill.accent{background:var(--accent)}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Team Table */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:24px}
+.member-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow)}
+.member-card .name{font-size:16px;font-weight:600;margin-bottom:4px}
+.member-card .accounts{font-size:12px;color:var(--muted);margin-bottom:12px}
+.member-card .account-tag{display:inline-block;background:var(--surface2);border-radius:4px;padding:2px 8px;margin:2px 4px 2px 0;font-family:var(--mono);font-size:11px}
+
+/* Table */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);padding:10px 14px;text-align:left;font-weight:600;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover{background:var(--surface2)}
+
+/* Status badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.green{background:var(--green-light);color:#1b7a37}
+.badge.orange{background:var(--orange-light);color:#a35d00}
+.badge.red{background:var(--red-light);color:#c62828}
+.badge.purple{background:var(--purple-light);color:#7b2fa0}
+.badge.blue{background:var(--accent-light);color:#0051a8}
+
+/* Compact submissions table */
+#submissionsTable{table-layout:auto}
+#submissionsTable th{padding:6px 6px;font-size:10px;letter-spacing:0}
+#submissionsTable td{padding:4px 6px;font-size:12px}
+#submissionsTable input[type="date"]{width:124px;padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);background:var(--surface)}
+#submissionsTable input[type="text"]{padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);background:var(--surface);width:100%;min-width:60px}
+#submissionsTable select{padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:10px;font-family:var(--font);background:var(--surface);max-width:130px}
+.memo-cell{position:relative;display:inline-block}
+.memo-popup{display:none;position:absolute;right:0;top:110%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;max-width:300px;min-width:150px;box-shadow:var(--shadow-md);z-index:10;white-space:normal;line-height:1.4}
+.memo-cell.open .memo-popup{display:block}
+.link-wrap{display:flex;align-items:center;gap:3px}
+.link-wrap input{flex:1;min-width:0}
+.link-wrap a{font-size:12px;flex-shrink:0;text-decoration:none}
+
+/* Forms */
+.form-row{display:flex;gap:12px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:4px;min-width:140px}
+.form-group label{font-size:12px;font-weight:500;color:var(--muted)}
+.form-group select,.form-group input,.form-group textarea{
+  padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-size:14px;font-family:var(--font);background:var(--surface);outline:none;
+  transition:border .15s}
+.form-group select:focus,.form-group input:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:60px}
+
+.btn{padding:8px 20px;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:#eee}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{background:var(--red);color:#fff}
+
+/* Section headers */
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-header h2{font-size:17px;font-weight:600}
+.section-header .count{font-size:13px;color:var(--muted)}
+
+/* Tab panels */
+.panel{display:none}
+.panel.active{display:block}
+
+/* Empty state */
+.empty{text-align:center;padding:48px;color:var(--muted)}
+.empty .icon{font-size:48px;margin-bottom:12px}
+.empty p{font-size:14px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#333;color:#fff;padding:12px 20px;border-radius:var(--radius-sm);font-size:13px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* Filter */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-bar input{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)}
+.filter-bar select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)}
+
+/* Week selector */
+.week-selector{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.week-selector button{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-size:14px}
+.week-selector .week-label{font-weight:600;font-size:14px;min-width:180px;text-align:center}
+
+/* Drag-and-drop */
+.drag-handle{cursor:grab;color:var(--muted);font-size:14px;user-select:none;padding:0 4px;opacity:.4;transition:opacity .15s}
+.drag-handle:hover{opacity:1}
+tr.dragging{opacity:.4;background:var(--accent-light)!important}
+tr.drag-over{border-top:2px solid var(--accent)!important}
+tr.drag-over td{border-top:2px solid var(--accent)}
+
+/* Link */
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Daily log entries */
+.log-entries{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.log-entry{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm)}
+.log-entry .entry-member{font-weight:600;min-width:60px}
+.log-entry .entry-account{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:140px}
+.log-entry .entry-count{font-weight:700;font-size:18px;color:var(--accent);min-width:40px;text-align:right}
+.log-entry .entry-note{flex:1;font-size:13px;color:var(--muted)}
+.log-entry .entry-delete{cursor:pointer;color:var(--red);font-size:12px;opacity:.5}
+.log-entry .entry-delete:hover{opacity:1}
+
+/* Target edit */
+.target-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.target-row:last-child{border-bottom:none}
+.target-row .tr-name{font-weight:600;min-width:60px}
+.target-row input{width:80px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;text-align:right}
+
+/* Pipeline funnel */
+.pipeline{display:flex;align-items:stretch;gap:0;margin-bottom:24px;overflow-x:auto;padding:4px 0}
+.pipeline-step{flex:1;min-width:120px;text-align:center;padding:16px 12px;position:relative;background:var(--surface);border:1px solid var(--border);transition:all .2s}
+.pipeline-step:first-child{border-radius:var(--radius) 0 0 var(--radius)}
+.pipeline-step:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.pipeline-step+.pipeline-step{border-left:none}
+.pipeline-step .step-num{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.pipeline-step .step-label{font-size:13px;font-weight:600;margin-bottom:6px}
+.pipeline-step .step-count{font-size:22px;font-weight:700;color:var(--text)}
+.pipeline-step .step-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.pipeline-step .step-arrow{position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--border);z-index:1}
+.pipeline-step.active{background:var(--accent-light);border-color:var(--accent)}
+.pipeline-step.highlight{background:#fff8e6;border-color:var(--orange)}
+.pipeline-step.highlight .step-num{color:var(--orange)}
+
+/* Bar chart */
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-row .bar-name{min-width:50px;font-weight:600;font-size:13px}
+.bar-row .bar-wrap{flex:1;height:28px;background:var(--surface2);border-radius:var(--radius-sm);overflow:hidden;position:relative}
+.bar-row .bar-fill{height:100%;border-radius:var(--radius-sm);transition:width .5s ease;display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:700;color:#fff;min-width:fit-content}
+.bar-row .bar-value{min-width:60px;text-align:right;font-size:14px;font-weight:700}
+.bar-row .bar-target{font-size:12px;color:var(--muted);min-width:40px}
+
+/* Daily breakdown */
+#dailyBreakdownTable th,#dailyBreakdownTable td{text-align:center;padding:8px 10px;font-size:13px}
+#dailyBreakdownTable td.day-total{font-weight:700;color:var(--accent)}
+#dailyBreakdownTable tr.member-row td:first-child{text-align:left;font-weight:600}
+#dailyBreakdownTable tr.total-row{background:var(--surface2);font-weight:700}
+#dailyBreakdownTable tr.total-row td{border-top:2px solid var(--border)}
+
+/* Simulator highlight */
+#simDetailTable td{font-size:13px}
+#simDetailTable td:nth-child(2){text-align:right;font-weight:700;font-size:15px}
+#simDetailTable td:nth-child(3){font-size:12px;color:var(--muted)}
+#simScenarioTable td{text-align:right;font-size:13px}
+#simScenarioTable td:first-child{text-align:left;font-weight:600}
+#simScenarioTable tr.current-scenario{background:var(--accent-light)}
+#simScenarioTable tr.current-scenario td:first-child::after{content:" (현재)";color:var(--accent);font-size:11px}
+
+@media(max-width:768px){
+  .main{padding:16px}
+  .card-grid{grid-template-columns:1fr}
+  .team-grid{grid-template-columns:1fr}
+  .form-row{flex-direction:column}
+  .form-group{min-width:100%}
+  .pipeline{flex-direction:column}
+  .pipeline-step{border-radius:var(--radius-sm)!important;border:1px solid var(--border)!important;margin-bottom:4px}
+  .pipeline-step .step-arrow{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>인플루언서 소싱</h1>
+  <span class="last-sync" id="lastSync">-</span>
+  <button class="sync-btn" id="syncBtn" onclick="syncAll()">동기화</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="pipeline">파이프라인</div>
+  <div class="tab" data-tab="targets">주간 목표</div>
+  <div class="tab" data-tab="brandcall">브랜드 콜</div>
+  <div class="tab" data-tab="analytics">성과</div>
+  <div class="tab" data-tab="simulator">목표역산</div>
+  <div class="tab" data-tab="templates">템플릿</div>
+</div>
+
+<!-- ============ PIPELINE ============ -->
+<div class="main">
+<div class="panel active" id="panel-pipeline">
+
+  <div class="section-header" style="margin-bottom:12px">
+    <h2>소싱 파이프라인</h2>
+    <select id="pipelineAccountFilter" onchange="renderPipeline();renderOverview()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);color:var(--fg)">
+      <option value="">전체 계정</option>
+    </select>
+  </div>
+  <div class="pipeline" id="pipelineFunnel">
+    <!-- dynamically filled -->
+  </div>
+
+  <div class="card-grid" id="statCards">
+    <!-- dynamically filled -->
+  </div>
+
+  <div class="section-header">
+    <h2>이번 주 팀 진행 현황</h2>
+    <div class="week-selector">
+      <button onclick="changeWeek(-1)">&larr;</button>
+      <span class="week-label" id="weekLabel">-</span>
+      <button onclick="changeWeek(1)">&rarr;</button>
+    </div>
+  </div>
+  <div class="team-grid" id="teamGrid">
+    <!-- dynamically filled -->
+  </div>
+
+  <div class="section-header">
+    <h2>오늘 활동</h2>
+  </div>
+  <div class="card" id="todayActivity">
+    <div class="empty"><p>오늘 기록된 활동 없음</p></div>
+  </div>
+
+  <!-- Quick Add Creator -->
+  <div class="card" style="margin-top:24px;padding:12px 16px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-weight:600;font-size:13px;white-space:nowrap">+ 크리에이터 추가</span>
+      <input type="text" id="addCreatorIg" placeholder="@인스타그램" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;width:140px;background:var(--surface);color:var(--fg)">
+      <select id="addCreatorAccount" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--surface);color:var(--fg)">
+        <option value="">소통계정</option>
+      </select>
+      <select id="addCreatorStatus" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--surface);color:var(--fg)">
+        <option value="긍정회신">긍정회신</option>
+        <option value="신규">신규</option>
+        <option value="출고완료">출고완료</option>
+        <option value="가이드전달">가이드전달</option>
+      </select>
+      <input type="text" id="addCreatorMemo" placeholder="메모 (선택)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;width:160px;background:var(--surface);color:var(--fg)">
+      <button class="btn btn-sm" onclick="addManualCreator()">추가</button>
+    </div>
+  </div>
+
+  <!-- Creator List -->
+  <div class="section-header" style="margin-top:16px">
+    <h2>크리에이터 목록</h2>
+    <span class="count" id="submissionCount">0건</span>
+  </div>
+  <div class="filter-bar">
+    <input type="text" placeholder="인스타그램 또는 메모 검색..." id="searchSubmissions" oninput="renderSubmissions()">
+    <select id="filterStatus" onchange="renderSubmissions()">
+      <option value="">전체</option>
+      <option value="신규">신규</option>
+      <option value="긍정회신">긍정회신</option>
+      <option value="출고완료">출고완료</option>
+      <option value="가이드전달">가이드전달</option>
+      <option value="업로드대기">업로드대기</option>
+      <option value="업로드완료">업로드완료</option>
+      <option value="광고코드확인">광고코드확인</option>
+      <option value="보류">보류</option>
+      <option value="수거">수거</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table id="submissionsTable">
+      <thead>
+        <tr>
+          <th style="width:24px"></th>
+          <th>인스타그램</th>
+          <th>이메일</th>
+          <th>소통계정</th>
+          <th>상태</th>
+          <th>폼제출일</th>
+          <th>출고</th>
+          <th>출고완료일</th>
+          <th>가이드전달일</th>
+          <th>업로드일정</th>
+          <th>드라이브</th>
+          <th>포스팅</th>
+          <th>광고코드</th>
+          <th>브콜</th>
+          <th>송장</th>
+          <th>메모</th>
+        </tr>
+      </thead>
+      <tbody id="submissionsBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ============ TARGETS + DAILY LOG ============ -->
+<div class="panel" id="panel-targets">
+  <div class="section-header">
+    <h2>주간 목표</h2>
+  </div>
+
+  <div class="card">
+    <h3>주간 목표 설정</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>시작일</label>
+        <input type="date" id="targetWeekStart">
+      </div>
+      <div class="form-group">
+        <label>종료일</label>
+        <input type="date" id="targetWeekEnd">
+      </div>
+      <div class="form-group">
+        <label>일일 기본 목표</label>
+        <input type="number" id="targetPerDay" min="0" placeholder="50">
+      </div>
+      <div class="form-group">
+        <label>예상 폼 제출 수</label>
+        <input type="number" id="targetExpectedForms" min="0" placeholder="50-70">
+      </div>
+    </div>
+    <h3 style="margin-top:16px">멤버별 주간 목표</h3>
+    <div id="targetMembers"></div>
+    <div class="form-row" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="saveTarget()">목표 저장</button>
+    </div>
+  </div>
+
+  <div style="margin-top:24px">
+    <div class="section-header">
+      <h2>목표 히스토리</h2>
+    </div>
+    <div id="targetHistory"></div>
+  </div>
+
+  <!-- Daily Contact Log (merged) -->
+  <div class="section-header" style="margin-top:32px">
+    <h2>일일 컨택 기록</h2>
+    <span class="count">콜드 DM 1건 = 1 컨택</span>
+  </div>
+
+  <div class="card">
+    <h3>컨택 기록 입력</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>날짜</label>
+        <input type="date" id="logDate">
+      </div>
+      <div class="form-group">
+        <label>담당자</label>
+        <select id="logMember" onchange="updateAccountOptions()">
+          <option value="">선택</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>계정</label>
+        <select id="logAccount">
+          <option value="">담당자 먼저 선택</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>컨택 수 (DM 발송)</label>
+        <input type="number" id="logCount" min="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>메모 (선택)</label>
+        <input type="text" id="logNote" placeholder="메모...">
+      </div>
+      <button class="btn btn-primary" onclick="addDailyLog()">추가</button>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:24px">
+    <h2>기록 히스토리</h2>
+    <div>
+      <input type="date" id="logFilterDate" onchange="renderDailyLogs()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px">
+    </div>
+  </div>
+  <div class="card" id="logHistory">
+    <div class="log-entries" id="logEntries"></div>
+  </div>
+</div>
+
+<!-- ============ BRAND CALL ============ -->
+<div class="panel" id="panel-brandcall">
+  <div class="section-header">
+    <h2>브랜드 콜</h2>
+  </div>
+  <div class="card">
+    <div class="empty">
+      <p>브랜드 콜 관리 기능 준비 중</p>
+      <p style="margin-top:8px;font-size:12px">긍정회신 크리에이터와의 브랜드 콜 일정/메모/완료 관리</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ANALYTICS ============ -->
+<div class="panel" id="panel-analytics">
+  <div class="section-header">
+    <h2>담당자별 분석</h2>
+    <div class="week-selector">
+      <button onclick="changeAnalyticsWeek(-1)">&larr;</button>
+      <span class="week-label" id="analyticsWeekLabel">-</span>
+      <button onclick="changeAnalyticsWeek(1)">&rarr;</button>
+    </div>
+  </div>
+
+  <!-- Member comparison bar chart -->
+  <div class="card">
+    <h3>담당자별 주간 컨택 비교</h3>
+    <div id="memberBarChart"></div>
+  </div>
+
+  <!-- Daily breakdown table -->
+  <div class="card" style="margin-top:16px">
+    <h3>일별 컨택 현황</h3>
+    <div class="table-wrap">
+      <table id="dailyBreakdownTable">
+        <thead id="dailyBreakdownHead"></thead>
+        <tbody id="dailyBreakdownBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Per-member detailed cards -->
+  <div style="margin-top:16px">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">담당자별 상세</h3>
+    <div class="team-grid" id="analyticsDetailGrid"></div>
+  </div>
+</div>
+
+<!-- ============ SIMULATOR ============ -->
+<div class="panel" id="panel-simulator">
+  <div class="section-header">
+    <h2>목표 역산 계산기 + 예산 시뮬레이터</h2>
+    <button class="btn btn-secondary btn-sm" onclick="resetSimulator()">기본값 초기화</button>
+  </div>
+
+  <!-- Input Parameters -->
+  <div class="card">
+    <h3>핵심 파라미터</h3>
+    <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      <div class="form-group">
+        <label>월간 총 조회수 목표</label>
+        <input type="number" id="simTotalViews" value="3000000" step="100000" oninput="calcSimulator()">
+        <span style="font-size:11px;color:var(--muted)">콘텐츠 + 광고 합산</span>
+      </div>
+      <div class="form-group">
+        <label>콘텐츠 기여율 (%)</label>
+        <input type="number" id="simContentRatio" value="80" min="1" max="100" oninput="calcSimulator()">
+        <span style="font-size:11px;color:var(--muted)">나머지 = 광고 부스팅</span>
+      </div>
+      <div class="form-group">
+        <label>콘텐츠 당 평균 조회수</label>
+        <input type="number" id="simViewsPerContent" value="20000" step="1000" oninput="calcSimulator()">
+      </div>
+      <div class="form-group">
+        <label>콘텐츠 당 단가 (원)</label>
+        <input type="number" id="simCostPerContent" value="72500" step="500" oninput="calcSimulator()">
+      </div>
+      <div class="form-group">
+        <label>캠페인 기간 (일)</label>
+        <input type="number" id="simPeriod" value="30" min="1" oninput="calcSimulator()">
+      </div>
+      <div class="form-group">
+        <label>콜드DM 실행 배수</label>
+        <input type="number" id="simDmMultiplier" value="2" min="1" max="5" step="0.5" oninput="calcSimulator()">
+        <span style="font-size:11px;color:var(--muted)">콜드DM 수량에만 적용</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversion Funnel Rates -->
+  <div class="card" style="margin-top:16px">
+    <h3>전환 퍼널 비율 (조정 가능)</h3>
+    <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      <div class="form-group">
+        <label>콜드DM → 폼 제출 (%)</label>
+        <input type="number" id="simDmToForm" value="5" min="0.1" max="100" step="0.5" oninput="calcSimulator()">
+      </div>
+      <div class="form-group">
+        <label>폼 제출 → 출고 (%)</label>
+        <input type="number" id="simFormToShip" value="80" min="1" max="100" step="1" oninput="calcSimulator()">
+      </div>
+      <div class="form-group">
+        <label>출고 → 콘텐츠 업로드 (%)</label>
+        <input type="number" id="simShipToUpload" value="75" min="1" max="100" step="1" oninput="calcSimulator()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Results: Reverse Funnel -->
+  <div style="margin-top:24px">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">역산 결과</h3>
+    <div class="pipeline" id="simFunnel" style="margin-bottom:24px"></div>
+  </div>
+
+  <!-- Budget + Summary Cards -->
+  <div class="card-grid" id="simSummaryCards" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"></div>
+
+  <!-- Detailed Breakdown Table -->
+  <div class="card" style="margin-top:16px">
+    <h3>상세 역산 테이블</h3>
+    <div class="table-wrap">
+      <table id="simDetailTable">
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th style="text-align:right">수치</th>
+            <th>산출 근거</th>
+          </tr>
+        </thead>
+        <tbody id="simDetailBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Scenario Comparison -->
+  <div class="card" style="margin-top:16px">
+    <h3>시나리오 비교 (조회수 목표별)</h3>
+    <div class="table-wrap">
+      <table id="simScenarioTable">
+        <thead>
+          <tr>
+            <th>시나리오</th>
+            <th style="text-align:right">총 조회수</th>
+            <th style="text-align:right">콘텐츠 수</th>
+            <th style="text-align:right">콜드DM (x배수)</th>
+            <th style="text-align:right">예산</th>
+            <th style="text-align:right">일일 DM</th>
+          </tr>
+        </thead>
+        <tbody id="simScenarioBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TEMPLATES ============ -->
+<div class="panel" id="panel-templates">
+  <div class="section-header">
+    <h2>템플릿</h2>
+  </div>
+  <div class="card">
+    <div class="empty">
+      <p>DM / 가이드 템플릿 관리 기능 준비 중</p>
+      <p style="margin-top:8px;font-size:12px">콜드DM 문구, 브리프 가이드, 리마인드 메시지 등</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const SHEET_ID = '1CGrEqs-9LXS85PJYmXWi3C_Q-cyy4UoL9rZmxd8jNNA';
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+
+const FULFILL_SHEET_ID = '1ibroQV42xuuvWg4P1kvaCw9RT_JxO9L-6lXVAgNjOhA';
+const FULFILL_GID = '890805647';
+const FULFILL_CSV_URL = `https://docs.google.com/spreadsheets/d/${FULFILL_SHEET_ID}/export?format=csv&gid=${FULFILL_GID}`;
+
+const SUPABASE_URL = 'https://chvxkfvimnqmmzsnyqrx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodnhrZnZpbW5xbW16c255cXJ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDE2NjY3NiwiZXhwIjoyMDg1NzQyNjc2fQ.M8ptMiW7j5newWUPfEnptkPwry21ROiQXWEmSQNwIkw';
+const BUCKET = 'playbook-data';
+
+const TEAM = {
+  '공식': ['darimati.us'],
+  '지운': ['darimati.crew', 'darimati.collab', 'darimati.team'],
+  '해림': ['darimati.partner', 'darimati.kr.crew', 'darimati.creators'],
+  '한결': ['darimati.partnership', 'darimati.manager', 'darimati.members'],
+};
+
+const MEMBER_NOTES = {};
+
+// ============================================================
+// STATE
+// ============================================================
+let submissions = [];
+let dailyLogs = [];
+let targets = [];
+let shippingData = {}; // { instagram: { trackingNo, updatedAt } }
+let creatorMeta = {}; // { instagram: { brandCall: bool, memo: string, updatedAt } }
+let manualCreators = []; // { instagram, status, memo, addedAt }
+let fulfillments = [];
+let pipelineData = {};
+let sortOrderData = []; // array of IG handles in display order
+const ALL_ACCOUNTS = Object.values(TEAM).flat();
+let currentWeekOffset = 0;
+let analyticsWeekOffset = 0;
+
+// ============================================================
+// SUPABASE STORAGE HELPERS
+// ============================================================
+async function supaRead(path) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY }
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function supaWrite(path, data) {
+  const body = JSON.stringify(data, null, 2);
+  const blob = new Blob([body], { type: 'application/json' });
+  let r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json', 'x-upsert': 'true' },
+    body: blob
+  });
+  if (!r.ok) {
+    r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY },
+      body: (() => { const fd = new FormData(); fd.append('', blob, path.split('/').pop()); return fd; })()
+    });
+  }
+  return r.ok;
+}
+
+// ============================================================
+// CSV PARSER
+// ============================================================
+function* csvRows(text) {
+  let row = []; let field = ''; let inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQ && text[i+1] === '"') { field += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) {
+      row.push(field); field = '';
+    } else if ((c === '\n' || c === '\r') && !inQ) {
+      if (c === '\r' && text[i+1] === '\n') i++;
+      row.push(field); field = '';
+      if (row.some(v => v.trim())) yield row;
+      row = [];
+    } else { field += c; }
+  }
+  row.push(field);
+  if (row.some(v => v.trim())) yield row;
+}
+
+// ============================================================
+// DATA LOADING
+// ============================================================
+async function loadSubmissions() {
+  try {
+    const r = await fetch(CSV_URL);
+    const text = await r.text();
+    const rows = [...csvRows(text)];
+    if (rows.length < 2) return;
+    submissions = rows.slice(1).map((row, idx) => ({
+      idx: idx + 1,
+      timestamp: row[0] || '',
+      instagram: (row[1] || '').replace(/^@/, ''),
+      email: (row[2] || '').trim(),
+      name: (row[3] || '').trim(),
+      phone: (row[4] || '').trim(),
+      contactManager: row[15] || '',
+      memo: row[16] || '',
+      guideDate: row[17] || '',
+      uploadDate: row[18] || '',
+      shippingStatus: row[19] || '',
+    })).filter(s => s.instagram && s.instagram !== 'Ss');
+  } catch (e) {
+    console.error('Failed to load submissions:', e);
+  }
+}
+
+async function loadDailyLogs() {
+  const data = await supaRead('sourcing/daily-logs.json');
+  dailyLogs = data?.logs || [];
+}
+
+async function loadTargets() {
+  const data = await supaRead('sourcing/targets.json');
+  targets = data?.targets || [];
+}
+
+async function saveDailyLogs() {
+  await supaWrite('sourcing/daily-logs.json', { logs: dailyLogs, updatedAt: new Date().toISOString() });
+}
+
+async function saveTargets() {
+  await supaWrite('sourcing/targets.json', { targets: targets, updatedAt: new Date().toISOString() });
+}
+
+async function loadShipping() {
+  const data = await supaRead('sourcing/shipping.json');
+  shippingData = data?.shipping || {};
+}
+
+async function saveShipping() {
+  await supaWrite('sourcing/shipping.json', { shipping: shippingData, updatedAt: new Date().toISOString() });
+}
+
+async function loadCreatorMeta() {
+  const data = await supaRead('sourcing/creator-meta.json');
+  creatorMeta = data?.meta || {};
+}
+
+async function saveCreatorMeta() {
+  await supaWrite('sourcing/creator-meta.json', { meta: creatorMeta, updatedAt: new Date().toISOString() });
+}
+
+async function loadManualCreators() {
+  const data = await supaRead('sourcing/manual-creators.json');
+  manualCreators = data?.creators || [];
+}
+
+async function saveManualCreators() {
+  await supaWrite('sourcing/manual-creators.json', { creators: manualCreators, updatedAt: new Date().toISOString() });
+}
+
+async function loadFulfillments() {
+  try {
+    const r = await fetch(FULFILL_CSV_URL);
+    const text = await r.text();
+    const rows = [...csvRows(text)];
+    if (rows.length < 2) return;
+    fulfillments = [];
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const seller = (row[2] || '').trim();
+      if (seller !== '증정') continue;
+      const name = (row[6] || '').trim();
+      const memo = (row[7] || '').trim();
+      const status = (row[4] || '').trim();
+      const shipDate = (row[1] || '').trim();
+      const trackingNo = (row[5] || '').trim();
+      let ig = '';
+      const memoMatch = memo.match(/@([\w.]+)/);
+      const nameMatch = name.match(/@([\w.]+)/);
+      if (memoMatch) ig = memoMatch[1].toLowerCase();
+      else if (nameMatch) ig = nameMatch[1].toLowerCase();
+      fulfillments.push({ ig, name, memo, status, shipDate, trackingNo });
+    }
+  } catch (e) { console.error('Failed to load fulfillments:', e); }
+}
+
+function getFulfillment(igHandle) {
+  const key = (igHandle || '').toLowerCase().replace(/^@/, '');
+  return fulfillments.find(f => f.ig && f.ig === key) || null;
+}
+
+async function loadPipelineData() {
+  const data = await supaRead('sourcing/pipeline.json');
+  pipelineData = data?.pipeline || {};
+}
+
+async function savePipelineData() {
+  await supaWrite('sourcing/pipeline.json', { pipeline: pipelineData, updatedAt: new Date().toISOString() });
+}
+
+async function loadSortOrder() {
+  const data = await supaRead('sourcing/sort-order.json');
+  sortOrderData = data?.order || [];
+}
+
+async function saveSortOrder() {
+  await supaWrite('sourcing/sort-order.json', { order: sortOrderData, updatedAt: new Date().toISOString() });
+}
+
+function normalizeDate(str) {
+  if (!str) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return fmtDate(d);
+  const m = str.match(/(\d{1,2})[\/.](\d{1,2})/);
+  if (m) return `${new Date().getFullYear()}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  return '';
+}
+
+function addDays(dateStr, days) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return fmtDate(d);
+}
+
+// ============================================================
+// SYNC
+// ============================================================
+async function syncAll() {
+  const btn = document.getElementById('syncBtn');
+  btn.disabled = true; btn.textContent = '동기화 중...';
+  try {
+    await Promise.all([loadSubmissions(), loadDailyLogs(), loadTargets(), loadShipping(), loadCreatorMeta(), loadManualCreators(), loadFulfillments(), loadPipelineData(), loadSortOrder()]);
+    renderAll();
+    document.getElementById('lastSync').textContent = `마지막 동기화: ${new Date().toLocaleTimeString('ko-KR')}`;
+    showToast('동기화 완료');
+  } catch (e) {
+    showToast('동기화 실패: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = '동기화';
+}
+
+// ============================================================
+// RENDERERS
+// ============================================================
+function renderAll() {
+  renderPipeline();
+  renderOverview();
+  renderSubmissions();
+  renderDailyLogs();
+  renderAnalytics();
+  renderTargetPanel();
+}
+
+function getWeekRange(offset = 0) {
+  const now = new Date();
+  const day = now.getDay();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + (offset * 7));
+  const sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6);
+  return { start: fmtDate(mon), end: fmtDate(sun), startDate: mon, endDate: sun };
+}
+
+function fmtDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function getTargetForWeek(weekStart) {
+  return targets.find(t => t.weekStart === weekStart) || null;
+}
+
+function getLogsForDateRange(start, end) {
+  return dailyLogs.filter(l => l.date >= start && l.date <= end);
+}
+
+function getLogsForDate(date) {
+  return dailyLogs.filter(l => l.date === date);
+}
+
+function renderOverview() {
+  const week = getWeekRange(currentWeekOffset);
+  document.getElementById('weekLabel').textContent = `${week.start} ~ ${week.end}`;
+
+  const target = getTargetForWeek(week.start);
+  const weekLogs = getLogsForDateRange(week.start, week.end);
+  const todayStr = fmtDate(new Date());
+  const todayLogs = getLogsForDate(todayStr);
+
+  const totalContacts = weekLogs.reduce((s, l) => s + (l.contacts || 0), 0);
+  const totalTarget = target ? Object.values(target.members || {}).reduce((s, m) => s + (m.weekly || 0), 0) : 0;
+  const formCount = submissions.length;
+  const todayTotal = todayLogs.reduce((s, l) => s + (l.contacts || 0), 0);
+
+  document.getElementById('statCards').innerHTML = `
+    <div class="stat">
+      <div class="label">주간 컨택</div>
+      <div class="value">${totalContacts.toLocaleString()}</div>
+      <div class="sub">${totalTarget ? `목표: ${totalTarget.toLocaleString()}` : '목표 미설정'}</div>
+      ${totalTarget ? `<div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill ${totalContacts >= totalTarget ? 'green' : totalContacts >= totalTarget * 0.5 ? 'orange' : 'red'}" style="width:${Math.min(100, (totalContacts / totalTarget * 100))}%"></div></div>
+        <div class="progress-label"><span>${Math.round(totalContacts / totalTarget * 100)}%</span><span>${totalTarget.toLocaleString()}</span></div>
+      </div>` : ''}
+    </div>
+    <div class="stat">
+      <div class="label">오늘</div>
+      <div class="value">${todayTotal.toLocaleString()}</div>
+      <div class="sub">${target ? `일일 목표: ${target.perDay || '-'}` : '-'}</div>
+    </div>
+    <div class="stat">
+      <div class="label">폼 제출</div>
+      <div class="value">${formCount}</div>
+      <div class="sub">구글 시트 연동</div>
+    </div>
+  `;
+
+  // Team grid
+  let teamHtml = '';
+  for (const [member, accounts] of Object.entries(TEAM)) {
+    const memberLogs = weekLogs.filter(l => l.member === member);
+    const memberTotal = memberLogs.reduce((s, l) => s + (l.contacts || 0), 0);
+    const memberTarget = target?.members?.[member]?.weekly || 0;
+    const pct = memberTarget ? Math.round(memberTotal / memberTarget * 100) : 0;
+    const note = MEMBER_NOTES[member] ? ` <span style="font-size:11px;color:var(--muted)">(${MEMBER_NOTES[member]})</span>` : '';
+
+    let accountBreak = '';
+    for (const acc of accounts) {
+      const accCount = memberLogs.filter(l => l.account === acc).reduce((s, l) => s + (l.contacts || 0), 0);
+      accountBreak += `<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span class="account-tag">${acc}</span><span style="font-weight:600">${accCount}</span></div>`;
+    }
+
+    teamHtml += `
+      <div class="member-card">
+        <div class="name">${member}${note}</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin:8px 0">
+          <span style="font-size:24px;font-weight:700">${memberTotal}</span>
+          <span style="font-size:13px;color:var(--muted)">${memberTarget ? `/ ${memberTarget}` : '목표 없음'}</span>
+        </div>
+        ${memberTarget ? `<div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill ${pct >= 100 ? 'green' : pct >= 50 ? 'orange' : 'red'}" style="width:${Math.min(100, pct)}%"></div></div>
+          <div class="progress-label"><span>${pct}%</span></div>
+        </div>` : ''}
+        <div style="margin-top:12px">${accountBreak}</div>
+      </div>
+    `;
+  }
+  document.getElementById('teamGrid').innerHTML = teamHtml;
+
+  // Today's activity
+  if (todayLogs.length > 0) {
+    let actHtml = '<div class="log-entries">';
+    for (const log of todayLogs) {
+      actHtml += `<div class="log-entry">
+        <span class="entry-member">${log.member}</span>
+        <span class="entry-account">${log.account}</span>
+        <span class="entry-count">${log.contacts}</span>
+        <span class="entry-note">${log.note || ''}</span>
+      </div>`;
+    }
+    actHtml += '</div>';
+    document.getElementById('todayActivity').innerHTML = actHtml;
+  } else {
+    document.getElementById('todayActivity').innerHTML = '<div class="empty"><p>오늘 기록된 활동 없음</p></div>';
+  }
+}
+
+function renderSubmissions() {
+  // Populate account dropdown for quick-add form
+  const accSelect = document.getElementById('addCreatorAccount');
+  if (accSelect && !accSelect._filled) {
+    ALL_ACCOUNTS.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; accSelect.appendChild(o); });
+    accSelect._filled = true;
+  }
+
+  const search = (document.getElementById('searchSubmissions')?.value || '').toLowerCase();
+  const statusFilter = document.getElementById('filterStatus')?.value || '';
+
+  // Merge form submissions + manual creators (deduplicate by IG handle)
+  const formIgs = new Set(submissions.map(s => s.instagram.toLowerCase()));
+  const manualEntries = manualCreators
+    .filter(m => !formIgs.has(m.instagram.toLowerCase()))
+    .map(m => ({ instagram: m.instagram, email: '', timestamp: '', memo: m.memo || '', guideDate: '', uploadDate: '', shippingStatus: '', isManual: true }));
+  let all = [...submissions, ...manualEntries];
+
+  // Apply sort order
+  if (sortOrderData.length > 0) {
+    const orderMap = {};
+    sortOrderData.forEach((ig, i) => { orderMap[ig.toLowerCase()] = i; });
+    all.sort((a, b) => {
+      const oa = orderMap[a.instagram.toLowerCase()];
+      const ob = orderMap[b.instagram.toLowerCase()];
+      if (oa !== undefined && ob !== undefined) return oa - ob;
+      if (oa !== undefined) return -1;
+      if (ob !== undefined) return 1;
+      return 0;
+    });
+  }
+
+  let filtered = all;
+  if (search) {
+    filtered = filtered.filter(s =>
+      s.instagram.toLowerCase().includes(search) ||
+      (s.memo || '').toLowerCase().includes(search)
+    );
+  }
+  if (statusFilter) {
+    filtered = filtered.filter(s => {
+      const meta = creatorMeta[s.instagram] || {};
+      const status = meta.status || getAutoStatus(s);
+      return status === statusFilter;
+    });
+  }
+
+  document.getElementById('submissionCount').textContent = `${filtered.length} / ${all.length}건`;
+
+  const tbody = document.getElementById('submissionsBody');
+  tbody.innerHTML = filtered.map(s => {
+    const ig = s.instagram;
+    const pd = pipelineData[ig] || {};
+    const ff = getFulfillment(ig);
+    const meta = creatorMeta[ig] || {};
+    const statusSelect = getStatusSelect(s);
+
+    const effShip = pd.shipDate || normalizeDate(ff?.shipDate) || '';
+    const effGuide = (pd.guideDate || s.guideDate) ? normalizeDate(pd.guideDate || s.guideDate) : '';
+    const effUpload = pd.uploadSchedule || '';
+    const effAccount = pd.account || '';
+
+    const accOpts = ALL_ACCOUNTS.map(a => `<option value="${a}"${a === effAccount ? ' selected' : ''}>${a}</option>`).join('');
+
+    const driveVal = pd.driveLink || '';
+    const postVal = pd.postLink || '';
+    const adCodeVal = pd.adCodeLink || '';
+
+    const brandCallChecked = meta.brandCall ? 'checked' : '';
+    const invoiceVal = pd.invoice || '';
+    const shippedChecked = meta.shipped ? 'checked' : '';
+    const editMemo = meta.memo || '';
+    const displayMemo = editMemo || s.memo || '';
+    const deleteBtn = s.isManual ? ` <button onclick="deleteManualCreator('${escHtml(ig)}')" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:10px;padding:0 2px" title="삭제">✕</button>` : '';
+
+    return `<tr draggable="true" data-ig="${escHtml(ig)}">
+      <td class="drag-handle" title="드래그하여 순서 변경">⠿</td>
+      <td style="white-space:nowrap"><a href="https://instagram.com/${ig}" target="_blank" style="font-size:11px">@${ig}</a>${deleteBtn}</td>
+      <td><input type="email" value="${escHtml(pd.email || s.email || '')}" placeholder="이메일" onchange="savePipelineField('${escHtml(ig)}','email',this.value)" style="min-width:140px"></td>
+      <td><select onchange="savePipelineField('${escHtml(ig)}','account',this.value)"><option value="">-</option>${accOpts}</select></td>
+      <td>${statusSelect}</td>
+      <td style="white-space:nowrap;font-size:11px">${formatTimestamp(s.timestamp)}</td>
+      <td style="text-align:center"><input type="checkbox" ${shippedChecked} data-ig="${escHtml(ig)}" onchange="toggleShipping(this)" style="cursor:pointer;width:16px;height:16px"></td>
+      <td><input type="date" value="${effShip}" onchange="onShipDateChange('${escHtml(ig)}',this.value)"></td>
+      <td><input type="date" value="${effGuide}" onchange="savePipelineField('${escHtml(ig)}','guideDate',this.value)"></td>
+      <td><input type="date" value="${effUpload}" onchange="savePipelineField('${escHtml(ig)}','uploadSchedule',this.value)"></td>
+      <td><div class="link-wrap"><input type="text" value="${escHtml(driveVal)}" placeholder="URL" onchange="savePipelineField('${escHtml(ig)}','driveLink',this.value)">${driveVal ? `<a href="${escHtml(driveVal)}" target="_blank">↗</a>` : ''}</div></td>
+      <td><div class="link-wrap"><input type="text" value="${escHtml(postVal)}" placeholder="URL" onchange="savePipelineField('${escHtml(ig)}','postLink',this.value)">${postVal ? `<a href="${escHtml(postVal)}" target="_blank">↗</a>` : ''}</div></td>
+      <td><div class="link-wrap"><input type="text" value="${escHtml(adCodeVal)}" placeholder="URL" onchange="savePipelineField('${escHtml(ig)}','adCodeLink',this.value)">${adCodeVal ? `<a href="${escHtml(adCodeVal)}" target="_blank">↗</a>` : ''}</div></td>
+      <td style="text-align:center"><input type="checkbox" ${brandCallChecked} data-ig="${escHtml(ig)}" onchange="toggleBrandCall(this)" style="cursor:pointer;width:16px;height:16px"></td>
+      <td><input type="text" value="${escHtml(invoiceVal)}" placeholder="송장번호" onchange="savePipelineField('${escHtml(ig)}','invoice',this.value)" style="min-width:100px"></td>
+      <td style="max-width:200px;font-size:12px;cursor:pointer" title="${escHtml(displayMemo)}" onclick="editMemo(this,'${escHtml(ig)}')">${displayMemo || '<span style=&quot;color:var(--muted)&quot;>클릭하여 입력</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+const STATUS_OPTIONS = [
+  { value: '신규', color: 'var(--surface2)', fg: 'var(--muted)' },
+  { value: '긍정회신', color: '#e8f5e9', fg: '#2e7d32' },
+  { value: '출고완료', color: '#e3f2fd', fg: '#1565c0' },
+  { value: '가이드전달', color: '#f3e5f5', fg: '#7b1fa2' },
+  { value: '업로드대기', color: '#f3e5f5', fg: '#7b1fa2' },
+  { value: '업로드완료', color: '#e8f5e9', fg: '#1b5e20' },
+  { value: '광고코드확인', color: '#e8f5e9', fg: '#1b5e20' },
+  { value: '보류', color: '#fff3e0', fg: '#e65100' },
+  { value: '수거', color: '#ffebee', fg: '#c62828' },
+];
+
+function getAutoStatus(s) {
+  const pd = pipelineData[s.instagram] || {};
+  const memo = (s.memo || '').toLowerCase();
+  const shipping = (s.shippingStatus || '').toLowerCase();
+  if (memo.includes('보류')) return '보류';
+  if (shipping.includes('수거')) return '수거';
+  if (pd.adCodeLink) return '광고코드확인';
+  if (pd.postLink) return '업로드완료';
+  if (pd.uploadSchedule || s.uploadDate) return '업로드대기';
+  if (pd.guideDate || s.guideDate) return '가이드전달';
+  const ff = getFulfillment(s.instagram);
+  const hasShip = pd.shipDate || (ff && ff.status && ff.status.includes('출고')) || shippingData[s.instagram]?.trackingNo;
+  if (hasShip) return '출고완료';
+  if (s.shippingStatus && !shipping.includes('보류')) return '출고완료';
+  if (s.isManual) return '긍정회신';
+  return '신규';
+}
+
+function getStatusSelect(s) {
+  const meta = creatorMeta[s.instagram] || {};
+  const current = meta.status || getAutoStatus(s);
+  const opt = STATUS_OPTIONS.find(o => o.value === current) || STATUS_OPTIONS[0];
+  const options = STATUS_OPTIONS.map(o =>
+    `<option value="${o.value}"${o.value === current ? ' selected' : ''}>${o.value}</option>`
+  ).join('');
+  return `<select data-ig="${escHtml(s.instagram)}" onchange="saveStatus(this)" style="padding:3px 6px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;background:${opt.color};color:${opt.fg};font-weight:600">${options}</select>`;
+}
+
+function formatTimestamp(ts) {
+  if (!ts) return '-';
+  const m = ts.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
+  if (m) return `${m[2].padStart(2,'0')}.${m[3].padStart(2,'0')}`;
+  return ts.slice(0, 10);
+}
+
+function renderDailyLogs() {
+  const filterDate = document.getElementById('logFilterDate')?.value || '';
+  let logs = filterDate ? dailyLogs.filter(l => l.date === filterDate) : dailyLogs;
+  logs = [...logs].sort((a, b) => b.date.localeCompare(a.date) || a.member.localeCompare(b.member));
+
+  if (logs.length === 0) {
+    document.getElementById('logEntries').innerHTML = '<div class="empty"><p>기록 없음</p></div>';
+    return;
+  }
+
+  const grouped = {};
+  for (const l of logs) {
+    if (!grouped[l.date]) grouped[l.date] = [];
+    grouped[l.date].push(l);
+  }
+
+  let html = '';
+  for (const [date, entries] of Object.entries(grouped)) {
+    const dayTotal = entries.reduce((s, e) => s + (e.contacts || 0), 0);
+    html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:12px;margin-bottom:4px">${date} <span style="color:var(--accent);font-weight:700">DM ${dayTotal}</span></div>`;
+    for (let i = 0; i < entries.length; i++) {
+      const e = entries[i];
+      const logIdx = dailyLogs.indexOf(e);
+      html += `<div class="log-entry">
+        <span class="entry-member">${e.member}</span>
+        <span class="entry-account">${e.account}</span>
+        <span class="entry-count">${e.contacts}</span>
+        <span class="entry-note">${e.note || ''}</span>
+        <span class="entry-delete" onclick="deleteDailyLog(${logIdx})">삭제</span>
+      </div>`;
+    }
+  }
+  document.getElementById('logEntries').innerHTML = html;
+}
+
+function renderTargetPanel() {
+  let membersHtml = '';
+  for (const [member] of Object.entries(TEAM)) {
+    membersHtml += `<div class="target-row">
+      <span class="tr-name">${member}</span>
+      <div class="form-group" style="flex-direction:row;align-items:center;gap:8px">
+        <label style="min-width:50px">주간:</label>
+        <input type="number" id="targetMember_${member}" min="0" placeholder="250">
+      </div>
+    </div>`;
+  }
+  document.getElementById('targetMembers').innerHTML = membersHtml;
+
+  if (targets.length === 0) {
+    document.getElementById('targetHistory').innerHTML = '<div class="card"><div class="empty"><p>설정된 목표 없음</p></div></div>';
+    return;
+  }
+
+  document.getElementById('targetHistory').innerHTML = [...targets].reverse().map((t, i) => {
+    const realIdx = targets.length - 1 - i;
+    const weekLogs = getLogsForDateRange(t.weekStart, t.weekEnd);
+    let membersHtml = '';
+    for (const [member, config] of Object.entries(t.members || {})) {
+      const actual = weekLogs.filter(l => l.member === member).reduce((s, l) => s + (l.contacts || 0), 0);
+      const pct = config.weekly ? Math.round(actual / config.weekly * 100) : 0;
+      membersHtml += `<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+        <span style="min-width:50px;font-weight:500">${member}</span>
+        <span style="min-width:60px;font-weight:700">${actual} / ${config.weekly}</span>
+        <div class="progress-bar" style="flex:1"><div class="progress-fill ${pct >= 100 ? 'green' : pct >= 50 ? 'orange' : 'red'}" style="width:${Math.min(100, pct)}%"></div></div>
+        <span style="min-width:40px;text-align:right;font-size:12px;color:var(--muted)">${pct}%</span>
+      </div>`;
+    }
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3>${t.weekStart} ~ ${t.weekEnd}</h3>
+        <div>
+          <span style="font-size:12px;color:var(--muted)">일일: ${t.perDay || '-'}</span>
+          <button class="btn btn-sm btn-danger" style="margin-left:8px" onclick="deleteTarget(${realIdx})">삭제</button>
+        </div>
+      </div>
+      ${membersHtml}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// PIPELINE
+// ============================================================
+function renderPipeline() {
+  const accountFilter = document.getElementById('pipelineAccountFilter')?.value || '';
+  const filteredLogs = accountFilter ? dailyLogs.filter(l => l.account === accountFilter) : dailyLogs;
+
+  const totalDMs = filteredLogs.reduce((s, l) => s + (l.contacts || 0), 0);
+  // Include manual creators in pipeline counts
+  const _formIgs = new Set(submissions.map(s => s.instagram.toLowerCase()));
+  const allCreators = [
+    ...submissions,
+    ...manualCreators
+      .filter(m => !_formIgs.has(m.instagram.toLowerCase()))
+      .map(m => ({ instagram: m.instagram, shippingStatus: '', guideDate: '', uploadDate: '' }))
+  ];
+
+  const formCount = allCreators.length;
+  const shipped = allCreators.filter(s => {
+    const pd = pipelineData[s.instagram] || {};
+    const ff = getFulfillment(s.instagram);
+    return pd.shipDate || (ff && ff.status && ff.status.includes('출고')) || shippingData[s.instagram]?.trackingNo || (s.shippingStatus && !s.shippingStatus.includes('보류'));
+  }).length;
+  const guideSent = allCreators.filter(s => (pipelineData[s.instagram]||{}).guideDate || s.guideDate).length;
+  const uploaded = allCreators.filter(s => (pipelineData[s.instagram]||{}).postLink || s.uploadDate).length;
+  const adCodeDone = allCreators.filter(s => (pipelineData[s.instagram]||{}).adCodeLink).length;
+
+  const steps = [
+    { num: '1단계', label: '콜드 DM', count: totalDMs, sub: '발송 총합' },
+    { num: '2단계', label: '긍정회신', count: allCreators.filter(s => computeStatus(s) === '긍정회신').length, sub: '수동 등록' },
+    { num: '3단계', label: '폼 제출', count: formCount, sub: '협업 신청' },
+    { num: '4단계', label: '제품 출고', count: shipped, sub: '발송 완료' },
+    { num: '5단계', label: '가이드 전달', count: guideSent, sub: '브리프 전달' },
+    { num: '6단계', label: '업로드', count: uploaded, sub: '게시 완료' },
+    { num: '7단계', label: '광고코드', count: adCodeDone, sub: '코드 확인' },
+  ];
+
+  document.getElementById('pipelineFunnel').innerHTML = steps.map((s, i) => `
+    <div class="pipeline-step${s.highlight ? ' highlight' : ''}">
+      <div class="step-num">${s.num}</div>
+      <div class="step-label">${s.label}</div>
+      <div class="step-count">${s.count}</div>
+      <div class="step-sub">${s.sub}</div>
+      ${i < steps.length - 1 ? '<span class="step-arrow">&rarr;</span>' : ''}
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// ANALYTICS RENDERER
+// ============================================================
+function renderAnalytics() {
+  const week = getWeekRange(analyticsWeekOffset);
+  document.getElementById('analyticsWeekLabel').textContent = `${week.start} ~ ${week.end}`;
+  const weekLogs = getLogsForDateRange(week.start, week.end);
+  const target = getTargetForWeek(week.start);
+
+  const memberColors = ['#007aff','#34c759','#ff9500','#af52de'];
+  const members = Object.keys(TEAM);
+  let maxVal = 1;
+  const memberTotals = members.map(m => {
+    const total = weekLogs.filter(l => l.member === m).reduce((s,l) => s + (l.contacts||0), 0);
+    if (total > maxVal) maxVal = total;
+    return { member: m, total, target: target?.members?.[m]?.weekly || 0 };
+  });
+
+  document.getElementById('memberBarChart').innerHTML = memberTotals.map((d, i) => {
+    const pct = Math.max(2, (d.total / maxVal) * 100);
+    const color = memberColors[i % memberColors.length];
+    const tgtPct = d.target ? Math.round(d.total / d.target * 100) : 0;
+    return `<div class="bar-row">
+      <span class="bar-name">${d.member}</span>
+      <div class="bar-wrap">
+        <div class="bar-fill" style="width:${pct}%;background:${color}">${d.total}</div>
+      </div>
+      <span class="bar-value">${d.target ? `${tgtPct}%` : '-'}</span>
+      <span class="bar-target">${d.target ? `/ ${d.target}` : ''}</span>
+    </div>`;
+  }).join('');
+
+  const dates = [];
+  const dayNames = ['월','화','수','목','금','토','일'];
+  const startD = new Date(week.start + 'T00:00:00');
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startD);
+    d.setDate(startD.getDate() + i);
+    dates.push({ date: fmtDate(d), day: dayNames[i] });
+  }
+
+  let thead = '<tr><th>담당자</th>';
+  dates.forEach(d => { thead += `<th>${d.day}<br><span style="font-weight:400;font-size:10px">${d.date.slice(5)}</span></th>`; });
+  thead += '<th>합계</th></tr>';
+  document.getElementById('dailyBreakdownHead').innerHTML = thead;
+
+  let tbody = '';
+  const dailyTotals = dates.map(() => 0);
+  let grandTotal = 0;
+
+  for (const member of members) {
+    tbody += `<tr class="member-row"><td>${member}</td>`;
+    let memberSum = 0;
+    dates.forEach((d, di) => {
+      const count = weekLogs.filter(l => l.member === member && l.date === d.date).reduce((s,l) => s + (l.contacts||0), 0);
+      memberSum += count;
+      dailyTotals[di] += count;
+      const style = count > 0 ? 'font-weight:600' : 'color:var(--muted)';
+      tbody += `<td style="${style}">${count || '-'}</td>`;
+    });
+    grandTotal += memberSum;
+    tbody += `<td class="day-total">${memberSum}</td></tr>`;
+  }
+
+  tbody += '<tr class="total-row"><td>합계</td>';
+  dailyTotals.forEach(t => { tbody += `<td>${t || '-'}</td>`; });
+  tbody += `<td class="day-total">${grandTotal}</td></tr>`;
+
+  document.getElementById('dailyBreakdownBody').innerHTML = tbody;
+
+  // Per-member detail cards
+  let detailHtml = '';
+  for (let mi = 0; mi < members.length; mi++) {
+    const member = members[mi];
+    const accounts = TEAM[member];
+    const memberLogs = weekLogs.filter(l => l.member === member);
+    const memberTotal = memberLogs.reduce((s,l) => s + (l.contacts||0), 0);
+    const memberTarget = target?.members?.[member]?.weekly || 0;
+    const note = MEMBER_NOTES[member] || '';
+    const color = memberColors[mi % memberColors.length];
+
+    const dailyCounts = dates.map(d => memberLogs.filter(l => l.date === d.date).reduce((s,l) => s + (l.contacts||0), 0));
+    const dayMax = Math.max(1, ...dailyCounts);
+
+    let miniChart = '<div style="display:flex;gap:4px;align-items:flex-end;height:50px;margin:12px 0">';
+    dailyCounts.forEach((c, di) => {
+      const h = Math.max(2, (c / dayMax) * 48);
+      miniChart += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+        <span style="font-size:10px;font-weight:600;color:${c > 0 ? 'var(--text)' : 'var(--muted)'}">${c || ''}</span>
+        <div style="width:100%;height:${h}px;background:${c > 0 ? color : 'var(--surface2)'};border-radius:3px"></div>
+        <span style="font-size:9px;color:var(--muted)">${dayNames[di]}</span>
+      </div>`;
+    });
+    miniChart += '</div>';
+
+    let accHtml = '';
+    for (const acc of accounts) {
+      const accCount = memberLogs.filter(l => l.account === acc).reduce((s,l) => s + (l.contacts||0), 0);
+      const accPct = memberTotal ? Math.round(accCount / memberTotal * 100) : 0;
+      accHtml += `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0">
+        <span class="account-tag">${acc}</span>
+        <span><span style="font-weight:600">${accCount}</span> <span style="color:var(--muted)">(${accPct}%)</span></span>
+      </div>`;
+    }
+
+    const activeDays = dailyCounts.filter(c => c > 0).length;
+    const avgPerDay = activeDays > 0 ? Math.round(memberTotal / activeDays) : 0;
+
+    detailHtml += `<div class="member-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="name">${member}${note ? ` <span style="font-size:11px;color:var(--muted)">(${note})</span>` : ''}</div>
+        <div style="font-size:24px;font-weight:700;color:${color}">${memberTotal}</div>
+      </div>
+      ${memberTarget ? `<div class="progress-wrap" style="margin-top:8px">
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, memberTotal/memberTarget*100)}%;background:${color}"></div></div>
+        <div class="progress-label"><span>${Math.round(memberTotal/memberTarget*100)}% 달성</span><span>목표 ${memberTarget}</span></div>
+      </div>` : ''}
+      ${miniChart}
+      <div style="display:flex;gap:16px;margin-bottom:12px;font-size:12px;color:var(--muted)">
+        <span>활동일: <b style="color:var(--text)">${activeDays}/7</b></span>
+        <span>일평균: <b style="color:var(--text)">${avgPerDay}</b></span>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:8px">${accHtml}</div>
+    </div>`;
+  }
+  document.getElementById('analyticsDetailGrid').innerHTML = detailHtml;
+}
+
+function changeAnalyticsWeek(dir) {
+  analyticsWeekOffset += dir;
+  renderAnalytics();
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function addDailyLog() {
+  const date = document.getElementById('logDate').value;
+  const member = document.getElementById('logMember').value;
+  const account = document.getElementById('logAccount').value;
+  const count = parseInt(document.getElementById('logCount').value) || 0;
+  const note = document.getElementById('logNote').value.trim();
+
+  if (!date || !member || !account || count <= 0) {
+    showToast('필수 항목을 모두 입력해주세요');
+    return;
+  }
+
+  dailyLogs.push({ date, member, account, contacts: count, note, createdAt: new Date().toISOString() });
+  saveDailyLogs();
+  renderAll();
+  showToast(`${member} (${account}) DM ${count}건 기록 완료`);
+
+  document.getElementById('logCount').value = '';
+  document.getElementById('logNote').value = '';
+}
+
+async function saveTracking(input) {
+  const ig = input.dataset.ig;
+  const val = input.value.trim();
+  if (val) {
+    shippingData[ig] = { trackingNo: val, updatedAt: new Date().toISOString() };
+  } else {
+    delete shippingData[ig];
+  }
+  await saveShipping();
+  renderPipeline();
+  showToast(val ? `${ig} 운송장 저장` : `${ig} 운송장 삭제`);
+}
+
+async function saveStatus(select) {
+  const ig = select.dataset.ig;
+  if (!creatorMeta[ig]) creatorMeta[ig] = {};
+  creatorMeta[ig].status = select.value;
+  creatorMeta[ig].updatedAt = new Date().toISOString();
+  await saveCreatorMeta();
+  const opt = STATUS_OPTIONS.find(o => o.value === select.value);
+  if (opt) { select.style.background = opt.color; select.style.color = opt.fg; }
+  renderPipeline();
+  showToast(`${ig} → ${select.value}`);
+}
+
+async function savePipelineField(ig, field, value) {
+  if (!pipelineData[ig]) pipelineData[ig] = {};
+  pipelineData[ig][field] = value;
+  pipelineData[ig].updatedAt = new Date().toISOString();
+  await savePipelineData();
+  renderSubmissions();
+  renderPipeline();
+  showToast(`@${ig} ${field} 저장`);
+}
+
+async function onShipDateChange(ig, value) {
+  if (!pipelineData[ig]) pipelineData[ig] = {};
+  pipelineData[ig].shipDate = value;
+  if (value) {
+    pipelineData[ig].guideDate = addDays(value, 1);
+    pipelineData[ig].uploadSchedule = addDays(value, 15);
+  }
+  pipelineData[ig].updatedAt = new Date().toISOString();
+  await savePipelineData();
+  renderSubmissions();
+  renderPipeline();
+  showToast(`@${ig} 출고일 저장 (가이드+1일, 업로드+15일 자동설정)`);
+}
+
+async function toggleBrandCall(checkbox) {
+  const ig = checkbox.dataset.ig;
+  if (!creatorMeta[ig]) creatorMeta[ig] = {};
+  creatorMeta[ig].brandCall = checkbox.checked;
+  creatorMeta[ig].updatedAt = new Date().toISOString();
+  await saveCreatorMeta();
+  showToast(`${ig} 브랜드콜 ${checkbox.checked ? '완료' : '해제'}`);
+}
+
+async function toggleShipping(checkbox) {
+  const ig = checkbox.dataset.ig;
+  if (!creatorMeta[ig]) creatorMeta[ig] = {};
+  creatorMeta[ig].shipped = checkbox.checked;
+  creatorMeta[ig].updatedAt = new Date().toISOString();
+  await saveCreatorMeta();
+  showToast(`${ig} 출고 ${checkbox.checked ? '완료' : '해제'}`);
+}
+
+function editMemo(td, ig) {
+  const meta = creatorMeta[ig] || {};
+  const current = meta.memo || '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = current;
+  input.placeholder = '메모 입력...';
+  input.style.cssText = 'width:100%;padding:4px 6px;border:1px solid var(--accent);border-radius:var(--radius-sm);font-size:12px;background:var(--surface);color:var(--fg);outline:none';
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+
+  async function save() {
+    const val = input.value.trim();
+    if (!creatorMeta[ig]) creatorMeta[ig] = {};
+    creatorMeta[ig].memo = val;
+    creatorMeta[ig].updatedAt = new Date().toISOString();
+    await saveCreatorMeta();
+    renderSubmissions();
+    showToast(val ? `${ig} 메모 저장` : `${ig} 메모 삭제`);
+  }
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+}
+
+async function addManualCreator() {
+  let ig = (document.getElementById('addCreatorIg')?.value || '').trim().replace(/^@/, '');
+  const account = document.getElementById('addCreatorAccount')?.value || '';
+  const status = document.getElementById('addCreatorStatus')?.value || '긍정회신';
+  const memo = document.getElementById('addCreatorMemo')?.value?.trim() || '';
+  if (!ig) { showToast('인스타그램 아이디를 입력해주세요'); return; }
+
+  const exists = submissions.some(s => s.instagram.toLowerCase() === ig.toLowerCase()) || manualCreators.some(m => m.instagram.toLowerCase() === ig.toLowerCase());
+  if (exists) { showToast(`@${ig} 이미 존재합니다`); return; }
+
+  manualCreators.push({ instagram: ig, memo, addedAt: new Date().toISOString() });
+  if (!creatorMeta[ig]) creatorMeta[ig] = {};
+  creatorMeta[ig].status = status;
+  if (memo) creatorMeta[ig].memo = memo;
+  creatorMeta[ig].updatedAt = new Date().toISOString();
+  if (account) {
+    if (!pipelineData[ig]) pipelineData[ig] = {};
+    pipelineData[ig].account = account;
+    pipelineData[ig].updatedAt = new Date().toISOString();
+    await savePipelineData();
+  }
+
+  await Promise.all([saveManualCreators(), saveCreatorMeta()]);
+  renderSubmissions();
+  renderPipeline();
+  showToast(`@${ig} 추가 완료 (${status})`);
+  document.getElementById('addCreatorIg').value = '';
+  document.getElementById('addCreatorMemo').value = '';
+}
+
+async function deleteManualCreator(ig) {
+  if (!confirm(`@${ig} 을(를) 목록에서 삭제할까요?`)) return;
+  manualCreators = manualCreators.filter(m => m.instagram.toLowerCase() !== ig.toLowerCase());
+  await saveManualCreators();
+  renderSubmissions();
+  renderPipeline();
+  showToast(`@${ig} 삭제 완료`);
+}
+
+// ============================================================
+// DRAG-AND-DROP REORDER
+// ============================================================
+let dragSrcRow = null;
+
+function initDragAndDrop() {
+  const tbody = document.getElementById('submissionsBody');
+  if (!tbody) return;
+
+  tbody.addEventListener('dragstart', (e) => {
+    const tr = e.target.closest('tr[draggable]');
+    if (!tr) return;
+    dragSrcRow = tr;
+    tr.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', tr.dataset.ig);
+  });
+
+  tbody.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const tr = e.target.closest('tr[draggable]');
+    if (!tr || tr === dragSrcRow) return;
+    tbody.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+    tr.classList.add('drag-over');
+  });
+
+  tbody.addEventListener('dragleave', (e) => {
+    const tr = e.target.closest('tr[draggable]');
+    if (tr) tr.classList.remove('drag-over');
+  });
+
+  tbody.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    const targetRow = e.target.closest('tr[draggable]');
+    if (!targetRow || !dragSrcRow || targetRow === dragSrcRow) return;
+    tbody.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+
+    // Get current row order from DOM
+    const rows = [...tbody.querySelectorAll('tr[draggable]')];
+    const fromIdx = rows.indexOf(dragSrcRow);
+    const toIdx = rows.indexOf(targetRow);
+
+    // Build new sort order from current filtered list
+    const currentOrder = rows.map(r => r.dataset.ig);
+    const [moved] = currentOrder.splice(fromIdx, 1);
+    currentOrder.splice(toIdx, 0, moved);
+
+    // Merge with existing sortOrderData: keep items not in current view
+    const currentSet = new Set(currentOrder.map(ig => ig.toLowerCase()));
+    const preserved = sortOrderData.filter(ig => !currentSet.has(ig.toLowerCase()));
+    sortOrderData = [...currentOrder, ...preserved];
+
+    await saveSortOrder();
+    renderSubmissions();
+    showToast('순서 저장 완료');
+  });
+
+  tbody.addEventListener('dragend', () => {
+    if (dragSrcRow) dragSrcRow.classList.remove('dragging');
+    tbody.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+    dragSrcRow = null;
+  });
+}
+
+// Initialize drag-and-drop after first render
+let dragInitialized = false;
+const origRenderSubmissions = renderSubmissions;
+renderSubmissions = function() {
+  origRenderSubmissions();
+  if (!dragInitialized) {
+    initDragAndDrop();
+    dragInitialized = true;
+  }
+};
+
+async function deleteDailyLog(idx) {
+  if (!confirm('이 기록을 삭제할까요?')) return;
+  dailyLogs.splice(idx, 1);
+  await saveDailyLogs();
+  renderAll();
+  showToast('기록 삭제 완료');
+}
+
+function saveTarget() {
+  const weekStart = document.getElementById('targetWeekStart').value;
+  const weekEnd = document.getElementById('targetWeekEnd').value;
+  const perDay = parseInt(document.getElementById('targetPerDay').value) || 0;
+  const expectedForms = parseInt(document.getElementById('targetExpectedForms').value) || 0;
+
+  if (!weekStart || !weekEnd) {
+    showToast('시작일과 종료일을 설정해주세요');
+    return;
+  }
+
+  const members = {};
+  for (const member of Object.keys(TEAM)) {
+    const val = parseInt(document.getElementById(`targetMember_${member}`)?.value) || 0;
+    members[member] = { weekly: val };
+  }
+
+  const existingIdx = targets.findIndex(t => t.weekStart === weekStart);
+  const targetObj = { weekStart, weekEnd, perDay, expectedForms, members, updatedAt: new Date().toISOString() };
+
+  if (existingIdx >= 0) {
+    targets[existingIdx] = targetObj;
+  } else {
+    targets.push(targetObj);
+  }
+
+  saveTargets();
+  renderAll();
+  showToast(`${weekStart} ~ ${weekEnd} 목표 저장 완료`);
+}
+
+async function deleteTarget(idx) {
+  if (!confirm('이 목표를 삭제할까요?')) return;
+  targets.splice(idx, 1);
+  await saveTargets();
+  renderAll();
+  showToast('목표 삭제 완료');
+}
+
+function changeWeek(dir) {
+  currentWeekOffset += dir;
+  renderOverview();
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function updateAccountOptions() {
+  const member = document.getElementById('logMember').value;
+  const sel = document.getElementById('logAccount');
+  sel.innerHTML = '';
+  if (!member || !TEAM[member]) {
+    sel.innerHTML = '<option value="">담당자 먼저 선택</option>';
+    return;
+  }
+  for (const acc of TEAM[member]) {
+    sel.innerHTML += `<option value="${acc}">${acc}</option>`;
+  }
+}
+
+function populateMemberSelects() {
+  const members = Object.keys(TEAM);
+  const sel = document.getElementById('logMember');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">선택</option>';
+  for (const m of members) {
+    sel.innerHTML += `<option value="${m}">${m}${MEMBER_NOTES[m] ? ` (${MEMBER_NOTES[m]})` : ''}</option>`;
+  }
+}
+
+function populateAccountFilter() {
+  const sel = document.getElementById('pipelineAccountFilter');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">전체 계정</option>';
+  for (const [member, accounts] of Object.entries(TEAM)) {
+    for (const acc of accounts) {
+      sel.innerHTML += `<option value="${acc}">${acc} (${member})</option>`;
+    }
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ============================================================
+// SIMULATOR
+// ============================================================
+const SIM_DEFAULTS = {
+  totalViews: 3000000, contentRatio: 80, viewsPerContent: 20000,
+  costPerContent: 72500, period: 30, dmMultiplier: 2,
+  dmToForm: 5, formToShip: 80, shipToUpload: 75
+};
+
+function getSimInputs() {
+  return {
+    totalViews: parseFloat(document.getElementById('simTotalViews')?.value) || 0,
+    contentRatio: parseFloat(document.getElementById('simContentRatio')?.value) || 80,
+    viewsPerContent: parseFloat(document.getElementById('simViewsPerContent')?.value) || 1,
+    costPerContent: parseFloat(document.getElementById('simCostPerContent')?.value) || 0,
+    period: parseFloat(document.getElementById('simPeriod')?.value) || 30,
+    dmMultiplier: parseFloat(document.getElementById('simDmMultiplier')?.value) || 1,
+    dmToForm: parseFloat(document.getElementById('simDmToForm')?.value) || 1,
+    formToShip: parseFloat(document.getElementById('simFormToShip')?.value) || 1,
+    shipToUpload: parseFloat(document.getElementById('simShipToUpload')?.value) || 1,
+  };
+}
+
+function simCalc(p) {
+  const contentViews = Math.round(p.totalViews * (p.contentRatio / 100));
+  const adViews = p.totalViews - contentViews;
+  const contentsNeeded = Math.ceil(contentViews / p.viewsPerContent);
+  const shipmentsNeeded = Math.ceil(contentsNeeded / (p.shipToUpload / 100));
+  const formsNeeded = Math.ceil(shipmentsNeeded / (p.formToShip / 100));
+  const baseDMs = Math.ceil(formsNeeded / (p.dmToForm / 100));
+  const execDMs = Math.ceil(baseDMs * p.dmMultiplier);
+  const dailyDMs = Math.ceil(execDMs / p.period);
+  const budget = contentsNeeded * p.costPerContent;
+  const teamMembers = Object.keys(TEAM).length;
+  const dailyDMsPerPerson = Math.ceil(dailyDMs / teamMembers);
+  return { contentViews, adViews, contentsNeeded, shipmentsNeeded, formsNeeded, baseDMs, execDMs, dailyDMs, budget, dailyDMsPerPerson, teamMembers };
+}
+
+function calcSimulator() {
+  const p = getSimInputs();
+  const r = simCalc(p);
+
+  document.getElementById('simFunnel').innerHTML = [
+    { num: '목표', label: '월간 조회수', count: fmtNum(p.totalViews), sub: `콘텐츠 ${p.contentRatio}% + 광고 ${100-p.contentRatio}%`, cls: 'highlight' },
+    { num: '필요', label: '콘텐츠', count: r.contentsNeeded, sub: `${fmtNum(r.contentViews)} 뷰` },
+    { num: '필요', label: '제품 출고', count: r.shipmentsNeeded, sub: `업로드율 ${p.shipToUpload}%` },
+    { num: '필요', label: '폼 제출', count: r.formsNeeded, sub: `출고율 ${p.formToShip}%` },
+    { num: '실행', label: '콜드DM', count: fmtNum(r.execDMs), sub: `기본 ${fmtNum(r.baseDMs)} × ${p.dmMultiplier}배`, cls: 'active' },
+  ].map((s, i, arr) => `
+    <div class="pipeline-step${s.cls ? ' ' + s.cls : ''}">
+      <div class="step-num">${s.num}</div>
+      <div class="step-label">${s.label}</div>
+      <div class="step-count">${s.count}</div>
+      <div class="step-sub">${s.sub}</div>
+      ${i < arr.length - 1 ? '<span class="step-arrow">&rarr;</span>' : ''}
+    </div>
+  `).join('');
+
+  document.getElementById('simSummaryCards').innerHTML = `
+    <div class="stat">
+      <div class="label">총 예산</div>
+      <div class="value" style="color:var(--accent)">${fmtWon(r.budget)}</div>
+      <div class="sub">${fmtNum(r.contentsNeeded)}건 × ${fmtWon(p.costPerContent)}</div>
+    </div>
+    <div class="stat">
+      <div class="label">일일 DM (팀 전체)</div>
+      <div class="value">${fmtNum(r.dailyDMs)}</div>
+      <div class="sub">${p.period}일 기준</div>
+    </div>
+    <div class="stat">
+      <div class="label">일일 DM (1인당)</div>
+      <div class="value">${fmtNum(r.dailyDMsPerPerson)}</div>
+      <div class="sub">${r.teamMembers}명 기준</div>
+    </div>
+    <div class="stat">
+      <div class="label">콘텐츠 당 조회수</div>
+      <div class="value">${fmtNum(p.viewsPerContent)}</div>
+      <div class="sub">콘텐츠 기여분 기준</div>
+    </div>
+  `;
+
+  document.getElementById('simDetailBody').innerHTML = [
+    ['월간 총 조회수 목표', fmtNum(p.totalViews), '입력값'],
+    ['콘텐츠 조회수 ('+p.contentRatio+'%)', fmtNum(r.contentViews), `${fmtNum(p.totalViews)} × ${p.contentRatio}%`],
+    ['광고 부스팅 조회수 ('+(100-p.contentRatio)+'%)', fmtNum(r.adViews), `${fmtNum(p.totalViews)} × ${100-p.contentRatio}%`],
+    ['필요 콘텐츠 수', r.contentsNeeded + '건', `${fmtNum(r.contentViews)} ÷ ${fmtNum(p.viewsPerContent)}`],
+    ['필요 출고 수', r.shipmentsNeeded + '건', `${r.contentsNeeded} ÷ ${p.shipToUpload}%`],
+    ['필요 폼 제출 수', r.formsNeeded + '건', `${r.shipmentsNeeded} ÷ ${p.formToShip}%`],
+    ['기본 콜드DM 수', fmtNum(r.baseDMs) + '건', `${r.formsNeeded} ÷ ${p.dmToForm}%`],
+    ['실행 콜드DM 수 (×' + p.dmMultiplier + ')', fmtNum(r.execDMs) + '건', `${fmtNum(r.baseDMs)} × ${p.dmMultiplier}`],
+    ['일일 DM 목표 (팀)', fmtNum(r.dailyDMs) + '건/일', `${fmtNum(r.execDMs)} ÷ ${p.period}일`],
+    ['일일 DM 목표 (1인)', fmtNum(r.dailyDMsPerPerson) + '건/일', `${fmtNum(r.dailyDMs)} ÷ ${r.teamMembers}명`],
+    ['콘텐츠 예산', fmtWon(r.budget), `${r.contentsNeeded} × ${fmtWon(p.costPerContent)}`],
+  ].map(([k,v,d]) => `<tr><td>${k}</td><td>${v}</td><td>${d}</td></tr>`).join('');
+
+  const scenarios = [
+    { label: '보수적', views: 1000000 },
+    { label: '기본', views: 2000000 },
+    { label: '현재 목표', views: p.totalViews },
+    { label: '공격적', views: 5000000 },
+    { label: '최대', views: 10000000 },
+  ];
+  const unique = [];
+  const seen = new Set();
+  for (const s of scenarios) {
+    if (!seen.has(s.views)) { unique.push(s); seen.add(s.views); }
+  }
+  document.getElementById('simScenarioBody').innerHTML = unique.map(s => {
+    const sp = { ...p, totalViews: s.views };
+    const sr = simCalc(sp);
+    const isCurrent = s.views === p.totalViews;
+    return `<tr class="${isCurrent ? 'current-scenario' : ''}">
+      <td>${s.label}</td>
+      <td>${fmtNum(s.views)}</td>
+      <td>${sr.contentsNeeded}건</td>
+      <td>${fmtNum(sr.execDMs)}건</td>
+      <td>${fmtWon(sr.budget)}</td>
+      <td>${fmtNum(sr.dailyDMs)}/일</td>
+    </tr>`;
+  }).join('');
+}
+
+function fmtNum(n) {
+  return Number(n).toLocaleString('ko-KR');
+}
+
+function fmtWon(n) {
+  if (n >= 100000000) return (n / 100000000).toFixed(1) + '억원';
+  if (n >= 10000) return (n / 10000).toFixed(0) + '만원';
+  return n.toLocaleString('ko-KR') + '원';
+}
+
+function resetSimulator() {
+  document.getElementById('simTotalViews').value = SIM_DEFAULTS.totalViews;
+  document.getElementById('simContentRatio').value = SIM_DEFAULTS.contentRatio;
+  document.getElementById('simViewsPerContent').value = SIM_DEFAULTS.viewsPerContent;
+  document.getElementById('simCostPerContent').value = SIM_DEFAULTS.costPerContent;
+  document.getElementById('simPeriod').value = SIM_DEFAULTS.period;
+  document.getElementById('simDmMultiplier').value = SIM_DEFAULTS.dmMultiplier;
+  document.getElementById('simDmToForm').value = SIM_DEFAULTS.dmToForm;
+  document.getElementById('simFormToShip').value = SIM_DEFAULTS.formToShip;
+  document.getElementById('simShipToUpload').value = SIM_DEFAULTS.shipToUpload;
+  calcSimulator();
+  showToast('기본값으로 초기화됨');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init() {
+  document.getElementById('logDate').value = fmtDate(new Date());
+  document.getElementById('logFilterDate').value = '';
+
+  const week = getWeekRange(0);
+  document.getElementById('targetWeekStart').value = week.start;
+  document.getElementById('targetWeekEnd').value = week.end;
+
+  populateMemberSelects();
+  populateAccountFilter();
+  calcSimulator();
+  await syncAll();
+})();
+</script>
+</body>
+</html>
