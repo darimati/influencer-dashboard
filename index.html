@@ -233,6 +233,7 @@ a:hover{text-decoration:underline}
   <div class="tab" data-tab="analytics">성과</div>
   <div class="tab" data-tab="simulator">목표역산</div>
   <div class="tab" data-tab="templates">템플릿</div>
+  <div class="tab" data-tab="ntparam">NT 파라미터</div>
 </div>
 
 <!-- ============ PIPELINE ============ -->
@@ -591,6 +592,100 @@ a:hover{text-decoration:underline}
     <div class="empty">
       <p>DM / 가이드 템플릿 관리 기능 준비 중</p>
       <p style="margin-top:8px;font-size:12px">콜드DM 문구, 브리프 가이드, 리마인드 메시지 등</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NT 파라미터 ============ -->
+<div class="panel" id="panel-ntparam">
+  <!-- 생성기 -->
+  <div class="section-header">
+    <h2>NT 파라미터 생성기</h2>
+  </div>
+  <div class="card">
+    <h3>파라미터 입력</h3>
+    <div class="form-row">
+      <div class="form-group" style="flex:2;min-width:280px">
+        <label>스마트스토어 상품 링크 (URL)</label>
+        <input type="text" id="ntUrl" placeholder="https://smartstore.naver.com/darimati/products/..." oninput="ntPreview()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>nt_source</label>
+        <input type="text" id="ntSource" placeholder="Insta, Carrot, Kakaomoment..." list="ntSourceList" oninput="ntPreview()">
+        <datalist id="ntSourceList">
+          <option value="Insta">
+          <option value="Instagram">
+          <option value="Carrot">
+          <option value="Kakaomoment">
+          <option value="KakaoChannel">
+          <option value="Shopify">
+          <option value="Youtube">
+          <option value="naver_live_banner">
+        </datalist>
+      </div>
+      <div class="form-group">
+        <label>nt_medium</label>
+        <input type="text" id="ntMedium" placeholder="Creator, V2, Menu..." list="ntMediumList" oninput="ntPreview()">
+        <datalist id="ntMediumList">
+          <option value="Creator">
+          <option value="V2">
+          <option value="V2_keyword">
+          <option value="Update">
+          <option value="Menu">
+          <option value="Landing">
+          <option value="Present">
+          <option value="upsale">
+          <option value="crew">
+          <option value="channel">
+        </datalist>
+      </div>
+      <div class="form-group">
+        <label>nt_detail</label>
+        <input type="text" id="ntDetail" placeholder="@handle, 8WeekClass..." oninput="ntPreview()">
+      </div>
+      <div class="form-group">
+        <label>nt_keyword</label>
+        <input type="text" id="ntKeyword" placeholder="June, a1..." oninput="ntPreview()">
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label style="font-size:12px;font-weight:500;color:var(--muted)">최종 NT 파라미터 URL</label>
+      <div style="display:flex;gap:8px;margin-top:4px;align-items:center">
+        <input type="text" id="ntResult" readonly style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--mono);font-size:12px;background:var(--surface2);color:var(--text)">
+        <button class="btn btn-secondary btn-sm" onclick="ntCopy()" title="복사">복사</button>
+        <button class="btn btn-primary btn-sm" onclick="ntSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 생성이력 -->
+  <div class="card" style="margin-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin-bottom:0">생성이력</h3>
+      <span id="ntHistoryCount" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+    <div class="filter-bar" style="margin-bottom:12px">
+      <input type="text" id="ntHistorySearch" placeholder="source, detail, URL 등으로 검색..." oninput="ntRenderHistory()">
+    </div>
+    <div class="table-wrap">
+      <table id="ntHistoryTable">
+        <thead>
+          <tr>
+            <th style="width:30px">no</th>
+            <th>상품 링크</th>
+            <th>source</th>
+            <th>medium</th>
+            <th>detail</th>
+            <th>keyword</th>
+            <th>최종 URL</th>
+            <th style="width:80px">생성일</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="ntHistoryBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -1866,6 +1961,148 @@ function resetSimulator() {
 }
 
 // ============================================================
+// NT 파라미터 생성기
+// ============================================================
+const NT_STORAGE_KEY = 'darimati_nt_history';
+
+const NT_INITIAL_HISTORY = [
+  {no:17, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@h_sukyung', keyword:'June', createdAt:'2025-06-01'},
+  {no:18, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@taeniharu', keyword:'June', createdAt:'2025-06-01'},
+  {no:19, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@runner_bangjung2', keyword:'June', createdAt:'2025-06-01'},
+  {no:20, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ny.moves_', keyword:'June', createdAt:'2025-06-01'},
+  {no:21, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ye_kon.g', keyword:'June', createdAt:'2025-06-01'},
+  {no:22, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@youngwonderful_', keyword:'June', createdAt:'2025-06-01'},
+  {no:23, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@daisy._33', keyword:'June', createdAt:'2025-06-01'},
+  {no:24, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@everyday_runlife', keyword:'June', createdAt:'2025-06-01'},
+  {no:25, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@pink_seulgi', keyword:'June', createdAt:'2025-06-01'},
+  {no:26, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@llilysso', keyword:'June', createdAt:'2025-06-01'},
+];
+
+let ntHistory = [];
+
+function ntLoadHistory() {
+  const saved = localStorage.getItem(NT_STORAGE_KEY);
+  if (saved) {
+    try { ntHistory = JSON.parse(saved); } catch { ntHistory = []; }
+  }
+  if (!ntHistory.length) {
+    ntHistory = NT_INITIAL_HISTORY.map(h => ({
+      ...h,
+      finalUrl: ntBuildUrl(h.url, h.source, h.medium, h.detail, h.keyword)
+    }));
+    ntSaveHistory();
+  }
+}
+
+function ntSaveHistory() {
+  localStorage.setItem(NT_STORAGE_KEY, JSON.stringify(ntHistory));
+}
+
+function ntBuildUrl(baseUrl, source, medium, detail, keyword) {
+  if (!baseUrl) return '';
+  let clean = baseUrl.replace(/\?+$/, '');
+  const params = [];
+  if (source) params.push(`nt_source=${encodeURIComponent(source)}`);
+  if (medium) params.push(`nt_medium=${encodeURIComponent(medium)}`);
+  if (detail) params.push(`nt_detail=${encodeURIComponent(detail)}`);
+  if (keyword) params.push(`nt_keyword=${encodeURIComponent(keyword)}`);
+  if (!params.length) return clean;
+  const sep = clean.includes('?') ? '&' : '?';
+  return clean + sep + params.join('&');
+}
+
+function ntPreview() {
+  const url = document.getElementById('ntUrl').value.trim();
+  const source = document.getElementById('ntSource').value.trim();
+  const medium = document.getElementById('ntMedium').value.trim();
+  const detail = document.getElementById('ntDetail').value.trim();
+  const keyword = document.getElementById('ntKeyword').value.trim();
+  document.getElementById('ntResult').value = ntBuildUrl(url, source, medium, detail, keyword);
+}
+
+function ntCopy() {
+  const result = document.getElementById('ntResult').value;
+  if (!result) { showToast('생성할 URL이 없습니다'); return; }
+  navigator.clipboard.writeText(result).then(() => showToast('URL 복사 완료'));
+}
+
+function ntSave() {
+  const url = document.getElementById('ntUrl').value.trim();
+  const source = document.getElementById('ntSource').value.trim();
+  const medium = document.getElementById('ntMedium').value.trim();
+  const detail = document.getElementById('ntDetail').value.trim();
+  const keyword = document.getElementById('ntKeyword').value.trim();
+  const finalUrl = document.getElementById('ntResult').value;
+
+  if (!url || !source) { showToast('URL과 source는 필수입니다'); return; }
+
+  const maxNo = ntHistory.reduce((m, h) => Math.max(m, h.no || 0), 0);
+  ntHistory.unshift({
+    no: maxNo + 1,
+    url, source, medium, detail, keyword, finalUrl,
+    createdAt: fmtDate(new Date())
+  });
+  ntSaveHistory();
+  ntRenderHistory();
+
+  document.getElementById('ntUrl').value = '';
+  document.getElementById('ntSource').value = '';
+  document.getElementById('ntMedium').value = '';
+  document.getElementById('ntDetail').value = '';
+  document.getElementById('ntKeyword').value = '';
+  document.getElementById('ntResult').value = '';
+  showToast('NT 파라미터 저장 완료');
+}
+
+function ntDeleteEntry(idx) {
+  if (!confirm('이 이력을 삭제할까요?')) return;
+  ntHistory.splice(idx, 1);
+  ntSaveHistory();
+  ntRenderHistory();
+  showToast('이력 삭제 완료');
+}
+
+function ntCopyRow(finalUrl) {
+  navigator.clipboard.writeText(finalUrl).then(() => showToast('URL 복사 완료'));
+}
+
+function ntRenderHistory() {
+  const search = (document.getElementById('ntHistorySearch')?.value || '').toLowerCase();
+  const filtered = ntHistory.filter(h => {
+    if (!search) return true;
+    return [h.url, h.source, h.medium, h.detail, h.keyword, h.finalUrl]
+      .filter(Boolean).some(v => v.toLowerCase().includes(search));
+  });
+
+  document.getElementById('ntHistoryCount').textContent = `${filtered.length}건`;
+
+  const tbody = document.getElementById('ntHistoryBody');
+  tbody.innerHTML = filtered.map((h, i) => {
+    const origIdx = ntHistory.indexOf(h);
+    const shortUrl = (h.url || '').replace(/https?:\/\/(brand\.naver\.com|smartstore\.naver\.com)\/darimati\/?/, '').substring(0, 30);
+    const shortFinal = (h.finalUrl || '').substring(0, 50) + ((h.finalUrl || '').length > 50 ? '...' : '');
+    return `<tr>
+      <td>${h.no || '-'}</td>
+      <td title="${h.url || ''}" style="font-size:11px;font-family:var(--mono);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${shortUrl || '-'}</td>
+      <td>${h.source || '-'}</td>
+      <td>${h.medium || '-'}</td>
+      <td>${h.detail || '-'}</td>
+      <td>${h.keyword || '-'}</td>
+      <td style="font-size:11px;font-family:var(--mono);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        <span title="${h.finalUrl || ''}" style="cursor:pointer" onclick="ntCopyRow('${(h.finalUrl||'').replace(/'/g,"\\'")}')">${shortFinal}</span>
+      </td>
+      <td style="font-size:11px">${h.createdAt || '-'}</td>
+      <td><button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:11px" onclick="ntDeleteEntry(${origIdx})">삭제</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function ntInit() {
+  ntLoadHistory();
+  ntRenderHistory();
+}
+
+// ============================================================
 // INIT
 // ============================================================
 (async function init() {
@@ -1879,6 +2116,7 @@ function resetSimulator() {
   populateMemberSelects();
   populateAccountFilter();
   calcSimulator();
+  ntInit();
   await syncAll();
 })();
 </script>
