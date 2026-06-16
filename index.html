@@ -2118,23 +2118,17 @@ function renderKanban() {
       const ig = s.instagram;
       const pd = pipelineData[ig] || {};
       const meta = creatorMeta[ig] || {};
+      const email = pd.email || s.email || '';
       const account = pd.account || '';
-      const memo = meta.memo || s.memo || '';
-      const ff = getFulfillment(ig);
-      const shipDate = pd.shipDate || (ff?.shipDate ? normalizeDate(ff.shipDate) : '');
-      const guideDate = pd.guideDate || s.guideDate || '';
       const uploadDate = pd.uploadSchedule || '';
 
       let metaLines = [];
-      if (account) metaLines.push(account);
-      if (shipDate) metaLines.push(`출고 ${shipDate}`);
-      if (guideDate) metaLines.push(`가이드 ${normalizeDate(guideDate)}`);
-      if (uploadDate) metaLines.push(`업로드 ${uploadDate}`);
-      if (memo) metaLines.push(memo.length > 20 ? memo.substring(0, 20) + '...' : memo);
+      if (email) metaLines.push(`✉️ ${email}`);
+      if (account) metaLines.push(`📱 ${account}`);
+      if (uploadDate) metaLines.push(`📅 ${uploadDate}`);
 
       return `<div class="kanban-card" draggable="true" data-ig="${escHtml(ig)}" ondragstart="kDragStart(event)" ondragend="kDragEnd(event)" onclick="openKmodal('${escHtml(ig)}')">
         <div class="kc-ig"><a href="https://instagram.com/${ig}" target="_blank" onclick="event.stopPropagation()">@${ig}</a></div>
-        ${account ? `<div class="kc-account">${account}</div>` : ''}
         ${metaLines.length ? `<div class="kc-meta">${metaLines.map(l => `<span>${escHtml(l)}</span>`).join('')}</div>` : ''}
       </div>`;
     }).join('');
