@@ -664,7 +664,10 @@ a:hover{text-decoration:underline}
   <div class="card" style="margin-top:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h3 style="margin-bottom:0">생성이력</h3>
-      <span id="ntHistoryCount" style="font-size:13px;color:var(--muted)"></span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="ntHistoryCount" style="font-size:13px;color:var(--muted)"></span>
+        <button class="btn btn-secondary btn-sm" onclick="ntExportCsv()">CSV 내보내기</button>
+      </div>
     </div>
     <div class="filter-bar" style="margin-bottom:12px">
       <input type="text" id="ntHistorySearch" placeholder="source, detail, URL 등으로 검색..." oninput="ntRenderHistory()">
@@ -680,6 +683,7 @@ a:hover{text-decoration:underline}
             <th>detail</th>
             <th>keyword</th>
             <th>최종 URL</th>
+            <th>메모</th>
             <th style="width:80px">생성일</th>
             <th style="width:60px"></th>
           </tr>
@@ -1963,39 +1967,37 @@ function resetSimulator() {
 // ============================================================
 // NT 파라미터 생성기
 // ============================================================
-const NT_STORAGE_KEY = 'darimati_nt_history';
-
 const NT_INITIAL_HISTORY = [
-  {no:17, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@h_sukyung', keyword:'June', createdAt:'2025-06-01'},
-  {no:18, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@taeniharu', keyword:'June', createdAt:'2025-06-01'},
-  {no:19, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@runner_bangjung2', keyword:'June', createdAt:'2025-06-01'},
-  {no:20, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ny.moves_', keyword:'June', createdAt:'2025-06-01'},
-  {no:21, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ye_kon.g', keyword:'June', createdAt:'2025-06-01'},
-  {no:22, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@youngwonderful_', keyword:'June', createdAt:'2025-06-01'},
-  {no:23, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@daisy._33', keyword:'June', createdAt:'2025-06-01'},
-  {no:24, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@everyday_runlife', keyword:'June', createdAt:'2025-06-01'},
-  {no:25, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@pink_seulgi', keyword:'June', createdAt:'2025-06-01'},
-  {no:26, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@llilysso', keyword:'June', createdAt:'2025-06-01'},
+  {no:17, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@h_sukyung', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:18, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@taeniharu', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:19, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@runner_bangjung2', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:20, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ny.moves_', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:21, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ye_kon.g', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:22, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@youngwonderful_', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:23, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@daisy._33', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:24, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@everyday_runlife', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:25, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@pink_seulgi', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:26, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@llilysso', keyword:'June', memo:'', createdAt:'2025-06-01'},
 ];
 
 let ntHistory = [];
 
-function ntLoadHistory() {
-  const saved = localStorage.getItem(NT_STORAGE_KEY);
-  if (saved) {
-    try { ntHistory = JSON.parse(saved); } catch { ntHistory = []; }
-  }
-  if (!ntHistory.length) {
+async function ntLoadHistory() {
+  const saved = await supaRead('sourcing/nt-params.json');
+  if (saved && Array.isArray(saved) && saved.length) {
+    ntHistory = saved;
+  } else {
     ntHistory = NT_INITIAL_HISTORY.map(h => ({
       ...h,
       finalUrl: ntBuildUrl(h.url, h.source, h.medium, h.detail, h.keyword)
     }));
-    ntSaveHistory();
+    await ntPersist();
   }
+  ntRenderHistory();
 }
 
-function ntSaveHistory() {
-  localStorage.setItem(NT_STORAGE_KEY, JSON.stringify(ntHistory));
+async function ntPersist() {
+  await supaWrite('sourcing/nt-params.json', ntHistory);
 }
 
 function ntBuildUrl(baseUrl, source, medium, detail, keyword) {
@@ -2040,9 +2042,9 @@ function ntSave() {
   ntHistory.unshift({
     no: maxNo + 1,
     url, source, medium, detail, keyword, finalUrl,
-    createdAt: fmtDate(new Date())
+    memo: '', createdAt: fmtDate(new Date())
   });
-  ntSaveHistory();
+  ntPersist();
   ntRenderHistory();
 
   document.getElementById('ntUrl').value = '';
@@ -2057,7 +2059,7 @@ function ntSave() {
 function ntDeleteEntry(idx) {
   if (!confirm('이 이력을 삭제할까요?')) return;
   ntHistory.splice(idx, 1);
-  ntSaveHistory();
+  ntPersist();
   ntRenderHistory();
   showToast('이력 삭제 완료');
 }
@@ -2066,11 +2068,24 @@ function ntCopyRow(finalUrl) {
   navigator.clipboard.writeText(finalUrl).then(() => showToast('URL 복사 완료'));
 }
 
+function ntEditMemo(idx) {
+  const td = document.getElementById('ntMemo-' + idx);
+  const current = ntHistory[idx].memo || '';
+  td.innerHTML = `<input type="text" value="${escHtml(current)}" onblur="ntSaveMemo(${idx}, this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px">`;
+  td.querySelector('input').focus();
+}
+
+function ntSaveMemo(idx, val) {
+  ntHistory[idx].memo = val;
+  ntPersist();
+  ntRenderHistory();
+}
+
 function ntRenderHistory() {
   const search = (document.getElementById('ntHistorySearch')?.value || '').toLowerCase();
   const filtered = ntHistory.filter(h => {
     if (!search) return true;
-    return [h.url, h.source, h.medium, h.detail, h.keyword, h.finalUrl]
+    return [h.url, h.source, h.medium, h.detail, h.keyword, h.finalUrl, h.memo]
       .filter(Boolean).some(v => v.toLowerCase().includes(search));
   });
 
@@ -2083,23 +2098,38 @@ function ntRenderHistory() {
     const shortFinal = (h.finalUrl || '').substring(0, 50) + ((h.finalUrl || '').length > 50 ? '...' : '');
     return `<tr>
       <td>${h.no || '-'}</td>
-      <td title="${h.url || ''}" style="font-size:11px;font-family:var(--mono);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${shortUrl || '-'}</td>
-      <td>${h.source || '-'}</td>
-      <td>${h.medium || '-'}</td>
-      <td>${h.detail || '-'}</td>
-      <td>${h.keyword || '-'}</td>
+      <td title="${escHtml(h.url || '')}" style="font-size:11px;font-family:var(--mono);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(shortUrl) || '-'}</td>
+      <td>${escHtml(h.source) || '-'}</td>
+      <td>${escHtml(h.medium) || '-'}</td>
+      <td>${escHtml(h.detail) || '-'}</td>
+      <td>${escHtml(h.keyword) || '-'}</td>
       <td style="font-size:11px;font-family:var(--mono);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        <span title="${h.finalUrl || ''}" style="cursor:pointer" onclick="ntCopyRow('${(h.finalUrl||'').replace(/'/g,"\\'")}')">${shortFinal}</span>
+        <span title="${escHtml(h.finalUrl || '')}" style="cursor:pointer;color:var(--accent)" onclick="ntCopyRow('${(h.finalUrl||'').replace(/'/g,"\\'")}')">${escHtml(shortFinal)}</span>
       </td>
+      <td id="ntMemo-${origIdx}" onclick="ntEditMemo(${origIdx})" style="font-size:11px;cursor:pointer;min-width:80px;color:${h.memo ? 'var(--text)' : 'var(--muted)'}">${escHtml(h.memo) || '메모'}</td>
       <td style="font-size:11px">${h.createdAt || '-'}</td>
       <td><button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:11px" onclick="ntDeleteEntry(${origIdx})">삭제</button></td>
     </tr>`;
   }).join('');
 }
 
-function ntInit() {
-  ntLoadHistory();
-  ntRenderHistory();
+function ntExportCsv() {
+  if (!ntHistory.length) { showToast('내보낼 이력이 없습니다'); return; }
+  const header = 'no,상품URL,nt_source,nt_medium,nt_detail,nt_keyword,최종URL,메모,생성일\n';
+  const rows = ntHistory.map(h =>
+    [h.no||'', h.url||'', h.source||'', h.medium||'', h.detail||'', h.keyword||'', h.finalUrl||'', h.memo||'', h.createdAt||'']
+      .map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')
+  ).join('\n');
+  const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `nt-params-${fmtDate(new Date())}.csv`;
+  a.click();
+  showToast('CSV 다운로드 완료');
+}
+
+async function ntInit() {
+  await ntLoadHistory();
 }
 
 // ============================================================
@@ -2116,8 +2146,8 @@ function ntInit() {
   populateMemberSelects();
   populateAccountFilter();
   calcSimulator();
-  ntInit();
   await syncAll();
+  ntInit();
 })();
 </script>
 </body>
