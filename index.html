@@ -208,7 +208,7 @@ a:hover{text-decoration:underline}
 
 /* Kanban Board */
 .kanban{display:flex;gap:12px;overflow-x:auto;padding:4px 0;align-items:flex-start;min-height:500px}
-.kanban-col{flex:0 0 220px;background:var(--surface2);border-radius:var(--radius);padding:12px;min-height:400px}
+.kanban-col{flex:0 0 200px;background:var(--surface2);border-radius:var(--radius);padding:10px;min-height:400px}
 .kanban-col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border)}
 .kanban-col-title{font-size:13px;font-weight:700}
 .kanban-col-count{font-size:12px;color:var(--muted);background:var(--surface);border-radius:12px;padding:2px 8px;font-weight:600}
@@ -226,12 +226,34 @@ a:hover{text-decoration:underline}
 /* Kanban Detail Modal */
 .kmodal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;justify-content:center;align-items:center}
 .kmodal-overlay.open{display:flex}
-.kmodal{background:var(--surface);border-radius:var(--radius);width:90%;max-width:560px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
-.kmodal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px}
-.kmodal h3{font-size:18px;font-weight:700;margin-bottom:16px}
-.kmodal .detail-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
-.kmodal .detail-label{font-size:12px;font-weight:600;color:var(--muted);min-width:80px}
-.kmodal .detail-value{font-size:13px;flex:1}
+.kmodal{background:var(--surface);border-radius:var(--radius);width:95%;max-width:680px;max-height:90vh;overflow-y:auto;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
+.kmodal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px;z-index:1}
+.kmodal-header{padding:28px 32px 0;border-bottom:none}
+.kmodal-header h3{font-size:22px;font-weight:700;margin-bottom:4px}
+.kmodal-header .kmodal-sub{font-size:13px;color:var(--muted)}
+.kmodal-props{padding:16px 32px;border-bottom:1px solid var(--border)}
+.kmodal-props .prop-row{display:flex;gap:8px;padding:7px 0;align-items:center;border-radius:4px;transition:background .1s}
+.kmodal-props .prop-row:hover{background:var(--surface2)}
+.kmodal-props .prop-icon{width:20px;text-align:center;font-size:14px;color:var(--muted);flex-shrink:0}
+.kmodal-props .prop-label{font-size:13px;color:var(--muted);min-width:110px;flex-shrink:0}
+.kmodal-props .prop-value{font-size:13px;flex:1;cursor:pointer;padding:2px 6px;border-radius:4px;min-height:24px;display:flex;align-items:center}
+.kmodal-props .prop-value:hover{background:var(--surface2)}
+.kmodal-props .prop-value.empty{color:var(--muted)}
+.kmodal-props .prop-value input,.kmodal-props .prop-value select,.kmodal-props .prop-value textarea{width:100%;padding:4px 6px;border:1px solid var(--accent);border-radius:4px;font-size:13px;font-family:var(--font);outline:none;background:var(--surface)}
+.kmodal-props .prop-value textarea{min-height:60px;resize:vertical}
+.kmodal-body{padding:20px 32px 28px}
+.kmodal-section{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--border)}
+.kmodal-section:first-child{border-top:none;margin-top:0;padding-top:0}
+.kmodal-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.kmodal-links a{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text);text-decoration:none;transition:all .15s}
+.kmodal-links a:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.kmodal-comments{padding:16px 32px 24px;border-top:1px solid var(--border)}
+.kmodal-comments h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted)}
+.kmodal-comments .comment{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.kmodal-comments .comment:last-child{border-bottom:none}
+.kmodal-comments .comment-meta{font-size:11px;color:var(--muted);margin-bottom:4px}
+.kmodal-comments textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);resize:none;min-height:36px}
+.kmodal-status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
 
 @media(max-width:768px){
   .main{padding:16px}
@@ -379,8 +401,13 @@ a:hover{text-decoration:underline}
 <div class="kmodal-overlay" id="kmodalOverlay" onclick="if(event.target===this)closeKmodal()">
   <div class="kmodal">
     <button class="kmodal-close" onclick="closeKmodal()">&times;</button>
-    <h3 id="kmodalTitle">-</h3>
-    <div id="kmodalBody"></div>
+    <div class="kmodal-header">
+      <h3 id="kmodalTitle">-</h3>
+      <div class="kmodal-sub" id="kmodalSub"></div>
+    </div>
+    <div class="kmodal-props" id="kmodalProps"></div>
+    <div class="kmodal-body" id="kmodalBody"></div>
+    <div class="kmodal-comments" id="kmodalComments"></div>
   </div>
 </div>
 
@@ -2041,11 +2068,13 @@ function resetSimulator() {
 // KANBAN BOARD
 // ============================================================
 const KANBAN_COLS = [
-  { id: '긍정회신', label: '긍정회신', color: '#e8f5e9' },
-  { id: '출고완료', label: '출고 완료', color: '#e3f2fd' },
-  { id: '가이드전달', label: '가이드 전달', color: '#f3e5f5' },
-  { id: '업로드완료', label: '업로드 완료', color: '#e8f5e9' },
-  { id: '광고코드확인', label: '소재 수령', color: '#e0f7fa' },
+  { id: '긍정회신', label: '긍정회신', color: '#34c759' },
+  { id: '신청폼전달', label: '신청폼 전달', color: '#ff9500' },
+  { id: '출고완료', label: '출고 완료', color: '#007aff' },
+  { id: '가이드전달', label: '가이드 전달 필요', color: '#af52de' },
+  { id: '업로드대기', label: '업로드 대기', color: '#ff9500' },
+  { id: '업로드완료', label: '업로드 완료', color: '#34c759' },
+  { id: '광고코드확인', label: '소재 수령', color: '#5ac8fa' },
 ];
 
 function kanbanGetAllCreators() {
@@ -2059,8 +2088,9 @@ function kanbanGetAllCreators() {
 function kanbanGetStatus(s) {
   const meta = creatorMeta[s.instagram] || {};
   let st = meta.status || getAutoStatus(s);
-  if (st === '업로드대기') st = '업로드완료';
   if (st === '신규') st = '긍정회신';
+  const validIds = KANBAN_COLS.map(c => c.id);
+  if (!validIds.includes(st)) st = '긍정회신';
   return st;
 }
 
@@ -2154,52 +2184,178 @@ async function kDrop(e) {
   kDragIg = null;
 }
 
+let kmodalIg = null;
+
 function openKmodal(ig) {
   const s = kanbanGetAllCreators().find(x => x.instagram === ig);
   if (!s) return;
+  kmodalIg = ig;
 
   const pd = pipelineData[ig] || {};
   const meta = creatorMeta[ig] || {};
   const ff = getFulfillment(ig);
   const status = meta.status || getAutoStatus(s);
   const shipDate = pd.shipDate || (ff?.shipDate ? normalizeDate(ff.shipDate) : '');
+  const guideDate = pd.guideDate || (s.guideDate ? normalizeDate(s.guideDate) : '');
+  const uploadDate = pd.uploadSchedule || '';
 
-  document.getElementById('kmodalTitle').textContent = `@${ig}`;
+  // Find matching NT parameter URL
+  const ntMatch = ntHistory.find(h => h.detail && h.detail.toLowerCase().replace('@','') === ig.toLowerCase());
+  const buyLink = pd.buyLink || (ntMatch ? ntMatch.finalUrl : '');
 
-  const rows = [
-    ['상태', status],
-    ['이메일', pd.email || s.email || '-'],
-    ['소통계정', pd.account || '-'],
-    ['폼제출일', s.timestamp ? normalizeDate(s.timestamp) : '-'],
-    ['출고일', shipDate || '-'],
-    ['가이드전달', pd.guideDate ? normalizeDate(pd.guideDate) : (s.guideDate ? normalizeDate(s.guideDate) : '-')],
-    ['업로드일정', pd.uploadSchedule || '-'],
-    ['송장번호', pd.invoice || '-'],
-    ['메모', meta.memo || s.memo || '-'],
+  // Title
+  document.getElementById('kmodalTitle').innerHTML = `<a href="https://instagram.com/${ig}" target="_blank" style="color:var(--accent);text-decoration:none">@${escHtml(ig)}</a>` + (meta.name ? ` <span style="font-weight:400;font-size:15px;color:var(--muted)">(${escHtml(meta.name)})</span>` : '');
+  document.getElementById('kmodalSub').textContent = s.timestamp ? `폼 제출: ${normalizeDate(s.timestamp)}` : (meta.addedAt ? `추가일: ${normalizeDate(meta.addedAt)}` : '');
+
+  // Status colors
+  const statusColors = {'긍정회신':'#34c759','신청폼전달':'#ff9500','출고완료':'#007aff','가이드전달':'#af52de','업로드대기':'#ff9500','업로드완료':'#34c759','광고코드확인':'#5ac8fa'};
+  const statusLabel = KANBAN_COLS.find(c => c.id === status)?.label || status;
+  const statusColor = statusColors[status] || 'var(--muted)';
+
+  // Properties section
+  const props = [
+    { icon: '⚡', label: '협업 진행 상태', field: 'status', type: 'status', value: statusLabel, color: statusColor },
+    { icon: '📝', label: '크리에이터 메모', field: 'memo', type: 'textarea', value: meta.memo || s.memo || '' },
+    { icon: '✉️', label: '이메일', field: 'email', type: 'text', value: pd.email || s.email || '' },
+    { icon: '📱', label: '컨택 계정', field: 'account', type: 'account', value: pd.account || '' },
+    { icon: '👤', label: '담당자', field: 'manager', type: 'manager', value: meta.manager || '' },
+    { icon: '📞', label: '콜여부 / 전화번호', field: 'callNote', type: 'text', value: meta.callNote || '' },
+    { icon: '📍', label: '사는 지역', field: 'region', type: 'text', value: meta.region || '' },
+    { icon: '📦', label: '출고일', field: 'shipDate', type: 'date', value: shipDate },
+    { icon: '📋', label: '가이드 전달일', field: 'guideDate', type: 'date', value: guideDate },
+    { icon: '📅', label: '업로드 일정', field: 'uploadSchedule', type: 'date', value: uploadDate },
+    { icon: '🔢', label: '송장번호', field: 'invoice', type: 'text', value: pd.invoice || '' },
+    { icon: '🔗', label: '가이드 링크', field: 'guideLink', type: 'url', value: meta.guideLink || '' },
+    { icon: '📸', label: '포스팅 링크', field: 'postLink', type: 'url', value: pd.postLink || '' },
+    { icon: '🎬', label: '클린본 드라이브', field: 'driveLink', type: 'url', value: pd.driveLink || '' },
+    { icon: '🛒', label: '전용 구매링크', field: 'buyLink', type: 'url', value: buyLink },
   ];
 
-  const links = [];
-  if (pd.driveLink) links.push(`<a href="${pd.driveLink}" target="_blank">드라이브</a>`);
-  if (pd.postLink) links.push(`<a href="${pd.postLink}" target="_blank">포스팅</a>`);
-  if (pd.adCodeLink) links.push(`<a href="${pd.adCodeLink}" target="_blank">광고코드</a>`);
+  document.getElementById('kmodalProps').innerHTML = props.map((p, i) => {
+    let valueHtml;
+    if (p.type === 'status') {
+      valueHtml = `<span class="kmodal-status-badge" style="background:${p.color}20;color:${p.color}">${escHtml(p.value)}</span>`;
+    } else if (p.type === 'url' && p.value) {
+      const short = p.value.length > 45 ? p.value.substring(0, 42) + '...' : p.value;
+      valueHtml = `<a href="${escHtml(p.value)}" target="_blank" style="color:var(--accent);font-size:12px;word-break:break-all" onclick="event.stopPropagation()">${escHtml(short)}</a>`;
+    } else {
+      valueHtml = p.value ? escHtml(p.value) : '<span style="color:var(--muted)">비어있음</span>';
+    }
+    const editable = p.type !== 'status' ? ` onclick="kmodalEdit('${p.field}','${p.type}',${i})"` : ` onclick="kmodalEditStatus(${i})"`;
+    return `<div class="prop-row">
+      <span class="prop-icon">${p.icon}</span>
+      <span class="prop-label">${p.label}</span>
+      <span class="prop-value${!p.value && p.type !== 'status' ? ' empty' : ''}" id="kprop-${i}"${editable}>${valueHtml}</span>
+    </div>`;
+  }).join('');
 
-  let html = rows.map(([label, value]) =>
-    `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${escHtml(value)}</span></div>`
-  ).join('');
-
-  if (links.length) {
-    html += `<div class="detail-row"><span class="detail-label">링크</span><span class="detail-value">${links.join(' · ')}</span></div>`;
-  }
-
-  html += `<div style="margin-top:16px;display:flex;gap:8px">
-    <a href="https://instagram.com/${ig}" target="_blank" class="btn btn-secondary btn-sm">인스타 프로필</a>
+  // Body: external links
+  document.getElementById('kmodalBody').innerHTML = `<div class="kmodal-links">
+    <a href="https://instagram.com/${ig}" target="_blank">인스타 프로필</a>
+    ${pd.driveLink ? `<a href="${escHtml(pd.driveLink)}" target="_blank">드라이브</a>` : ''}
+    ${pd.postLink ? `<a href="${escHtml(pd.postLink)}" target="_blank">포스팅</a>` : ''}
+    ${buyLink ? `<a href="${escHtml(buyLink)}" target="_blank">구매링크</a>` : ''}
   </div>`;
 
-  document.getElementById('kmodalBody').innerHTML = html;
+  // Comments
+  const comments = meta.comments || [];
+  let commentsHtml = '<h4>코멘트</h4>';
+  comments.forEach(c => {
+    commentsHtml += `<div class="comment"><div class="comment-meta">${escHtml(c.author || '담당자')} · ${c.date || ''}</div>${escHtml(c.text)}</div>`;
+  });
+  commentsHtml += `<div style="display:flex;gap:8px;margin-top:8px"><textarea id="kmodalNewComment" placeholder="코멘트 추가..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();kmodalAddComment()}"></textarea><button class="btn btn-sm" onclick="kmodalAddComment()" style="align-self:flex-end">등록</button></div>`;
+  document.getElementById('kmodalComments').innerHTML = commentsHtml;
+
   document.getElementById('kmodalOverlay').classList.add('open');
 }
 
+function kmodalEditStatus(propIdx) {
+  const el = document.getElementById('kprop-' + propIdx);
+  const opts = KANBAN_COLS.map(c => c.id);
+  const meta = creatorMeta[kmodalIg] || {};
+  const current = meta.status || '긍정회신';
+  el.innerHTML = `<select onchange="kmodalSaveField('status',this.value)" style="width:100%">${opts.map(o => {
+    const label = KANBAN_COLS.find(c => c.id === o)?.label || o;
+    return `<option value="${o}"${o === current ? ' selected' : ''}>${label}</option>`;
+  }).join('')}</select>`;
+  el.querySelector('select').focus();
+}
+
+function kmodalEdit(field, type, propIdx) {
+  const el = document.getElementById('kprop-' + propIdx);
+  const ig = kmodalIg;
+  const meta = creatorMeta[ig] || {};
+  const pd = pipelineData[ig] || {};
+  const s = kanbanGetAllCreators().find(x => x.instagram === ig) || {};
+
+  let current = '';
+  if (['memo','callNote','region','manager','guideLink'].includes(field)) current = meta[field] || '';
+  else if (['email','account','shipDate','guideDate','uploadSchedule','invoice','postLink','driveLink','buyLink'].includes(field)) current = pd[field] || '';
+  if (field === 'email' && !current) current = s.email || '';
+  if (field === 'memo' && !current) current = s.memo || '';
+
+  if (type === 'account') {
+    el.innerHTML = `<select onchange="kmodalSaveField('${field}',this.value)"><option value="">선택</option>${ALL_ACCOUNTS.map(a => `<option${a===current?' selected':''}>${a}</option>`).join('')}</select>`;
+    el.querySelector('select').focus();
+  } else if (type === 'manager') {
+    const members = Object.keys(TEAM);
+    el.innerHTML = `<select onchange="kmodalSaveField('${field}',this.value)"><option value="">선택</option>${members.map(m => `<option${m===current?' selected':''}>${m}</option>`).join('')}</select>`;
+    el.querySelector('select').focus();
+  } else if (type === 'textarea') {
+    el.innerHTML = `<textarea onblur="kmodalSaveField('${field}',this.value)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${escHtml(current)}</textarea>`;
+    el.querySelector('textarea').focus();
+  } else if (type === 'date') {
+    el.innerHTML = `<input type="date" value="${current}" onchange="kmodalSaveField('${field}',this.value)" onblur="kmodalSaveField('${field}',this.value)">`;
+    el.querySelector('input').focus();
+  } else {
+    el.innerHTML = `<input type="text" value="${escHtml(current)}" onblur="kmodalSaveField('${field}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">`;
+    el.querySelector('input').focus();
+  }
+}
+
+async function kmodalSaveField(field, value) {
+  const ig = kmodalIg;
+  if (!ig) return;
+
+  // Fields stored in creatorMeta
+  const metaFields = ['status','memo','callNote','region','manager','guideLink','name'];
+  // Fields stored in pipelineData
+  const pdFields = ['email','account','shipDate','guideDate','uploadSchedule','invoice','postLink','driveLink','buyLink'];
+
+  if (metaFields.includes(field)) {
+    if (!creatorMeta[ig]) creatorMeta[ig] = {};
+    creatorMeta[ig][field] = value;
+    creatorMeta[ig].updatedAt = new Date().toISOString();
+    await saveCreatorMeta();
+  } else if (pdFields.includes(field)) {
+    if (!pipelineData[ig]) pipelineData[ig] = {};
+    pipelineData[ig][field] = value;
+    await supaWrite('sourcing/pipeline.json', pipelineData);
+  }
+
+  // Refresh views
+  renderKanban();
+  renderSubmissions();
+  renderPipeline();
+  openKmodal(ig); // refresh modal
+}
+
+async function kmodalAddComment() {
+  const ig = kmodalIg;
+  if (!ig) return;
+  const text = document.getElementById('kmodalNewComment')?.value.trim();
+  if (!text) return;
+  if (!creatorMeta[ig]) creatorMeta[ig] = {};
+  if (!creatorMeta[ig].comments) creatorMeta[ig].comments = [];
+  creatorMeta[ig].comments.push({ text, date: fmtDate(new Date()), author: '담당자' });
+  creatorMeta[ig].updatedAt = new Date().toISOString();
+  await saveCreatorMeta();
+  openKmodal(ig);
+  showToast('코멘트 등록됨');
+}
+
 function closeKmodal() {
+  kmodalIg = null;
   document.getElementById('kmodalOverlay').classList.remove('open');
 }
 
