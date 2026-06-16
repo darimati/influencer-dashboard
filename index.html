@@ -281,6 +281,7 @@ a:hover{text-decoration:underline}
   <div class="tab" data-tab="paid">유가 협찬 보드</div>
   <div class="tab" data-tab="targets">주간 목표</div>
   <div class="tab" data-tab="analytics">성과 &amp; 역산</div>
+  <div class="tab" data-tab="hyrox">11월 HYROX</div>
   <div class="tab" data-tab="ntparam">NT 파라미터</div>
 </div>
 
@@ -699,6 +700,68 @@ a:hover{text-decoration:underline}
   </div>
 </div>
 
+<!-- ============ 11월 HYROX ============ -->
+<div class="panel" id="panel-hyrox">
+  <div class="section-header">
+    <h2>11월 HYROX — BR-001 출전 리스트</h2>
+    <span class="count" id="hyroxCount">0명</span>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>참가자 추가</h3>
+    <div class="form-row">
+      <div class="form-group"><label>1번 성함</label><input type="text" id="hxName1" placeholder="김지운"></div>
+      <div class="form-group"><label>1번 인스타</label><input type="text" id="hxIg1" placeholder="jiuu_n"></div>
+      <div class="form-group"><label>2번 성함</label><input type="text" id="hxName2" placeholder="정수호 (없으면 비워두기)"></div>
+      <div class="form-group"><label>2번 인스타</label><input type="text" id="hxIg2" placeholder="suhokor"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>출전 형태</label>
+        <select id="hxCategory" onchange="autoFillHyroxDate()">
+          <option value="">선택</option>
+          <option value="남자 개인">남자 개인 (11.14 오전)</option>
+          <option value="어댑티브 남자">어댑티브 남자 (11.14 오전)</option>
+          <option value="프로 더블 여성">프로 더블 여성 (11.14 오후)</option>
+          <option value="프로 여성">프로 여성 (11.14 오후)</option>
+          <option value="혼성 더블">혼성 더블 (11.14 오후)</option>
+          <option value="프로 더블 남성">프로 더블 남성 (11.14 저녁)</option>
+          <option value="프로 남성">프로 남성 (11.14 저녁)</option>
+          <option value="여성 더블">여성 더블 (11.15 오전)</option>
+          <option value="여성 개인">여성 개인 (11.15 오전~오후)</option>
+          <option value="어댑티브 여성">어댑티브 여성 (11.15 오전~오후)</option>
+          <option value="남성 더블">남성 더블 (11.15 오후)</option>
+          <option value="남성 릴레이">남성 릴레이 (11.15 저녁)</option>
+          <option value="혼성 릴레이">혼성 릴레이 (11.15 저녁)</option>
+          <option value="여성 릴레이">여성 릴레이 (11.15 저녁)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>출전일시</label><input type="text" id="hxDate" placeholder="자동입력" readonly style="background:var(--surface2)"></div>
+      <div class="form-group"><label>메모</label><input type="text" id="hxMemo" placeholder="주요 연락수단 등"></div>
+      <div class="form-group" style="align-self:flex-end"><button class="btn btn-primary" onclick="addHyroxEntry()">추가</button></div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>1번 성함</th>
+          <th>1번 인스타</th>
+          <th>2번 성함</th>
+          <th>2번 인스타</th>
+          <th>메모</th>
+          <th>출전 형태</th>
+          <th>출전일시</th>
+          <th>훈련화 1차</th>
+          <th>훈련화 2차</th>
+          <th>대회화</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="hyroxBody"></tbody>
+    </table>
+  </div>
+</div>
+
 <!-- ============ NT 파라미터 ============ -->
 <div class="panel" id="panel-ntparam">
   <!-- 생성기 -->
@@ -832,6 +895,7 @@ let manualCreators = []; // { instagram, status, memo, addedAt }
 let fulfillments = [];
 let pipelineData = {};
 let sortOrderData = []; // array of IG handles in display order
+let hyroxEntries = []; // HYROX participant list
 const ALL_ACCOUNTS = Object.values(TEAM).flat();
 let currentWeekOffset = 0;
 let analyticsWeekOffset = 0;
@@ -1035,7 +1099,7 @@ async function syncAll() {
   const btn = document.getElementById('syncBtn');
   btn.disabled = true; btn.textContent = '동기화 중...';
   try {
-    await Promise.all([loadSubmissions(), loadDailyLogs(), loadTargets(), loadShipping(), loadCreatorMeta(), loadManualCreators(), loadFulfillments(), loadPipelineData(), loadSortOrder()]);
+    await Promise.all([loadSubmissions(), loadDailyLogs(), loadTargets(), loadShipping(), loadCreatorMeta(), loadManualCreators(), loadFulfillments(), loadPipelineData(), loadSortOrder(), loadHyroxEntries()]);
     renderAll();
     document.getElementById('lastSync').textContent = `마지막 동기화: ${new Date().toLocaleTimeString('ko-KR')}`;
     showToast('동기화 완료');
@@ -1056,6 +1120,7 @@ function renderAll() {
   renderAnalytics();
   renderTargetPanel();
   renderKanban();
+  renderHyrox();
 }
 
 function getWeekRange(offset = 0) {
@@ -2445,6 +2510,113 @@ function renderPaidBoard() {
       <td><button onclick="deletePaidCreator(${origIdx})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px" title="삭제">✕</button></td>
     </tr>`;
   }).join('');
+}
+
+// ============================================================
+// 11월 HYROX
+// ============================================================
+const HYROX_SCHEDULE = {
+  '남자 개인': '11.14(토) 오전',
+  '어댑티브 남자': '11.14(토) 오전',
+  '프로 더블 여성': '11.14(토) 오후',
+  '프로 여성': '11.14(토) 오후',
+  '혼성 더블': '11.14(토) 오후',
+  '프로 더블 남성': '11.14(토) 저녁',
+  '프로 남성': '11.14(토) 저녁',
+  '여성 더블': '11.15(일) 오전',
+  '여성 개인': '11.15(일) 오전~오후',
+  '어댑티브 여성': '11.15(일) 오전~오후',
+  '남성 더블': '11.15(일) 오후',
+  '남성 릴레이': '11.15(일) 저녁',
+  '혼성 릴레이': '11.15(일) 저녁',
+  '여성 릴레이': '11.15(일) 저녁',
+};
+
+async function loadHyroxEntries() {
+  const d = await supaRead('sourcing/hyrox-entries.json');
+  if (d) hyroxEntries = d;
+}
+
+async function saveHyroxEntries() {
+  await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
+}
+
+function autoFillHyroxDate() {
+  const cat = document.getElementById('hxCategory').value;
+  document.getElementById('hxDate').value = HYROX_SCHEDULE[cat] || '';
+}
+
+async function addHyroxEntry() {
+  const name1 = document.getElementById('hxName1').value.trim();
+  const ig1 = document.getElementById('hxIg1').value.trim().replace(/^@/, '');
+  const name2 = document.getElementById('hxName2').value.trim();
+  const ig2 = document.getElementById('hxIg2').value.trim().replace(/^@/, '');
+  const category = document.getElementById('hxCategory').value;
+  const date = document.getElementById('hxDate').value;
+  const memo = document.getElementById('hxMemo').value.trim();
+  if (!name1 || !ig1 || !category) { showToast('1번 성함, 인스타, 출전 형태는 필수입니다'); return; }
+  hyroxEntries.push({
+    id: Date.now().toString(36),
+    name1, ig1, name2, ig2, category, date, memo,
+    shoe1: '', shoe2: '', shoeComp: '',
+    addedAt: new Date().toISOString()
+  });
+  await saveHyroxEntries();
+  renderHyrox();
+  // clear form
+  document.getElementById('hxName1').value = '';
+  document.getElementById('hxIg1').value = '';
+  document.getElementById('hxName2').value = '';
+  document.getElementById('hxIg2').value = '';
+  document.getElementById('hxCategory').value = '';
+  document.getElementById('hxDate').value = '';
+  document.getElementById('hxMemo').value = '';
+  showToast('HYROX 참가자 추가 완료');
+}
+
+async function deleteHyroxEntry(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  hyroxEntries = hyroxEntries.filter(e => e.id !== id);
+  await saveHyroxEntries();
+  renderHyrox();
+}
+
+async function saveHyroxField(id, field, value) {
+  const entry = hyroxEntries.find(e => e.id === id);
+  if (!entry) return;
+  entry[field] = value;
+  if (field === 'category') {
+    entry.date = HYROX_SCHEDULE[value] || entry.date;
+  }
+  await saveHyroxEntries();
+  if (field === 'category') renderHyrox();
+}
+
+function renderHyrox() {
+  const body = document.getElementById('hyroxBody');
+  document.getElementById('hyroxCount').textContent = hyroxEntries.length + '명';
+  if (!hyroxEntries.length) {
+    body.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--muted)">참가자를 추가해 주세요</td></tr>';
+    return;
+  }
+  body.innerHTML = hyroxEntries.map((e, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${escHtml(e.name1)}</td>
+      <td><a href="https://instagram.com/${escHtml(e.ig1)}" target="_blank" style="color:var(--accent)">@${escHtml(e.ig1)}</a></td>
+      <td>${escHtml(e.name2 || '-')}</td>
+      <td>${e.ig2 ? `<a href="https://instagram.com/${escHtml(e.ig2)}" target="_blank" style="color:var(--accent)">@${escHtml(e.ig2)}</a>` : '-'}</td>
+      <td><input type="text" value="${escHtml(e.memo || '')}" onchange="saveHyroxField('${e.id}','memo',this.value)" style="width:100px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px"></td>
+      <td><select onchange="saveHyroxField('${e.id}','category',this.value)" style="padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:11px">
+        ${Object.keys(HYROX_SCHEDULE).map(k => `<option value="${k}" ${k === e.category ? 'selected' : ''}>${k}</option>`).join('')}
+      </select></td>
+      <td style="white-space:nowrap">${escHtml(e.date || '')}</td>
+      <td><input type="date" value="${escHtml(e.shoe1 || '')}" onchange="saveHyroxField('${e.id}','shoe1',this.value)" style="width:120px;padding:2px;border:1px solid var(--border);border-radius:4px;font-size:11px"></td>
+      <td><input type="date" value="${escHtml(e.shoe2 || '')}" onchange="saveHyroxField('${e.id}','shoe2',this.value)" style="width:120px;padding:2px;border:1px solid var(--border);border-radius:4px;font-size:11px"></td>
+      <td><input type="date" value="${escHtml(e.shoeComp || '')}" onchange="saveHyroxField('${e.id}','shoeComp',this.value)" style="width:120px;padding:2px;border:1px solid var(--border);border-radius:4px;font-size:11px"></td>
+      <td><button onclick="deleteHyroxEntry('${e.id}')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:14px" title="삭제">✕</button></td>
+    </tr>
+  `).join('');
 }
 
 // ============================================================
