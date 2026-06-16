@@ -275,6 +275,7 @@ a:hover{text-decoration:underline}
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSeD3V115_SVML19SJTERtXPvKrLXfOAlAt91kB79fLkYAAJYQ/viewform?usp=sharing&ouid=101313832275518522334" target="_blank" style="padding:6px 12px;background:var(--green-light);color:#1b7a37;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">6월 신청폼</a>
     <a href="https://docs.google.com/spreadsheets/d/1CGrEqs-9LXS85PJYmXWi3C_Q-cyy4UoL9rZmxd8jNNA/edit?usp=drive_link" target="_blank" style="padding:6px 12px;background:var(--accent-light);color:#0051a8;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">6월 신청폼 데이터</a>
     <a href="https://docs.google.com/spreadsheets/d/1WdAybySaW4jpY-4_FdAf7gV-eMIvXnlgfc3FygR20Ig/edit?usp=sharing" target="_blank" style="padding:6px 12px;background:var(--purple-light);color:#7b2fa0;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">하이록스 신청폼</a>
+    <a href="reel-plan.html" target="_blank" style="padding:6px 12px;background:var(--orange-light);color:#a35d00;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">릴스 기획안 제출</a>
   </div>
   <span class="last-sync" id="lastSync">-</span>
   <button class="sync-btn" id="syncBtn" onclick="syncAll()">동기화</button>
@@ -288,6 +289,7 @@ a:hover{text-decoration:underline}
   <div class="tab" data-tab="analytics">성과 &amp; 역산</div>
   <div class="tab" data-tab="hyrox">11월 HYROX</div>
   <div class="tab" data-tab="ntparam">NT 파라미터</div>
+  <div class="tab" data-tab="reelplans">릴스 기획안</div>
 </div>
 
 <!-- ============ PIPELINE ============ -->
@@ -860,6 +862,50 @@ a:hover{text-decoration:underline}
     </div>
   </div>
 </div>
+
+<!-- ============ 릴스 기획안 ============ -->
+<div class="panel" id="panel-reelplans">
+  <div class="section-header" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+    <h2>릴스 기획안 제출 현황</h2>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="reelPlanCount" style="font-size:13px;color:var(--muted)"></span>
+      <a href="reel-plan.html" target="_blank" style="padding:6px 14px;background:var(--accent);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">제출 링크 열기</a>
+      <button class="sync-btn" onclick="loadReelPlans()" style="padding:6px 14px;font-size:12px">새로고침</button>
+    </div>
+  </div>
+  <div class="card">
+    <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="text" id="reelPlanSearch" placeholder="핸들, 주제 검색..." oninput="renderReelPlans()" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;min-width:200px">
+      <select id="reelPlanStatusFilter" onchange="renderReelPlans()" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px">
+        <option value="">전체 상태</option>
+        <option value="검토중">검토중</option>
+        <option value="승인">승인</option>
+        <option value="수정요청">수정요청</option>
+        <option value="반려">반려</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px">No</th>
+            <th>핸들</th>
+            <th>릴스 주제</th>
+            <th>후킹 장면</th>
+            <th>핵심 메시지</th>
+            <th>CTA</th>
+            <th>촬영일</th>
+            <th>상태</th>
+            <th>제출일</th>
+            <th style="width:50px">메모</th>
+          </tr>
+        </thead>
+        <tbody id="reelPlanBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2767,6 +2813,69 @@ function ntInit() {
 }
 
 // ============================================================
+// REEL PLANS VIEWER
+// ============================================================
+let reelPlans = [];
+
+async function loadReelPlans() {
+  const data = await supaRead('sourcing/reel-plans.json');
+  reelPlans = (data && data.plans) ? data.plans : [];
+  renderReelPlans();
+}
+
+async function updateReelPlanStatus(idx, newStatus) {
+  reelPlans[idx].status = newStatus;
+  reelPlans[idx].reviewedAt = new Date().toISOString();
+  await supaWrite('sourcing/reel-plans.json', { plans: reelPlans, updatedAt: new Date().toISOString() });
+  renderReelPlans();
+  showToast(`기획안 상태 → ${newStatus}`);
+}
+
+function renderReelPlans() {
+  const search = (document.getElementById('reelPlanSearch')?.value || '').toLowerCase();
+  const statusFilter = document.getElementById('reelPlanStatusFilter')?.value || '';
+  const body = document.getElementById('reelPlanBody');
+  if (!body) return;
+
+  let filtered = reelPlans.slice().reverse();
+  if (search) filtered = filtered.filter(p => (p.igHandle||'').toLowerCase().includes(search) || (p.topic||'').toLowerCase().includes(search));
+  if (statusFilter) filtered = filtered.filter(p => p.status === statusFilter);
+
+  const countEl = document.getElementById('reelPlanCount');
+  if (countEl) countEl.textContent = `총 ${filtered.length}건`;
+
+  const statusColors = { '검토중': 'orange', '승인': 'green', '수정요청': 'blue', '반려': 'red' };
+
+  body.innerHTML = filtered.map((p, i) => {
+    const origIdx = reelPlans.length - 1 - (reelPlans.indexOf(p) >= 0 ? reelPlans.indexOf(p) : i);
+    const realIdx = reelPlans.indexOf(p);
+    const dt = p.submittedAt ? new Date(p.submittedAt) : null;
+    const dateStr = dt ? `${dt.getMonth()+1}/${dt.getDate()}` : '-';
+    const badgeClass = statusColors[p.status] || 'orange';
+    const memoShort = p.memo ? (p.memo.length > 8 ? p.memo.slice(0,8)+'…' : p.memo) : '-';
+    return `<tr>
+      <td>${i+1}</td>
+      <td style="font-weight:600;white-space:nowrap">${p.igHandle || '-'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(p.topic||'').replace(/"/g,'&quot;')}">${p.topic || '-'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(p.hook||'').replace(/"/g,'&quot;')}">${p.hook || '-'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(p.message||'').replace(/"/g,'&quot;')}">${p.message || '-'}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(p.cta||'').replace(/"/g,'&quot;')}">${p.cta || '-'}</td>
+      <td style="white-space:nowrap;font-size:12px">${p.shootDate || '-'}</td>
+      <td>
+        <select onchange="updateReelPlanStatus(${realIdx},this.value)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface)">
+          <option value="검토중" ${p.status==='검토중'?'selected':''}>검토중</option>
+          <option value="승인" ${p.status==='승인'?'selected':''}>승인</option>
+          <option value="수정요청" ${p.status==='수정요청'?'selected':''}>수정요청</option>
+          <option value="반려" ${p.status==='반려'?'selected':''}>반려</option>
+        </select>
+      </td>
+      <td style="font-size:12px;white-space:nowrap">${dateStr}</td>
+      <td title="${(p.memo||'').replace(/"/g,'&quot;')}" style="font-size:11px;cursor:help">${memoShort}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
 // INIT
 // ============================================================
 (async function init() {
@@ -2782,6 +2891,7 @@ function ntInit() {
   calcSimulator();
   ntInit();
   loadPaidBoard();
+  loadReelPlans();
   await syncAll();
 })();
 </script>

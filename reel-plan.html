@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>릴스 기획안 제출</title>
+<style>
+:root{
+  --bg:#f5f5f7;--surface:#fff;--border:#e5e5ea;
+  --text:#1d1d1f;--muted:#86868b;--accent:#007aff;--accent-light:#e8f0fe;
+  --green:#34c759;--green-light:#e8faf0;--red:#ff3b30;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+
+.logo-area{text-align:center;margin-bottom:32px}
+.logo-area h1{font-size:22px;font-weight:700;margin-bottom:4px}
+.logo-area p{font-size:14px;color:var(--muted)}
+
+.form-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-md);width:100%;max-width:560px;padding:28px 24px}
+
+.field{margin-bottom:20px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.field .hint{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4}
+.field input,.field textarea,.field select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font);background:var(--surface);color:var(--text);transition:border-color .15s;outline:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,122,255,.12)}
+.field textarea{resize:vertical;min-height:80px}
+.field .char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:4px}
+
+.required::after{content:" *";color:var(--red)}
+
+.submit-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);transition:opacity .15s}
+.submit-btn:hover{opacity:.9}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.success-msg{display:none;text-align:center;padding:40px 20px}
+.success-msg .check{font-size:48px;margin-bottom:12px}
+.success-msg h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.success-msg p{font-size:14px;color:var(--muted);margin-bottom:20px}
+.success-msg .another-btn{display:inline-block;padding:10px 24px;background:var(--accent-light);color:var(--accent);border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:var(--font)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+
+.footer{margin-top:32px;text-align:center;font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="logo-area">
+  <h1>릴스 기획안 제출</h1>
+  <p>협업 릴스 촬영 전, 기획안을 제출해주세요</p>
+</div>
+
+<div class="form-card" id="formCard">
+  <form id="reelForm" onsubmit="return handleSubmit(event)">
+
+    <div class="field">
+      <label class="required">인스타그램 핸들</label>
+      <div class="hint">@ 포함하여 입력해주세요 (예: @username)</div>
+      <input type="text" id="igHandle" placeholder="@" required>
+    </div>
+
+    <div class="field">
+      <label class="required">릴스 주제</label>
+      <div class="hint">어떤 주제/상황의 릴스인지 간단히 설명해주세요</div>
+      <textarea id="topic" placeholder="예: BR-001 러닝화 실착 리뷰 + 한강 러닝 브이로그" required></textarea>
+    </div>
+
+    <div class="field">
+      <label class="required">후킹 장면 (첫 1~3초)</label>
+      <div class="hint">시청자가 스크롤을 멈추게 할 첫 장면을 구체적으로 적어주세요</div>
+      <textarea id="hook" placeholder="예: 새벽 한강 위에서 신발 클로즈업 + 달리기 시작하는 모습" required></textarea>
+    </div>
+
+    <div class="field">
+      <label class="required">핵심 메시지</label>
+      <div class="hint">릴스를 통해 전달하고자 하는 핵심 메시지</div>
+      <textarea id="message" placeholder="예: 가볍고 쿠셔닝이 좋아서 장거리 러닝에도 무릎이 편했다" required></textarea>
+    </div>
+
+    <div class="field">
+      <label class="required">CTA (Call To Action)</label>
+      <div class="hint">시청자에게 유도할 행동 (댓글, 링크 클릭, 팔로우 등)</div>
+      <textarea id="cta" placeholder="예: 프로필 링크에서 할인코드로 구매 가능! 댓글로 사이즈 추천 요청" required></textarea>
+    </div>
+
+    <div class="field">
+      <label>촬영 예정일</label>
+      <input type="date" id="shootDate">
+    </div>
+
+    <div class="field">
+      <label>기타 메모</label>
+      <textarea id="memo" placeholder="추가 사항이 있다면 자유롭게 적어주세요" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">기획안 제출하기</button>
+  </form>
+</div>
+
+<div class="form-card success-msg" id="successMsg">
+  <div class="check">&#10003;</div>
+  <h2>제출 완료!</h2>
+  <p>기획안이 성공적으로 제출되었습니다.<br>담당자가 검토 후 연락드리겠습니다.</p>
+  <button class="another-btn" onclick="resetForm()">새 기획안 제출하기</button>
+</div>
+
+<div class="footer">DARIMATI Influencer Team</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://chvxkfvimnqmmzsnyqrx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodnhrZnZpbW5xbW16c255cXJ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDE2NjY3NiwiZXhwIjoyMDg1NzQyNjc2fQ.M8ptMiW7j5newWUPfEnptkPwry21ROiQXWEmSQNwIkw';
+const BUCKET = 'playbook-data';
+const DATA_PATH = 'sourcing/reel-plans.json';
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function supaRead(path) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY }
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function supaWrite(path, data) {
+  const body = JSON.stringify(data);
+  let r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json', 'x-upsert': 'true' },
+    body
+  });
+  if (r.status === 400) {
+    r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body
+    });
+  }
+  return r.ok;
+}
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '제출 중...';
+
+  try {
+    const plan = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      igHandle: document.getElementById('igHandle').value.trim(),
+      topic: document.getElementById('topic').value.trim(),
+      hook: document.getElementById('hook').value.trim(),
+      message: document.getElementById('message').value.trim(),
+      cta: document.getElementById('cta').value.trim(),
+      shootDate: document.getElementById('shootDate').value || '',
+      memo: document.getElementById('memo').value.trim(),
+      status: '검토중',
+      submittedAt: new Date().toISOString()
+    };
+
+    // Normalize handle
+    if (!plan.igHandle.startsWith('@')) plan.igHandle = '@' + plan.igHandle;
+
+    // Load existing plans and append
+    const existing = await supaRead(DATA_PATH);
+    const plans = (existing && existing.plans) ? existing.plans : [];
+    plans.push(plan);
+    const ok = await supaWrite(DATA_PATH, { plans, updatedAt: new Date().toISOString() });
+
+    if (ok) {
+      document.getElementById('formCard').querySelector('form').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+    } else {
+      showToast('제출 실패 - 다시 시도해주세요');
+      btn.disabled = false;
+      btn.textContent = '기획안 제출하기';
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('오류 발생 - 다시 시도해주세요');
+    btn.disabled = false;
+    btn.textContent = '기획안 제출하기';
+  }
+}
+
+function resetForm() {
+  document.getElementById('reelForm').reset();
+  document.getElementById('successMsg').style.display = 'none';
+  document.getElementById('formCard').querySelector('form').style.display = 'block';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = '기획안 제출하기';
+}
+</script>
+</body>
+</html>
