@@ -206,6 +206,33 @@ a:hover{text-decoration:underline}
 #simScenarioTable tr.current-scenario{background:var(--accent-light)}
 #simScenarioTable tr.current-scenario td:first-child::after{content:" (현재)";color:var(--accent);font-size:11px}
 
+/* Kanban Board */
+.kanban{display:flex;gap:12px;overflow-x:auto;padding:4px 0;align-items:flex-start;min-height:500px}
+.kanban-col{flex:0 0 220px;background:var(--surface2);border-radius:var(--radius);padding:12px;min-height:400px}
+.kanban-col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.kanban-col-title{font-size:13px;font-weight:700}
+.kanban-col-count{font-size:12px;color:var(--muted);background:var(--surface);border-radius:12px;padding:2px 8px;font-weight:600}
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;cursor:grab;transition:box-shadow .15s,transform .15s;position:relative}
+.kanban-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kanban-card.dragging{opacity:.4;transform:rotate(2deg)}
+.kanban-card .kc-ig{font-weight:700;font-size:13px;color:var(--accent);margin-bottom:4px}
+.kanban-card .kc-ig a{color:inherit}
+.kanban-card .kc-account{font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:6px}
+.kanban-card .kc-meta{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.kanban-card .kc-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+.kanban-col.drag-over{background:#e8f0fe;border:2px dashed var(--accent)}
+.kanban-empty{text-align:center;padding:24px 8px;color:var(--muted);font-size:12px}
+
+/* Kanban Detail Modal */
+.kmodal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;justify-content:center;align-items:center}
+.kmodal-overlay.open{display:flex}
+.kmodal{background:var(--surface);border-radius:var(--radius);width:90%;max-width:560px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
+.kmodal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px}
+.kmodal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+.kmodal .detail-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.kmodal .detail-label{font-size:12px;font-weight:600;color:var(--muted);min-width:80px}
+.kmodal .detail-value{font-size:13px;flex:1}
+
 @media(max-width:768px){
   .main{padding:16px}
   .card-grid{grid-template-columns:1fr}
@@ -228,6 +255,7 @@ a:hover{text-decoration:underline}
 
 <div class="tabs">
   <div class="tab active" data-tab="pipeline">무가 협찬 보드</div>
+  <div class="tab" data-tab="kanban">무가 칸반</div>
   <div class="tab" data-tab="paid">유가 협찬 보드</div>
   <div class="tab" data-tab="targets">주간 목표</div>
   <div class="tab" data-tab="analytics">성과 &amp; 역산</div>
@@ -336,6 +364,24 @@ a:hover{text-decoration:underline}
     </table>
   </div>
 
+</div>
+
+<!-- ============ KANBAN BOARD ============ -->
+<div class="panel" id="panel-kanban">
+  <div class="section-header">
+    <h2>무가 협찬 칸반</h2>
+    <span class="count" id="kanbanCount">0건</span>
+  </div>
+  <div class="kanban" id="kanbanBoard"></div>
+</div>
+
+<!-- Kanban Detail Modal -->
+<div class="kmodal-overlay" id="kmodalOverlay" onclick="if(event.target===this)closeKmodal()">
+  <div class="kmodal">
+    <button class="kmodal-close" onclick="closeKmodal()">&times;</button>
+    <h3 id="kmodalTitle">-</h3>
+    <div id="kmodalBody"></div>
+  </div>
 </div>
 
 <!-- ============ TARGETS + DAILY LOG ============ -->
@@ -650,10 +696,7 @@ a:hover{text-decoration:underline}
   <div class="card" style="margin-top:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h3 style="margin-bottom:0">생성이력</h3>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span id="ntHistoryCount" style="font-size:13px;color:var(--muted)"></span>
-        <button class="btn btn-secondary btn-sm" onclick="ntExportCsv()">CSV 내보내기</button>
-      </div>
+      <span id="ntHistoryCount" style="font-size:13px;color:var(--muted)"></span>
     </div>
     <div class="filter-bar" style="margin-bottom:12px">
       <input type="text" id="ntHistorySearch" placeholder="source, detail, URL 등으로 검색..." oninput="ntRenderHistory()">
@@ -669,7 +712,6 @@ a:hover{text-decoration:underline}
             <th>detail</th>
             <th>keyword</th>
             <th>최종 URL</th>
-            <th>메모</th>
             <th style="width:80px">생성일</th>
             <th style="width:60px"></th>
           </tr>
@@ -942,6 +984,7 @@ function renderAll() {
   renderDailyLogs();
   renderAnalytics();
   renderTargetPanel();
+  renderKanban();
 }
 
 function getWeekRange(offset = 0) {
@@ -1951,39 +1994,207 @@ function resetSimulator() {
 }
 
 // ============================================================
+// KANBAN BOARD
+// ============================================================
+const KANBAN_COLS = [
+  { id: '긍정회신', label: '긍정회신', color: '#e8f5e9' },
+  { id: '출고완료', label: '출고 완료', color: '#e3f2fd' },
+  { id: '가이드전달', label: '가이드 전달', color: '#f3e5f5' },
+  { id: '업로드완료', label: '업로드 완료', color: '#e8f5e9' },
+  { id: '광고코드확인', label: '소재 수령', color: '#e0f7fa' },
+];
+
+function kanbanGetAllCreators() {
+  const formIgs = new Set(submissions.map(s => s.instagram.toLowerCase()));
+  const manualEntries = manualCreators
+    .filter(m => !formIgs.has(m.instagram.toLowerCase()))
+    .map(m => ({ instagram: m.instagram, email: '', timestamp: '', memo: m.memo || '', guideDate: '', uploadDate: '', shippingStatus: '', isManual: true }));
+  return [...submissions, ...manualEntries];
+}
+
+function kanbanGetStatus(s) {
+  const meta = creatorMeta[s.instagram] || {};
+  let st = meta.status || getAutoStatus(s);
+  if (st === '업로드대기') st = '업로드완료';
+  if (st === '신규') st = '긍정회신';
+  return st;
+}
+
+function renderKanban() {
+  const all = kanbanGetAllCreators();
+  const board = document.getElementById('kanbanBoard');
+  if (!board) return;
+
+  const grouped = {};
+  KANBAN_COLS.forEach(c => grouped[c.id] = []);
+
+  all.forEach(s => {
+    const st = kanbanGetStatus(s);
+    if (grouped[st]) grouped[st].push(s);
+    else if (st !== '보류' && st !== '수거') grouped['긍정회신'].push(s);
+  });
+
+  const total = Object.values(grouped).reduce((s, arr) => s + arr.length, 0);
+  const countEl = document.getElementById('kanbanCount');
+  if (countEl) countEl.textContent = `${total}건`;
+
+  board.innerHTML = KANBAN_COLS.map(col => {
+    const items = grouped[col.id] || [];
+    const cards = items.map(s => {
+      const ig = s.instagram;
+      const pd = pipelineData[ig] || {};
+      const meta = creatorMeta[ig] || {};
+      const account = pd.account || '';
+      const memo = meta.memo || s.memo || '';
+      const ff = getFulfillment(ig);
+      const shipDate = pd.shipDate || (ff?.shipDate ? normalizeDate(ff.shipDate) : '');
+      const guideDate = pd.guideDate || s.guideDate || '';
+      const uploadDate = pd.uploadSchedule || '';
+
+      let metaLines = [];
+      if (account) metaLines.push(account);
+      if (shipDate) metaLines.push(`출고 ${shipDate}`);
+      if (guideDate) metaLines.push(`가이드 ${normalizeDate(guideDate)}`);
+      if (uploadDate) metaLines.push(`업로드 ${uploadDate}`);
+      if (memo) metaLines.push(memo.length > 20 ? memo.substring(0, 20) + '...' : memo);
+
+      return `<div class="kanban-card" draggable="true" data-ig="${escHtml(ig)}" ondragstart="kDragStart(event)" ondragend="kDragEnd(event)" onclick="openKmodal('${escHtml(ig)}')">
+        <div class="kc-ig"><a href="https://instagram.com/${ig}" target="_blank" onclick="event.stopPropagation()">@${ig}</a></div>
+        ${account ? `<div class="kc-account">${account}</div>` : ''}
+        ${metaLines.length ? `<div class="kc-meta">${metaLines.map(l => `<span>${escHtml(l)}</span>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    return `<div class="kanban-col" data-col="${col.id}" ondragover="kDragOver(event)" ondragleave="kDragLeave(event)" ondrop="kDrop(event)" style="border-top:3px solid ${col.color}">
+      <div class="kanban-col-header">
+        <span class="kanban-col-title">${col.label}</span>
+        <span class="kanban-col-count">${items.length}</span>
+      </div>
+      ${cards || '<div class="kanban-empty">없음</div>'}
+    </div>`;
+  }).join('');
+}
+
+let kDragIg = null;
+function kDragStart(e) {
+  kDragIg = e.target.dataset.ig;
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function kDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+}
+function kDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function kDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+async function kDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const newStatus = e.currentTarget.dataset.col;
+  if (!kDragIg || !newStatus) return;
+
+  if (!creatorMeta[kDragIg]) creatorMeta[kDragIg] = {};
+  creatorMeta[kDragIg].status = newStatus;
+  creatorMeta[kDragIg].updatedAt = new Date().toISOString();
+  await saveCreatorMeta();
+
+  renderKanban();
+  renderSubmissions();
+  renderPipeline();
+  showToast(`@${kDragIg} → ${KANBAN_COLS.find(c => c.id === newStatus)?.label || newStatus}`);
+  kDragIg = null;
+}
+
+function openKmodal(ig) {
+  const s = kanbanGetAllCreators().find(x => x.instagram === ig);
+  if (!s) return;
+
+  const pd = pipelineData[ig] || {};
+  const meta = creatorMeta[ig] || {};
+  const ff = getFulfillment(ig);
+  const status = meta.status || getAutoStatus(s);
+  const shipDate = pd.shipDate || (ff?.shipDate ? normalizeDate(ff.shipDate) : '');
+
+  document.getElementById('kmodalTitle').textContent = `@${ig}`;
+
+  const rows = [
+    ['상태', status],
+    ['이메일', pd.email || s.email || '-'],
+    ['소통계정', pd.account || '-'],
+    ['폼제출일', s.timestamp ? normalizeDate(s.timestamp) : '-'],
+    ['출고일', shipDate || '-'],
+    ['가이드전달', pd.guideDate ? normalizeDate(pd.guideDate) : (s.guideDate ? normalizeDate(s.guideDate) : '-')],
+    ['업로드일정', pd.uploadSchedule || '-'],
+    ['송장번호', pd.invoice || '-'],
+    ['메모', meta.memo || s.memo || '-'],
+  ];
+
+  const links = [];
+  if (pd.driveLink) links.push(`<a href="${pd.driveLink}" target="_blank">드라이브</a>`);
+  if (pd.postLink) links.push(`<a href="${pd.postLink}" target="_blank">포스팅</a>`);
+  if (pd.adCodeLink) links.push(`<a href="${pd.adCodeLink}" target="_blank">광고코드</a>`);
+
+  let html = rows.map(([label, value]) =>
+    `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${escHtml(value)}</span></div>`
+  ).join('');
+
+  if (links.length) {
+    html += `<div class="detail-row"><span class="detail-label">링크</span><span class="detail-value">${links.join(' · ')}</span></div>`;
+  }
+
+  html += `<div style="margin-top:16px;display:flex;gap:8px">
+    <a href="https://instagram.com/${ig}" target="_blank" class="btn btn-secondary btn-sm">인스타 프로필</a>
+  </div>`;
+
+  document.getElementById('kmodalBody').innerHTML = html;
+  document.getElementById('kmodalOverlay').classList.add('open');
+}
+
+function closeKmodal() {
+  document.getElementById('kmodalOverlay').classList.remove('open');
+}
+
+// ============================================================
 // NT 파라미터 생성기
 // ============================================================
+const NT_STORAGE_KEY = 'darimati_nt_history';
+
 const NT_INITIAL_HISTORY = [
-  {no:17, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@h_sukyung', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:18, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@taeniharu', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:19, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@runner_bangjung2', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:20, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ny.moves_', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:21, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ye_kon.g', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:22, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@youngwonderful_', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:23, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@daisy._33', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:24, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@everyday_runlife', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:25, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@pink_seulgi', keyword:'June', memo:'', createdAt:'2025-06-01'},
-  {no:26, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@llilysso', keyword:'June', memo:'', createdAt:'2025-06-01'},
+  {no:17, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@h_sukyung', keyword:'June', createdAt:'2025-06-01'},
+  {no:18, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@taeniharu', keyword:'June', createdAt:'2025-06-01'},
+  {no:19, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@runner_bangjung2', keyword:'June', createdAt:'2025-06-01'},
+  {no:20, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ny.moves_', keyword:'June', createdAt:'2025-06-01'},
+  {no:21, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@ye_kon.g', keyword:'June', createdAt:'2025-06-01'},
+  {no:22, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@youngwonderful_', keyword:'June', createdAt:'2025-06-01'},
+  {no:23, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@daisy._33', keyword:'June', createdAt:'2025-06-01'},
+  {no:24, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@everyday_runlife', keyword:'June', createdAt:'2025-06-01'},
+  {no:25, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@pink_seulgi', keyword:'June', createdAt:'2025-06-01'},
+  {no:26, url:'https://brand.naver.com/darimati/products/13462747167', source:'Insta', medium:'Creator', detail:'@llilysso', keyword:'June', createdAt:'2025-06-01'},
 ];
 
 let ntHistory = [];
 
-async function ntLoadHistory() {
-  const saved = await supaRead('sourcing/nt-params.json');
-  if (saved && Array.isArray(saved) && saved.length) {
-    ntHistory = saved;
-  } else {
+function ntLoadHistory() {
+  const saved = localStorage.getItem(NT_STORAGE_KEY);
+  if (saved) {
+    try { ntHistory = JSON.parse(saved); } catch { ntHistory = []; }
+  }
+  if (!ntHistory.length) {
     ntHistory = NT_INITIAL_HISTORY.map(h => ({
       ...h,
       finalUrl: ntBuildUrl(h.url, h.source, h.medium, h.detail, h.keyword)
     }));
-    await ntPersist();
+    ntSaveHistory();
   }
-  ntRenderHistory();
 }
 
-async function ntPersist() {
-  await supaWrite('sourcing/nt-params.json', ntHistory);
+function ntSaveHistory() {
+  localStorage.setItem(NT_STORAGE_KEY, JSON.stringify(ntHistory));
 }
 
 function ntBuildUrl(baseUrl, source, medium, detail, keyword) {
@@ -2028,9 +2239,9 @@ function ntSave() {
   ntHistory.unshift({
     no: maxNo + 1,
     url, source, medium, detail, keyword, finalUrl,
-    memo: '', createdAt: fmtDate(new Date())
+    createdAt: fmtDate(new Date())
   });
-  ntPersist();
+  ntSaveHistory();
   ntRenderHistory();
 
   document.getElementById('ntUrl').value = '';
@@ -2045,7 +2256,7 @@ function ntSave() {
 function ntDeleteEntry(idx) {
   if (!confirm('이 이력을 삭제할까요?')) return;
   ntHistory.splice(idx, 1);
-  ntPersist();
+  ntSaveHistory();
   ntRenderHistory();
   showToast('이력 삭제 완료');
 }
@@ -2054,24 +2265,11 @@ function ntCopyRow(finalUrl) {
   navigator.clipboard.writeText(finalUrl).then(() => showToast('URL 복사 완료'));
 }
 
-function ntEditMemo(idx) {
-  const td = document.getElementById('ntMemo-' + idx);
-  const current = ntHistory[idx].memo || '';
-  td.innerHTML = `<input type="text" value="${escHtml(current)}" onblur="ntSaveMemo(${idx}, this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px">`;
-  td.querySelector('input').focus();
-}
-
-function ntSaveMemo(idx, val) {
-  ntHistory[idx].memo = val;
-  ntPersist();
-  ntRenderHistory();
-}
-
 function ntRenderHistory() {
   const search = (document.getElementById('ntHistorySearch')?.value || '').toLowerCase();
   const filtered = ntHistory.filter(h => {
     if (!search) return true;
-    return [h.url, h.source, h.medium, h.detail, h.keyword, h.finalUrl, h.memo]
+    return [h.url, h.source, h.medium, h.detail, h.keyword, h.finalUrl]
       .filter(Boolean).some(v => v.toLowerCase().includes(search));
   });
 
@@ -2084,38 +2282,23 @@ function ntRenderHistory() {
     const shortFinal = (h.finalUrl || '').substring(0, 50) + ((h.finalUrl || '').length > 50 ? '...' : '');
     return `<tr>
       <td>${h.no || '-'}</td>
-      <td title="${escHtml(h.url || '')}" style="font-size:11px;font-family:var(--mono);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(shortUrl) || '-'}</td>
-      <td>${escHtml(h.source) || '-'}</td>
-      <td>${escHtml(h.medium) || '-'}</td>
-      <td>${escHtml(h.detail) || '-'}</td>
-      <td>${escHtml(h.keyword) || '-'}</td>
+      <td title="${h.url || ''}" style="font-size:11px;font-family:var(--mono);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${shortUrl || '-'}</td>
+      <td>${h.source || '-'}</td>
+      <td>${h.medium || '-'}</td>
+      <td>${h.detail || '-'}</td>
+      <td>${h.keyword || '-'}</td>
       <td style="font-size:11px;font-family:var(--mono);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        <span title="${escHtml(h.finalUrl || '')}" style="cursor:pointer;color:var(--accent)" onclick="ntCopyRow('${(h.finalUrl||'').replace(/'/g,"\\'")}')">${escHtml(shortFinal)}</span>
+        <span title="${h.finalUrl || ''}" style="cursor:pointer" onclick="ntCopyRow('${(h.finalUrl||'').replace(/'/g,"\\'")}')">${shortFinal}</span>
       </td>
-      <td id="ntMemo-${origIdx}" onclick="ntEditMemo(${origIdx})" style="font-size:11px;cursor:pointer;min-width:80px;color:${h.memo ? 'var(--text)' : 'var(--muted)'}">${escHtml(h.memo) || '메모'}</td>
       <td style="font-size:11px">${h.createdAt || '-'}</td>
       <td><button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:11px" onclick="ntDeleteEntry(${origIdx})">삭제</button></td>
     </tr>`;
   }).join('');
 }
 
-function ntExportCsv() {
-  if (!ntHistory.length) { showToast('내보낼 이력이 없습니다'); return; }
-  const header = 'no,상품URL,nt_source,nt_medium,nt_detail,nt_keyword,최종URL,메모,생성일\n';
-  const rows = ntHistory.map(h =>
-    [h.no||'', h.url||'', h.source||'', h.medium||'', h.detail||'', h.keyword||'', h.finalUrl||'', h.memo||'', h.createdAt||'']
-      .map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')
-  ).join('\n');
-  const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `nt-params-${fmtDate(new Date())}.csv`;
-  a.click();
-  showToast('CSV 다운로드 완료');
-}
-
-async function ntInit() {
-  await ntLoadHistory();
+function ntInit() {
+  ntLoadHistory();
+  ntRenderHistory();
 }
 
 // ============================================================
@@ -2132,8 +2315,8 @@ async function ntInit() {
   populateMemberSelects();
   populateAccountFilter();
   calcSimulator();
-  await syncAll();
   ntInit();
+  await syncAll();
 })();
 </script>
 </body>
