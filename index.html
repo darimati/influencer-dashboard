@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>인플루언서 소싱 대시보드</title>
+<title>인스타 릴스 협업 대시보드</title>
 <style>
 :root{
   --bg:#f5f5f7;--surface:#fff;--surface2:#f8f8fa;--border:#e5e5ea;
@@ -221,18 +221,16 @@ a:hover{text-decoration:underline}
 <body>
 
 <div class="header">
-  <h1>인플루언서 소싱</h1>
+  <h1>인스타 릴스 협업 대시보드</h1>
   <span class="last-sync" id="lastSync">-</span>
   <button class="sync-btn" id="syncBtn" onclick="syncAll()">동기화</button>
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-tab="pipeline">파이프라인</div>
+  <div class="tab active" data-tab="pipeline">무가 협찬 보드</div>
+  <div class="tab" data-tab="paid">유가 협찬 보드</div>
   <div class="tab" data-tab="targets">주간 목표</div>
-  <div class="tab" data-tab="brandcall">브랜드 콜</div>
-  <div class="tab" data-tab="analytics">성과</div>
-  <div class="tab" data-tab="simulator">목표역산</div>
-  <div class="tab" data-tab="templates">템플릿</div>
+  <div class="tab" data-tab="analytics">성과 &amp; 역산</div>
   <div class="tab" data-tab="ntparam">NT 파라미터</div>
 </div>
 
@@ -241,7 +239,7 @@ a:hover{text-decoration:underline}
 <div class="panel active" id="panel-pipeline">
 
   <div class="section-header" style="margin-bottom:12px">
-    <h2>소싱 파이프라인</h2>
+    <h2>무가 협찬 보드</h2>
     <select id="pipelineAccountFilter" onchange="renderPipeline();renderOverview()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);color:var(--fg)">
       <option value="">전체 계정</option>
     </select>
@@ -428,20 +426,7 @@ a:hover{text-decoration:underline}
   </div>
 </div>
 
-<!-- ============ BRAND CALL ============ -->
-<div class="panel" id="panel-brandcall">
-  <div class="section-header">
-    <h2>브랜드 콜</h2>
-  </div>
-  <div class="card">
-    <div class="empty">
-      <p>브랜드 콜 관리 기능 준비 중</p>
-      <p style="margin-top:8px;font-size:12px">긍정회신 크리에이터와의 브랜드 콜 일정/메모/완료 관리</p>
-    </div>
-  </div>
-</div>
-
-<!-- ============ ANALYTICS ============ -->
+<!-- ============ ANALYTICS + SIMULATOR ============ -->
 <div class="panel" id="panel-analytics">
   <div class="section-header">
     <h2>담당자별 분석</h2>
@@ -474,10 +459,9 @@ a:hover{text-decoration:underline}
     <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">담당자별 상세</h3>
     <div class="team-grid" id="analyticsDetailGrid"></div>
   </div>
-</div>
 
-<!-- ============ SIMULATOR ============ -->
-<div class="panel" id="panel-simulator">
+  <!-- ── 목표역산 섹션 ── -->
+  <div style="margin-top:32px;border-top:2px solid var(--border);padding-top:24px">
   <div class="section-header">
     <h2>목표 역산 계산기 + 예산 시뮬레이터</h2>
     <button class="btn btn-secondary btn-sm" onclick="resetSimulator()">기본값 초기화</button>
@@ -581,17 +565,19 @@ a:hover{text-decoration:underline}
       </table>
     </div>
   </div>
+  </div>
 </div>
 
-<!-- ============ TEMPLATES ============ -->
-<div class="panel" id="panel-templates">
+<!-- ============ 유가 협찬 보드 ============ -->
+<div class="panel" id="panel-paid">
   <div class="section-header">
-    <h2>템플릿</h2>
+    <h2>유가 협찬 보드</h2>
   </div>
   <div class="card">
     <div class="empty">
-      <p>DM / 가이드 템플릿 관리 기능 준비 중</p>
-      <p style="margin-top:8px;font-size:12px">콜드DM 문구, 브리프 가이드, 리마인드 메시지 등</p>
+      <div class="icon" style="font-size:48px">💰</div>
+      <p>유가 협찬 파이프라인 준비 중</p>
+      <p style="margin-top:8px;font-size:12px">유료 협찬 크리에이터 관리 · 계약 · 정산 추적</p>
     </div>
   </div>
 </div>
