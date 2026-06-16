@@ -616,14 +616,58 @@ a:hover{text-decoration:underline}
 
 <!-- ============ 유가 협찬 보드 ============ -->
 <div class="panel" id="panel-paid">
-  <div class="section-header">
+  <div class="section-header" style="margin-bottom:12px">
     <h2>유가 협찬 보드</h2>
   </div>
+
   <div class="card">
-    <div class="empty">
-      <div class="icon" style="font-size:48px">💰</div>
-      <p>유가 협찬 파이프라인 준비 중</p>
-      <p style="margin-top:8px;font-size:12px">유료 협찬 크리에이터 관리 · 계약 · 정산 추적</p>
+    <h3 style="margin-bottom:12px">유가 협찬 크리에이터 목록</h3>
+    <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-weight:600;font-size:13px;white-space:nowrap">+ 추가</span>
+      <input type="text" id="paidCreatorIg" placeholder="@인스타그램" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;width:140px">
+      <select id="paidCreatorStatus" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px">
+        <option value="섭외중">섭외중</option>
+        <option value="견적확인">견적확인</option>
+        <option value="계약완료">계약완료</option>
+        <option value="콘텐츠제작">콘텐츠제작</option>
+        <option value="업로드완료">업로드완료</option>
+        <option value="정산완료">정산완료</option>
+        <option value="보류">보류</option>
+      </select>
+      <input type="number" id="paidCreatorBudget" placeholder="예산(원)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;width:120px">
+      <input type="text" id="paidCreatorMemo" placeholder="메모 (선택)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;width:160px">
+      <button class="btn btn-sm" onclick="addPaidCreator()">추가</button>
+    </div>
+    <div class="filter-bar" style="margin-bottom:12px">
+      <input type="text" placeholder="인스타그램 또는 메모 검색..." id="paidSearch" oninput="renderPaidBoard()">
+      <select id="paidFilterStatus" onchange="renderPaidBoard()">
+        <option value="">전체</option>
+        <option value="섭외중">섭외중</option>
+        <option value="견적확인">견적확인</option>
+        <option value="계약완료">계약완료</option>
+        <option value="콘텐츠제작">콘텐츠제작</option>
+        <option value="업로드완료">업로드완료</option>
+        <option value="정산완료">정산완료</option>
+        <option value="보류">보류</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:24px">#</th>
+            <th>인스타그램</th>
+            <th>상태</th>
+            <th>예산</th>
+            <th>콘텐츠 유형</th>
+            <th>업로드일</th>
+            <th>정산일</th>
+            <th>메모</th>
+            <th style="width:50px"></th>
+          </tr>
+        </thead>
+        <tbody id="paidBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -2160,6 +2204,100 @@ function closeKmodal() {
 }
 
 // ============================================================
+// PAID COLLABORATION BOARD
+// ============================================================
+let paidCreators = [];
+
+async function loadPaidBoard() {
+  const saved = await supaRead('sourcing/paid-creators.json');
+  if (saved && Array.isArray(saved)) paidCreators = saved;
+  renderPaidBoard();
+}
+
+async function savePaidBoard() {
+  await supaWrite('sourcing/paid-creators.json', paidCreators);
+}
+
+function addPaidCreator() {
+  const ig = document.getElementById('paidCreatorIg').value.trim();
+  const status = document.getElementById('paidCreatorStatus').value;
+  const budget = parseInt(document.getElementById('paidCreatorBudget').value) || 0;
+  const memo = document.getElementById('paidCreatorMemo').value.trim();
+  if (!ig) { showToast('인스타그램을 입력하세요'); return; }
+  paidCreators.unshift({
+    instagram: ig.replace(/^@/, ''),
+    status, budget, contentType: '', uploadDate: '', settlementDate: '',
+    memo, addedAt: new Date().toISOString()
+  });
+  savePaidBoard();
+  renderPaidBoard();
+  document.getElementById('paidCreatorIg').value = '';
+  document.getElementById('paidCreatorBudget').value = '';
+  document.getElementById('paidCreatorMemo').value = '';
+  showToast('유가 협찬 크리에이터 추가됨');
+}
+
+function deletePaidCreator(idx) {
+  if (!confirm('삭제할까요?')) return;
+  paidCreators.splice(idx, 1);
+  savePaidBoard();
+  renderPaidBoard();
+}
+
+function editPaidField(idx, field) {
+  const td = document.getElementById(`paid-${field}-${idx}`);
+  const current = paidCreators[idx][field] || '';
+  const isSelect = field === 'status';
+  const isNumber = field === 'budget';
+  if (isSelect) {
+    const opts = ['섭외중','견적확인','계약완료','콘텐츠제작','업로드완료','정산완료','보류'];
+    td.innerHTML = `<select onchange="savePaidField(${idx},'${field}',this.value)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px">${opts.map(o => `<option${o===current?' selected':''}>${o}</option>`).join('')}</select>`;
+  } else {
+    const type = isNumber ? 'number' : 'text';
+    td.innerHTML = `<input type="${type}" value="${escHtml(String(current))}" onblur="savePaidField(${idx},'${field}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px">`;
+    td.querySelector('input').focus();
+  }
+}
+
+function savePaidField(idx, field, val) {
+  paidCreators[idx][field] = field === 'budget' ? (parseInt(val) || 0) : val;
+  savePaidBoard();
+  renderPaidBoard();
+}
+
+function renderPaidBoard() {
+  const search = (document.getElementById('paidSearch')?.value || '').toLowerCase();
+  const statusFilter = document.getElementById('paidFilterStatus')?.value || '';
+  const filtered = paidCreators.filter(c => {
+    if (statusFilter && c.status !== statusFilter) return false;
+    if (search && !(`@${c.instagram} ${c.memo || ''}`).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const tbody = document.getElementById('paidBody');
+  if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">등록된 유가 협찬 크리에이터가 없습니다</td></tr>';
+    return;
+  }
+  const statusColors = {'섭외중':'blue','견적확인':'orange','계약완료':'green','콘텐츠제작':'purple','업로드완료':'green','정산완료':'green','보류':'red'};
+  tbody.innerHTML = filtered.map((c, i) => {
+    const origIdx = paidCreators.indexOf(c);
+    const color = statusColors[c.status] || 'blue';
+    return `<tr>
+      <td style="color:var(--muted);font-size:12px">${origIdx + 1}</td>
+      <td><a href="https://instagram.com/${c.instagram}" target="_blank" style="color:var(--accent)">@${escHtml(c.instagram)}</a></td>
+      <td id="paid-status-${origIdx}" onclick="editPaidField(${origIdx},'status')" style="cursor:pointer"><span class="badge ${color}">${escHtml(c.status)}</span></td>
+      <td id="paid-budget-${origIdx}" onclick="editPaidField(${origIdx},'budget')" style="cursor:pointer;font-size:12px">${c.budget ? fmtWon(c.budget) : '-'}</td>
+      <td id="paid-contentType-${origIdx}" onclick="editPaidField(${origIdx},'contentType')" style="cursor:pointer;font-size:12px">${escHtml(c.contentType) || '클릭 입력'}</td>
+      <td id="paid-uploadDate-${origIdx}" onclick="editPaidField(${origIdx},'uploadDate')" style="cursor:pointer;font-size:12px">${escHtml(c.uploadDate) || '-'}</td>
+      <td id="paid-settlementDate-${origIdx}" onclick="editPaidField(${origIdx},'settlementDate')" style="cursor:pointer;font-size:12px">${escHtml(c.settlementDate) || '-'}</td>
+      <td id="paid-memo-${origIdx}" onclick="editPaidField(${origIdx},'memo')" style="cursor:pointer;font-size:12px;color:${c.memo ? 'var(--text)' : 'var(--muted)'}">${escHtml(c.memo) || '메모'}</td>
+      <td><button onclick="deletePaidCreator(${origIdx})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px" title="삭제">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
 // NT 파라미터 생성기
 // ============================================================
 const NT_STORAGE_KEY = 'darimati_nt_history';
@@ -2316,6 +2454,7 @@ function ntInit() {
   populateAccountFilter();
   calcSimulator();
   ntInit();
+  loadPaidBoard();
   await syncAll();
 })();
 </script>
