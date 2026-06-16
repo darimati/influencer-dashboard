@@ -30,6 +30,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .field textarea{resize:vertical;min-height:80px}
 .field .char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:4px}
 
+.sub-fields{display:flex;flex-direction:column;gap:12px}
+.sub-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+
+.tip-box{background:var(--accent-light);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:var(--accent);line-height:1.5;margin-bottom:10px}
+
+.cta-section{background:#fafafa;border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px}
+.cta-section h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+
+.copy-row{display:flex;gap:8px;align-items:stretch;margin-bottom:8px}
+.copy-row input{flex:1}
+.copy-btn{padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--font);transition:opacity .15s}
+.copy-btn:hover{opacity:.85}
+.copy-btn:active{opacity:.7}
+.copied{background:var(--green)!important}
+
 .required::after{content:" *";color:var(--red)}
 
 .submit-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);transition:opacity .15s}
@@ -71,9 +86,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     </div>
 
     <div class="field">
-      <label class="required">후킹 장면 (첫 1~3초)</label>
-      <div class="hint">시청자가 스크롤을 멈추게 할 첫 장면을 구체적으로 적어주세요</div>
-      <textarea id="hook" placeholder="예: 새벽 한강 위에서 신발 클로즈업 + 달리기 시작하는 모습" required></textarea>
+      <label class="required">1. 인스타 릴스 — 후킹되는 강력한 첫 3초 구성하기</label>
+      <div class="tip-box">첫 3초에서 시청자 반응(좋아요·저장·시청 유지)을 잘 잡으면, 인스타 알고리즘이 더 많은 사람에게 릴스를 노출해줄 확률이 크게 올라갑니다!</div>
+      <div class="sub-fields">
+        <div class="sub-field">
+          <label>장면 구성</label>
+          <textarea id="hookScene" placeholder="예: 새벽 한강 위에서 신발 클로즈업 → 달리기 시작하는 모습 (슬로모션)" required></textarea>
+        </div>
+        <div class="sub-field">
+          <label>나레이션 / 카피</label>
+          <textarea id="hookNarration" placeholder="예: &quot;이거 신고 10km 뛰어봤는데...&quot; (자막 + 보이스오버)" required></textarea>
+        </div>
+      </div>
     </div>
 
     <div class="field">
@@ -82,10 +106,39 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <textarea id="message" placeholder="예: 가볍고 쿠셔닝이 좋아서 장거리 러닝에도 무릎이 편했다" required></textarea>
     </div>
 
-    <div class="field">
-      <label class="required">CTA (Call To Action)</label>
-      <div class="hint">시청자에게 유도할 행동 (댓글, 링크 클릭, 팔로우 등)</div>
-      <textarea id="cta" placeholder="예: 프로필 링크에서 할인코드로 구매 가능! 댓글로 사이즈 추천 요청" required></textarea>
+    <div class="cta-section">
+      <h3>CTA — 시청자 혜택 안내</h3>
+      <div class="tip-box">크리에이터님을 통해 구매하시는 분들께 저희가 선물을 따로 드리려고 합니다! 아래 안내 메시지를 DM으로 보내주시면 돼요.</div>
+
+      <div class="field">
+        <label class="required">구매 링크</label>
+        <div class="hint">크리에이터님 전용 구매 링크를 입력해주세요 (개인별 트래킹 링크)</div>
+        <input type="url" id="purchaseLink" placeholder="https://smartstore.naver.com/..." required>
+      </div>
+
+      <div class="field">
+        <label>DM 안내 메시지 (복사해서 사용하세요)</label>
+        <div class="hint">시청자가 DM으로 문의하면 아래 메시지를 보내주세요. 내용은 자동으로 채워집니다.</div>
+        <div class="copy-row">
+          <input type="text" id="dmMsg" readonly>
+          <button type="button" class="copy-btn" onclick="copyField('dmMsg',this)">복사</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>배송 메모 안내 (구매자에게 전달)</label>
+        <div class="hint">구매자가 주문 시 배송란 메모에 아래 문구를 적어달라고 안내해주세요.</div>
+        <div class="copy-row">
+          <input type="text" id="shippingMsg" readonly>
+          <button type="button" class="copy-btn" onclick="copyField('shippingMsg',this)">복사</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>추가 CTA</label>
+        <div class="hint">댓글 유도, 팔로우 유도 등 추가 행동 안내가 있다면 적어주세요</div>
+        <textarea id="ctaExtra" placeholder="예: 댓글로 사이즈 추천 요청해주세요!" rows="2"></textarea>
+      </div>
     </div>
 
     <div class="field">
@@ -153,6 +206,30 @@ async function supaWrite(path, data) {
   return r.ok;
 }
 
+function updateMessages() {
+  const handle = document.getElementById('igHandle').value.trim() || '@크리에이터';
+  const link = document.getElementById('purchaseLink').value.trim() || '(구매링크)';
+  document.getElementById('dmMsg').value =
+    `안녕하세요! 아래 링크에서 구매하시고, 주문 시 배송메모에 "${handle} 통해서 구매합니다" 라고 적어주시면 선물을 따로 보내드릴게요! ${link}`;
+  document.getElementById('shippingMsg').value =
+    `${handle} 통해서 구매합니다`;
+}
+
+function copyField(fieldId, btn) {
+  const val = document.getElementById(fieldId).value;
+  navigator.clipboard.writeText(val).then(() => {
+    btn.textContent = '복사됨!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('igHandle').addEventListener('input', updateMessages);
+  document.getElementById('purchaseLink').addEventListener('input', updateMessages);
+  updateMessages();
+});
+
 async function handleSubmit(e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
@@ -164,9 +241,11 @@ async function handleSubmit(e) {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       igHandle: document.getElementById('igHandle').value.trim(),
       topic: document.getElementById('topic').value.trim(),
-      hook: document.getElementById('hook').value.trim(),
+      hookScene: document.getElementById('hookScene').value.trim(),
+      hookNarration: document.getElementById('hookNarration').value.trim(),
       message: document.getElementById('message').value.trim(),
-      cta: document.getElementById('cta').value.trim(),
+      purchaseLink: document.getElementById('purchaseLink').value.trim(),
+      ctaExtra: document.getElementById('ctaExtra').value.trim(),
       shootDate: document.getElementById('shootDate').value || '',
       memo: document.getElementById('memo').value.trim(),
       status: '검토중',
