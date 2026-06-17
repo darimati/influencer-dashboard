@@ -894,6 +894,8 @@ a:hover{text-decoration:underline}
             <th>후킹 장면</th>
             <th>핵심 메시지</th>
             <th>CTA</th>
+            <th>음원</th>
+            <th>레퍼런스</th>
             <th>촬영일</th>
             <th>상태</th>
             <th>제출일</th>
@@ -2860,6 +2862,8 @@ function renderReelPlans() {
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(p.hook||'').replace(/"/g,'&quot;')}">${p.hook || '-'}</td>
       <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(p.message||'').replace(/"/g,'&quot;')}">${p.message || '-'}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(p.cta||'').replace(/"/g,'&quot;')}">${p.cta || '-'}</td>
+      <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${(p.musicTrack||'').replace(/"/g,'&quot;')}">${p.musicTrack || '-'}</td>
+      <td style="font-size:12px">${p.refLink ? '<a href="'+p.refLink+'" target="_blank" style="color:var(--accent)">링크</a>' : '-'}</td>
       <td style="white-space:nowrap;font-size:12px">${p.shootDate || '-'}</td>
       <td>
         <select onchange="updateReelPlanStatus(${realIdx},this.value)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface)">
