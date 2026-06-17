@@ -58,20 +58,34 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .label-usp{background:#e8f0fe;color:#2563eb}
 .label-direction{background:#e8faf0;color:#16a34a}
 
-/* === USP Blocks === */
-.usp-block{padding:16px;border-radius:var(--radius-sm);background:#fafafa;border:1px solid var(--border);margin-bottom:10px}
-.usp-block .usp-title{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.usp-block .usp-desc{font-size:13px;color:var(--muted);line-height:1.6}
+/* === Product Image === */
+.product-img{width:100%;border-radius:var(--radius);margin-bottom:14px;display:block}
 
-/* === Message Examples === */
-.msg-example{padding:14px 16px;border-radius:var(--radius-sm);background:#fffbeb;border-left:3px solid var(--orange);margin-bottom:8px;font-size:13px;font-weight:500;line-height:1.5;color:#92400e}
+/* === Feature Section === */
+.feature-section{margin-bottom:10px}
+.feature-header{font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.4}
+.feature-sub{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px}
+.feature-detail{font-size:14px;color:#444;line-height:1.7;margin-bottom:10px}
 
-/* === Reel References === */
-.reel-ref{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-sm);background:#fafafa;border:1px solid var(--border);margin-bottom:8px;text-decoration:none;color:var(--text);transition:all .15s}
-.reel-ref:hover{background:var(--accent-light);border-color:var(--accent)}
-.reel-ref .reel-icon{font-size:20px;flex-shrink:0}
-.reel-ref .reel-label{font-size:13px;font-weight:500}
-.reel-ref .reel-sub{font-size:11px;color:var(--muted)}
+/* === Bullet List === */
+.feat-list{list-style:none;padding:0;margin:10px 0}
+.feat-list li{padding:8px 0;font-size:14px;color:#444;line-height:1.5;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;gap:8px}
+.feat-list li:last-child{border-bottom:none}
+.feat-list li .dot{flex-shrink:0;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:7px}
+
+/* === Quote Block === */
+.quote-block{padding:14px 16px;border-radius:var(--radius-sm);background:#f8f9fa;border-left:3px solid var(--accent);margin:12px 0;font-size:14px;font-weight:500;line-height:1.5;color:#333;font-style:italic}
+
+/* === Badge Row === */
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.badge{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#f0f0f0;color:#555}
+.badge-blue{background:var(--accent-light);color:#2563eb}
+.badge-green{background:#e8faf0;color:#16a34a}
+.badge-orange{background:#fff8ee;color:#c2410c}
+
+/* === Video Embed === */
+.video-wrap{position:relative;width:100%;padding-bottom:56.25%;border-radius:var(--radius-sm);overflow:hidden;margin:12px 0;background:#000}
+.video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
 
 /* === Form === */
 .field{margin-bottom:16px}
@@ -154,80 +168,110 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   <div class="page" id="page-product">
     <button class="back-btn" onclick="goPage('home')">돌아가기</button>
 
-    <!-- 제품 개요 -->
+    <!-- Hero Image -->
+    <img src="https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/product-hero.jpeg" alt="DARIMATI BR-001" class="product-img" loading="lazy">
+
+    <!-- Intro -->
     <div class="content-card">
-      <span class="label label-target">Target</span>
-      <h2>살 빼려고 러닝 시작하는<br>초보 러너를 위한 러닝화</h2>
-      <p>러닝 고관여층이 아닌, <strong>다이어트를 위해 러닝을 시작하는 입문자</strong>가 핵심 타겟입니다.</p>
-      <p>러닝화 스펙보다 <strong>크리에이터의 변화 스토리, 운동 습관 형성, 실제 착용 후기</strong> 중심으로 쉽고 직관적이게 풀어주세요.</p>
+      <h2>걷기부터 러닝까지,<br>왜 다리마티가 좋을까요?</h2>
+      <p>DARIMATI는 러닝화의 기능과 일상화의 편안함을 하나로 합친 <strong>하이브리드 러닝화</strong>입니다. 아침 출근부터 저녁 러닝까지, 한 켤레로 하루를 완성합니다.</p>
     </div>
 
-    <!-- 핵심 USP -->
+    <!-- ① 피팅 -->
     <div class="content-card">
-      <span class="label label-usp">Core USP</span>
-      <h2>BR-001</h2>
-
-      <div class="usp-block">
-        <div class="usp-title">&#x1F9B6; 안정형 러닝화</div>
-        <div class="usp-desc">러닝 입문자의 <strong>발목과 무릎을 먼저 생각</strong>한 안정형 러닝화. 체중과 부족한 근력으로 발목·무릎 부담이 큰 입문자를 위해 설계.</div>
-      </div>
-
-      <div class="usp-block">
-        <div class="usp-title">&#x1F4A8; ATPU 100% 미드솔</div>
-        <div class="usp-desc">쿠셔닝과 반발력을 확보하면서도 발목이 과하게 흔들리지 않도록 <strong>안정성에 집중</strong>한 소재.</div>
-      </div>
-
-      <div class="usp-block">
-        <div class="usp-title">&#x1F3C3; 걷기 ~ 10km</div>
-        <div class="usp-desc">걷기부터 5~10km 러닝까지 부담 없이 도전할 수 있도록 설계. 러닝 입문자의 첫 신발로 제격.</div>
-      </div>
-
-      <div class="usp-block">
-        <div class="usp-title">&#x1F45F; 시티 하이브리드</div>
-        <div class="usp-desc">미니멀한 디자인으로 청바지, 슬랙스, 치마 등 일상복과 자연스럽게 매치. <strong>러닝·출퇴근·등하교·모임</strong>까지 하나의 신발.</div>
+      <div class="feature-section">
+        <div class="badge-row"><span class="badge badge-blue">01</span></div>
+        <div class="feature-header">신기 편한데 안 벗겨집니다</div>
+        <div class="feature-sub">러너들의 오래된 딜레마: 잡아주려면 불편하고, 편하면 벗겨진다</div>
+        <div class="feature-detail">DARIMATI는 끈의 장력이 아니라 <strong>신발 자체의 구조</strong>로 이 문제를 해결했습니다.</div>
+        <ul class="feat-list">
+          <li><span class="dot"></span>레이스 가이드 구조: 끈이 발등 위에서 균일하게 장력을 분산, 느슨하게 묶어도 감싸는 느낌 유지</li>
+          <li><span class="dot"></span>힐 카운터 설계: 뒤꿈치 안쪽 곡면이 발을 자연스럽게 감싸 슬립 최소화</li>
+          <li><span class="dot"></span>탈착 편의성: 끈을 풀지 않고도 신고 벗기가 수월</li>
+        </ul>
+        <div class="quote-block">느슨하게 묶어도 쉽게 벗겨지지 않습니다.<br>편하게 신으면서도 안정적으로 달릴 수 있는 신발, 그게 출발점이었습니다.</div>
       </div>
     </div>
 
-    <!-- 콘텐츠 방향성 -->
+    <!-- ② ATPU 미드솔 -->
     <div class="content-card">
-      <span class="label label-direction">콘텐츠 방향</span>
-      <h2>이런 느낌으로<br>만들어주세요</h2>
+      <div class="feature-section">
+        <div class="badge-row"><span class="badge badge-blue">02</span></div>
+        <div class="feature-header">가장 좋은 러닝화 소재를 넣었습니다</div>
+        <div class="feature-sub">고반발 소재는 왜 비싼 신발에만 들어갈까?</div>
+        <div class="feature-detail">DARIMATI는 <strong>ATPU 100% 미드솔</strong>을 채택했습니다. 일반 EVA 폼 대비 뛰어난 에너지 리턴율을 보이면서도, 과도한 반발로 인한 불안정성을 줄인 소재입니다.</div>
+        <ul class="feat-list">
+          <li><span class="dot"></span><strong>쿠션감</strong> — 30분 이상 러닝에서도 발바닥 피로가 축적되지 않는 충격 흡수력</li>
+          <li><span class="dot"></span><strong>반발력</strong> — 착지 에너지를 다음 보폭으로 자연스럽게 전환</li>
+          <li><span class="dot"></span><strong>안정성</strong> — 워킹과 러닝 전환 시 발이 흔들리지 않는 균형</li>
+        </ul>
+        <div class="quote-block">기록 경쟁이 아니라, 매일 30분을 달리는 사람을 위한 고급 소재.<br>비싼 레이싱 슈즈의 기술을, 매일 신는 신발에 담았습니다.</div>
+      </div>
+    </div>
 
-      <h3>&#x1F4AC; 메시지 예시</h3>
-      <div class="msg-example">살 빼려고 러닝 시작했는데, 발목부터 아프셨나요?</div>
-      <div class="msg-example">러닝 초보가 푹신한 신발만 찾으면 안 되는 이유.</div>
-      <div class="msg-example">다이어트 러닝, 3일만에 포기하는 가장 큰 이유.</div>
-      <div class="msg-example">운동할 때만 신는 러닝화 말고, 매일 신는 러닝화.</div>
+    <!-- ③ 자동차 엔지니어링 -->
+    <div class="content-card">
+      <div class="feature-section">
+        <div class="badge-row"><span class="badge badge-blue">03</span></div>
+        <div class="feature-header">자동차를 설계하던 방식으로 만들었습니다</div>
+        <div class="feature-sub">현대자동차 출신 엔지니어의 관점</div>
+        <div class="feature-detail">DARIMATI 개발에는 <strong>현대자동차 출신 엔지니어</strong>가 참여했습니다. 자동차 주행 안정성을 설계하듯, 사람의 보행과 러닝 시 움직임을 분석하고 구조를 설계했습니다.</div>
+        <div class="feature-detail">걷다가 뛰고, 방향을 바꾸고, 다양한 지면을 만나는 상황에서도 발의 움직임이 <strong>예측 가능하도록</strong> 구조를 잡았습니다.</div>
+        <div class="quote-block">단순히 예쁜 신발이 아니라 움직임까지 설계한 신발.<br>디자인은 눈에 보이지만, 설계는 걸어보면 느껴집니다.</div>
+      </div>
+    </div>
 
-      <h3>&#x1F3AC; 콘텐츠 적용 예시</h3>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">초보 러닝 꿀팁 공유 → 발목·무릎 부담 이야기 → 요즘 신고 있는 러닝화 소개 → 구매 링크 & 혜택</p>
+    <!-- Lifestyle Image -->
+    <img src="https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/product-lifestyle.jpg" alt="DARIMATI Lifestyle" class="product-img" loading="lazy">
 
-      <h3>&#x1F4F1; 레퍼런스 릴스</h3>
-      <a href="https://www.instagram.com/reel/DNSvwMLvnZp/" target="_blank" class="reel-ref">
-        <span class="reel-icon">&#x1F3AC;</span>
-        <div>
-          <div class="reel-label">러닝/다이어트 정보 콘텐츠</div>
-          <div class="reel-sub">정보성 + 일상 러닝 브이로그</div>
+    <!-- ④ 글로벌 검증 -->
+    <div class="content-card">
+      <div class="feature-section">
+        <div class="badge-row"><span class="badge badge-green">04</span></div>
+        <div class="feature-header">미국도 인정한 하이브리드 러닝화</div>
+        <div class="feature-sub">글로벌 검증: 숫자가 말하는 것들</div>
+        <ul class="feat-list">
+          <li><span class="dot"></span><strong>RunRepeat 호평</strong> — 미국 최대 러닝화 리뷰 플랫폼에서 하이브리드 러닝화로서의 가능성을 높게 평가</li>
+          <li><span class="dot"></span><strong>Kickstarter 218% 달성</strong> — '하이브리드 러닝화'라는 새 카테고리에 대한 시장 수요를 증명</li>
+          <li><span class="dot"></span><strong>HYROX 선수·코치 테스트</strong> — 세계적 피트니스 레이싱 대회 선수와 코치들이 실제 훈련에서 테스트</li>
+        </ul>
+
+        <!-- HYROX Video -->
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/fMrh-cfa9to" allowfullscreen loading="lazy"></iframe>
         </div>
-      </a>
-      <a href="https://www.instagram.com/reel/DWCzr5AT-C1/" target="_blank" class="reel-ref">
-        <span class="reel-icon">&#x1F3AC;</span>
-        <div>
-          <div class="reel-label">슬로러닝 / 초보 러닝 팁</div>
-          <div class="reel-sub">러닝 다이어트, 초보자 맞춤</div>
-        </div>
-      </a>
-      <a href="https://www.instagram.com/reel/DHDB3ILPKsH/" target="_blank" class="reel-ref">
-        <span class="reel-icon">&#x1F3AC;</span>
-        <div>
-          <div class="reel-label">운동하는 워킹맘 콘텐츠</div>
-          <div class="reel-sub">엄마와 함께하는 러닝</div>
-        </div>
-      </a>
+
+        <div class="quote-block">빠르기만 한 신발보다 오래 움직일 수 있는 신발.<br>한 가지 동작이 아니라, 모든 움직임을 위한 신발.</div>
+      </div>
+    </div>
+
+    <!-- ⑤ 일상 겸용 -->
+    <div class="content-card">
+      <div class="feature-section">
+        <div class="badge-row"><span class="badge badge-orange">05</span></div>
+        <div class="feature-header">출근할 때도 신을 수 있게 만들었습니다</div>
+        <div class="feature-sub">러닝화처럼 보이지 않는 러닝화</div>
+        <div class="feature-detail">절제된 컬러, 미니멀한 실루엣. 캐주얼에서 비즈니스 캐주얼까지 자연스럽게 어우러지는 디자인.</div>
+        <ul class="feat-list">
+          <li><span class="dot"></span><strong>청바지</strong> — 깔끔한 실루엣이 캐주얼룩을 정돈된 인상으로</li>
+          <li><span class="dot"></span><strong>슬랙스</strong> — 절제된 볼륨감으로 비즈니스 캐주얼과 자연스러운 매치</li>
+          <li><span class="dot"></span><strong>러닝팬츠</strong> — 애슬레저룩의 정석</li>
+          <li><span class="dot"></span><strong>캐주얼 자켓</strong> — 재킷 + 스니커즈, 러닝 기능까지 더한 조합</li>
+        </ul>
+        <div class="quote-block">아침 출근부터 저녁 러닝까지 한 켤레로.<br>신발을 바꾸지 않아도 되는 것, 그것이 DARIMATI가 생각하는 하이브리드입니다.</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="content-card" style="text-align:center;padding:28px 20px">
+      <p style="font-size:14px;color:var(--muted);margin-bottom:12px">DARIMATI — 걷기부터 러닝까지, 하이브리드 러닝화</p>
+      <a href="https://brand.naver.com/darimati" target="_blank" class="submit-btn" style="display:inline-block;max-width:280px;text-decoration:none;margin-bottom:10px;font-size:14px;padding:14px 20px">네이버 브랜드 스토어 &rarr;</a>
+      <br>
+      <a href="https://www.darimati.us/ko-kr" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:none;font-weight:600">공식 홈페이지 바로가기</a>
     </div>
 
     <div style="text-align:center;padding:8px 0 16px">
-      <button class="submit-btn" style="max-width:320px" onclick="goPage('submit')">기획안 제출하러 가기 &rarr;</button>
+      <button class="submit-btn" style="max-width:320px;background:#333" onclick="goPage('submit')">기획안 제출하러 가기 &rarr;</button>
     </div>
   </div>
 
