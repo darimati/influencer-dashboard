@@ -203,10 +203,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <span class="card-title">제품 소개</span>
         <span class="card-desc">BR-001 핵심 정보</span>
       </a>
-      <a class="nav-card disabled">
+      <a class="nav-card" onclick="goPage('guide')">
         <span class="card-icon">&#x1F3AC;</span>
         <span class="card-title">콘텐츠 가이드</span>
-        <span class="card-desc">촬영 & 편집 팁</span>
+        <span class="card-desc">릴스 제작 가이드</span>
       </a>
       <a class="nav-card" onclick="goPage('submit')">
         <span class="card-icon">&#x1F4DD;</span>
@@ -564,6 +564,85 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     </div>
   </div>
 
+  <!-- ===== 콘텐츠 가이드 PAGE ===== -->
+  <div class="page" id="page-guide">
+    <button class="back-btn" onclick="goPage('home')">돌아가기</button>
+
+    <!-- 릴스 구조 가이드 -->
+    <div class="content-card">
+      <h2>릴스 구조 가이드</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px">아래 구조를 참고해서 릴스를 기획해보세요. 기획안 제출 시 이 흐름대로 정리하면 깔끔합니다.</p>
+
+      <div class="step-item">
+        <span class="step-num">1</span>
+        <div>
+          <strong>후킹 (첫 1-3초)</strong>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5">시청자가 스크롤을 멈추게 할 첫 장면.<br>예: 신발 클로즈업, 러닝 시작 순간, 일상→운동 전환 장면</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <span class="step-num">2</span>
+        <div>
+          <strong>본문 (10-30초)</strong>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5">제품 포인트를 자연스럽게 보여주세요.<br>
+          <strong style="color:#333">반드시 포함:</strong> 실착 모습, 신는 순간의 편안함<br>
+          <strong style="color:#333">선택 포함:</strong> 코디 매칭, 러닝/워킹 장면, 비포→애프터</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <span class="step-num">3</span>
+        <div>
+          <strong>CTA — 마무리 (3-5초)</strong>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5">팔로워가 행동하게 유도하세요.<br>예: "프로필 링크에서 확인해보세요", "댓글로 사이즈 알려주세요"</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 촬영 팁 -->
+    <div class="content-card">
+      <h2>촬영 팁</h2>
+      <ul class="feat-list">
+        <li><span class="dot"></span><strong>자연광</strong> 또는 밝은 조명에서 촬영</li>
+        <li><span class="dot"></span><strong>실착 장면 필수</strong> — 걷기/뛰기 중 모습</li>
+        <li><span class="dot"></span><strong>다양한 앵글</strong> — 전체 코디 + 발 클로즈업</li>
+        <li><span class="dot"></span><strong>고화질</strong> — 흔들림 없는 안정적인 촬영</li>
+      </ul>
+      <div style="padding:12px 16px;background:#fff0f0;border:1px solid #fecaca;border-radius:var(--radius-sm);margin-top:10px;font-size:13px;color:#b91c1c;line-height:1.5">
+        <strong>주의:</strong> 타사 브랜드 로고나 디자인이 과하게 드러나는 패션은 피해주세요.
+      </div>
+    </div>
+
+    <!-- 캡션 템플릿 (개인화) -->
+    <div class="content-card">
+      <h2>캡션 템플릿</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">릴스 업로드 시 아래 캡션을 참고해주세요. 탭하면 복사됩니다.</p>
+
+      <div id="captionTemplate" style="padding:16px;background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;margin-bottom:10px" onclick="copyCaptionTemplate()">
+        <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:8px">탭하면 복사됩니다</span>
+        <p id="captionText" style="font-size:14px;color:#333;line-height:1.8;margin:0;white-space:pre-line">러닝화인데 출근할 때도 신어요 👟
+하루종일 한 켤레로 끝!
+
+🔗 프로필 링크에서 확인
+구매 시 비고란에 "@크리에이터 릴스 보고 구매합니다!" 적으면 전용 선물 🎁
+
+#다리마티 #DARIMATI #러닝화 #하이브리드러닝화</p>
+      </div>
+      <span class="copy-toast" id="captionToast" style="display:none">복사 완료!</span>
+    </div>
+
+    <!-- 기획안 제출 CTA -->
+    <div class="content-card" style="text-align:center;padding:24px 20px">
+      <p style="font-size:14px;color:var(--muted);margin-bottom:12px">가이드를 확인했다면 기획안을 제출해주세요!</p>
+      <button class="submit-btn" style="max-width:280px;font-size:14px;padding:14px" onclick="goPage('submit')">기획안 작성하기</button>
+    </div>
+
+    <div style="text-align:center;padding:8px 0 16px">
+      <button class="back-btn" onclick="goPage('home')">돌아가기</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -698,6 +777,13 @@ async function loadCreatorProfile() {
   if (igInput && handle && handle !== '크리에이터') {
     igInput.value = handle.startsWith('@') ? handle : '@' + handle;
   }
+
+  // Personalize caption template
+  const captionEl = document.getElementById('captionText');
+  if (captionEl && displayName !== '크리에이터') {
+    const atHandle = displayName.startsWith('@') ? displayName : '@' + displayName;
+    captionEl.textContent = '러닝화인데 출근할 때도 신어요 👟\n하루종일 한 켤레로 끝!\n\n🔗 프로필 링크에서 확인\n구매 시 비고란에 "' + atHandle + ' 릴스 보고 구매합니다!" 적으면 전용 선물 🎁\n\n#다리마티 #DARIMATI #러닝화 #하이브리드러닝화';
+  }
 }
 
 function copyMyLink() {
@@ -717,6 +803,16 @@ function copyCTAText() {
     t.style.display = 'inline';
     setTimeout(() => t.style.display = 'none', 2000);
     showToast('문구가 복사되었습니다!');
+  });
+}
+
+function copyCaptionTemplate() {
+  const el = document.getElementById('captionText');
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const t = document.getElementById('captionToast');
+    t.style.display = 'inline';
+    setTimeout(() => t.style.display = 'none', 2000);
+    showToast('캡션이 복사되었습니다!');
   });
 }
 
