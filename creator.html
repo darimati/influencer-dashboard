@@ -393,16 +393,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   <div class="page" id="page-checklist">
     <button class="back-btn" onclick="goPage('home')">돌아가기</button>
 
-    <!-- 간이 기획안 안내 -->
+    <!-- 기획안 제출 안내 -->
     <div class="content-card">
-      <h2>촬영 전 간단한 기획안을<br>먼저 공유해주세요</h2>
-      <p style="font-size:13px;color:var(--muted);line-height:1.7">촬영 전에 릴스 방향을 간단히 정리해서 보내주시면, 저희가 검토 후 피드백 드리겠습니다. 서로 방향을 맞춘 후 촬영하시면 수정 없이 깔끔하게 진행할 수 있어요.</p>
-      <button class="submit-btn" style="margin-top:14px;font-size:14px;padding:14px" onclick="goPage('submit')">기획안 작성하기</button>
+      <h2>촬영 전, 영상 아이디어를<br>먼저 공유 부탁드려요!</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7">촬영 전 제작 방향을 간단히 정리해서 제출해주시면, 좋은 성과와 팔로워분들께 더 좋은 내용을 전달할 수 있도록 같이 검토하고 의견 드리겠습니다.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+        <button class="submit-btn" style="flex:1;font-size:14px;padding:14px" onclick="goPage('submit')">기획안 작성하기</button>
+        <span id="submitStatus" style="flex-shrink:0;font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;background:#fff0f0;color:var(--red)">제출 전</span>
+      </div>
     </div>
 
-    <!-- 요청사항 -->
+    <!-- 협찬게시물 요청사항 -->
     <div class="content-card">
-      <h2>요청사항</h2>
+      <h2>협찬게시물 요청사항</h2>
       <ul class="ck-list">
         <li>
           <span class="ck-box" onclick="this.classList.toggle('checked')">&#10003;</span>
@@ -681,6 +684,7 @@ async function handleSubmit(e) {
     if (ok) {
       document.getElementById('formCard').style.display = 'none';
       document.getElementById('successMsg').style.display = 'block';
+      updateSubmitStatus(true);
     } else {
       showToast('제출 실패 - 다시 시도해주세요');
       btn.disabled = false;
@@ -700,6 +704,23 @@ function resetForm() {
   document.getElementById('formCard').style.display = 'block';
   document.getElementById('submitBtn').disabled = false;
   document.getElementById('submitBtn').textContent = '기획안 제출하기';
+}
+
+/* ============================================================
+   SUBMIT STATUS
+   ============================================================ */
+function updateSubmitStatus(submitted) {
+  const el = document.getElementById('submitStatus');
+  if (!el) return;
+  if (submitted) {
+    el.textContent = '제출 완료';
+    el.style.background = '#e8faf0';
+    el.style.color = 'var(--green)';
+  } else {
+    el.textContent = '제출 전';
+    el.style.background = '#fff0f0';
+    el.style.color = 'var(--red)';
+  }
 }
 
 /* ============================================================
