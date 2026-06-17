@@ -248,7 +248,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       </div>
       <a class="quick-btn qb-drive" id="driveLink" href="#" target="_blank">
         <div class="qb-title">클린본 제출 드라이브</div>
-        <div class="qb-desc">자막 없는 영상 원본 업로드</div>
+        <div class="qb-desc">영상 원본 업로드</div>
       </a>
     </div>
 
@@ -407,15 +407,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         </div>
 
         <div class="field">
-          <label class="req">첫 3초 후킹 — 장면</label>
-          <div class="hint">시청자가 스크롤 멈추게 할 첫 장면</div>
-          <textarea id="hookScene" placeholder="예: 새벽 한강에서 신발 클로즈업 + 달리기 시작" rows="3" required></textarea>
+          <label class="req">첫 3초 후킹 장면</label>
+          <div class="hint">시청자가 스크롤 멈추게 할 첫 장면 (어떤 화면?)</div>
+          <textarea id="hook" placeholder="예: 새벽 한강에서 신발 클로즈업 + 달리기 시작" rows="4" required></textarea>
         </div>
 
         <div class="field">
-          <label class="req">첫 3초 후킹 — 메시지</label>
-          <div class="hint">영상 시작에 나올 텍스트나 멘트</div>
-          <textarea id="hookMessage" placeholder="예: 살 빼려고 러닝 시작했는데, 발목부터 아프셨나요?" rows="3" required></textarea>
+          <label class="req">첫 3초 후킹 메시지</label>
+          <div class="hint">첫 3초에 보여줄 자막이나 나레이션 (어떤 말?)</div>
+          <textarea id="hookMsg" placeholder="예: 살 빼려고 러닝 시작했는데, 발목부터 아프셨나요?" rows="4" required></textarea>
         </div>
 
         <div class="field">
@@ -1014,8 +1014,8 @@ async function handleSubmit(e) {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       igHandle: document.getElementById('igHandle').value.trim(),
       topic: document.getElementById('topic').value.trim(),
-      hookScene: document.getElementById('hookScene').value.trim(),
-      hookMessage: document.getElementById('hookMessage').value.trim(),
+      hook: document.getElementById('hook').value.trim(),
+      hookMsg: document.getElementById('hookMsg').value.trim(),
       message: document.getElementById('message').value.trim(),
       cta: document.getElementById('cta').value.trim(),
       memo: document.getElementById('memo').value.trim(),
