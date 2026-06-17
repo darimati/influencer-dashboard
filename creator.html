@@ -150,15 +150,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .status-pending{background:#fff0f0;color:var(--red)}
 .status-done{background:#e8faf0;color:var(--green)}
 
-/* === Quick Action Buttons === */
-.quick-actions{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.quick-btn{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent;transition:all .15s}
-.quick-btn:active{transform:scale(.98);box-shadow:var(--shadow-md)}
-.quick-btn .qb-icon{font-size:24px;flex-shrink:0}
-.quick-btn .qb-body{flex:1;min-width:0}
-.quick-btn .qb-title{font-size:14px;font-weight:700;margin-bottom:2px}
-.quick-btn .qb-desc{font-size:12px;color:var(--muted);line-height:1.4}
-.quick-btn .qb-arrow{font-size:16px;color:var(--muted);flex-shrink:0}
+/* === Quick Action Buttons (2-col row) === */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.quick-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:var(--radius-sm);padding:14px 10px;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;transition:all .15s;border:none;text-align:center;min-height:60px}
+.quick-btn:active{transform:scale(.97);opacity:.9}
+.quick-btn.qb-purchase{background:#2563eb;color:#fff}
+.quick-btn.qb-drive{background:#16a34a;color:#fff}
+.quick-btn .qb-title{font-size:13px;font-weight:700}
+.quick-btn .qb-desc{font-size:11px;opacity:.85;line-height:1.3}
 .copy-toast{font-size:12px;font-weight:600;color:var(--green);display:none}
 </style>
 </head>
@@ -177,26 +176,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <div class="name" id="greetingName">크리에이터님, 안녕하세요!</div>
       <div class="msg" id="greetingMsg">다리마티와 협업해주셔서 진심으로 감사합니다. 아래 카드를 통해 제품 정보 확인, 기획안 제출까지 한번에 진행해주세요.</div>
       <button class="admin-edit" id="adminEditBtn" onclick="openAdminGreeting()">수정</button>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <div class="quick-btn" onclick="goPage('mylink')">
-        <span class="qb-icon">&#x1F517;</span>
-        <div class="qb-body">
-          <div class="qb-title">전용 구매링크 만들기</div>
-          <div class="qb-desc">팔로워 전용 선물 안내 + 내 링크 복사</div>
-        </div>
-        <span class="qb-arrow">&rsaquo;</span>
-      </div>
-      <a class="quick-btn" id="driveLink" href="#" target="_blank">
-        <span class="qb-icon">&#x1F4C1;</span>
-        <div class="qb-body">
-          <div class="qb-title">클린본 제출 드라이브</div>
-          <div class="qb-desc">영상 원본 업로드용 폴더</div>
-        </div>
-        <span class="qb-arrow">&rsaquo;</span>
-      </a>
     </div>
 
     <div class="roadmap">
@@ -234,6 +213,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
           <div class="step-desc">업로드 전 체크리스트를 확인하세요</div>
         </div>
         <span class="card-status status-pending" id="checkStatus" style="flex-shrink:0">확인 전</span>
+      </a>
+    </div>
+
+    <!-- Quick Actions (2-col below roadmap) -->
+    <div class="quick-actions">
+      <div class="quick-btn qb-purchase" onclick="goPage('mylink')">
+        <div class="qb-title">전용 구매링크 만들기</div>
+        <div class="qb-desc">내 링크 복사</div>
+      </div>
+      <a class="quick-btn qb-drive" id="driveLink" href="#" target="_blank">
+        <div class="qb-title">클린본 제출 드라이브</div>
+        <div class="qb-desc">영상 원본 업로드</div>
       </a>
     </div>
 
