@@ -157,6 +157,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .quick-btn .qb-title{font-size:14px;font-weight:700;margin-bottom:2px}
 .quick-btn .qb-desc{font-size:12px;color:var(--muted);line-height:1.4}
 .quick-btn .qb-arrow{font-size:16px;color:var(--muted);flex-shrink:0}
+
+/* === Roadmap Flow === */
+.roadmap{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px;padding:14px 8px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow-x:auto}
+.roadmap-step{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;padding:4px 6px;border-radius:8px;transition:background .15s}
+.roadmap-step:active{background:#f0f0f0}
+.roadmap-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.roadmap-label{font-size:10px;font-weight:600;color:#555;text-align:center;line-height:1.2;word-break:keep-all;max-width:56px}
+.roadmap-arrow{font-size:14px;color:var(--muted);flex-shrink:0;margin:0 2px}
 .copy-toast{font-size:12px;font-weight:600;color:var(--green);display:none}
 </style>
 </head>
@@ -177,24 +185,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <button class="admin-edit" id="adminEditBtn" onclick="openAdminGreeting()">수정</button>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <div class="quick-btn" onclick="goPage('mylink')">
-        <span class="qb-icon">&#x1F517;</span>
-        <div class="qb-body">
-          <div class="qb-title">전용 구매링크 만들기</div>
-          <div class="qb-desc">팔로워 전용 선물 안내 + 내 링크 복사</div>
-        </div>
-        <span class="qb-arrow">&rsaquo;</span>
+    <!-- Roadmap Flow Guide -->
+    <div class="roadmap">
+      <div class="roadmap-step" onclick="goPage('product')">
+        <span class="roadmap-num">1</span>
+        <span class="roadmap-label">제품 소개</span>
       </div>
-      <a class="quick-btn" id="driveLink" href="#" target="_blank">
-        <span class="qb-icon">&#x1F4C1;</span>
-        <div class="qb-body">
-          <div class="qb-title">클린본 제출 드라이브</div>
-          <div class="qb-desc">영상 원본 업로드용 폴더</div>
-        </div>
-        <span class="qb-arrow">&rsaquo;</span>
-      </a>
+      <span class="roadmap-arrow">&#x276F;</span>
+      <div class="roadmap-step" onclick="goPage('guide')">
+        <span class="roadmap-num">2</span>
+        <span class="roadmap-label">콘텐츠 가이드</span>
+      </div>
+      <span class="roadmap-arrow">&#x276F;</span>
+      <div class="roadmap-step" onclick="goPage('submit')">
+        <span class="roadmap-num">3</span>
+        <span class="roadmap-label">기획안 제출</span>
+      </div>
+      <span class="roadmap-arrow">&#x276F;</span>
+      <div class="roadmap-step" onclick="goPage('checklist')">
+        <span class="roadmap-num">4</span>
+        <span class="roadmap-label">필수사항 확인</span>
+      </div>
     </div>
 
     <div class="nav-cards">
@@ -219,6 +230,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <span class="card-title">필수사항 확인</span>
         <span class="card-desc">업로드 전 체크</span>
         <span class="card-status status-pending" id="checkStatus">확인 전</span>
+      </a>
+    </div>
+
+    <!-- Quick Actions (하단) -->
+    <div class="quick-actions">
+      <div class="quick-btn" onclick="goPage('mylink')">
+        <span class="qb-icon">&#x1F517;</span>
+        <div class="qb-body">
+          <div class="qb-title">전용 구매링크 만들기</div>
+          <div class="qb-desc">팔로워 전용 선물 안내 + 내 링크 복사</div>
+        </div>
+        <span class="qb-arrow">&rsaquo;</span>
+      </div>
+      <a class="quick-btn" id="driveLink" href="#" target="_blank">
+        <span class="qb-icon">&#x1F4C1;</span>
+        <div class="qb-body">
+          <div class="qb-title">클린본 제출 드라이브</div>
+          <div class="qb-desc">영상 원본 업로드용 폴더</div>
+        </div>
+        <span class="qb-arrow">&rsaquo;</span>
       </a>
     </div>
 
