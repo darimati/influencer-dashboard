@@ -419,12 +419,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         </div>
 
         <div class="field">
-          <label class="req">핵심 메시지</label>
-          <div class="hint">이 릴스로 전달할 핵심 내용 1가지</div>
-          <textarea id="message" placeholder="예: 가볍고 쿠셔닝 좋아 장거리에도 무릎이 편했다" rows="4" required></textarea>
-        </div>
-
-        <div class="field">
           <label class="req">마지막 행동 유도 멘트</label>
           <div class="hint">영상 마지막에 시청자에게 유도할 행동</div>
           <textarea id="cta" placeholder="예: 댓글 달아주세요! 선물 주는 구매 링크 공유드릴게요" required></textarea>
@@ -1016,7 +1010,6 @@ async function handleSubmit(e) {
       topic: document.getElementById('topic').value.trim(),
       hook: document.getElementById('hook').value.trim(),
       hookMsg: document.getElementById('hookMsg').value.trim(),
-      message: document.getElementById('message').value.trim(),
       cta: document.getElementById('cta').value.trim(),
       memo: document.getElementById('memo').value.trim(),
       status: '검토중',
