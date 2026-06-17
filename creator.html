@@ -29,15 +29,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .greeting .name{font-size:20px;font-weight:700;margin-bottom:6px;line-height:1.3}
 .greeting .msg{font-size:14px;color:var(--muted);line-height:1.6}
 
-/* === Nav Cards === */
-.nav-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.nav-card{background:var(--surface);border-radius:var(--radius);padding:20px 16px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent}
-.nav-card:hover,.nav-card:active{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--accent)}
-.nav-card .card-icon{font-size:32px;line-height:1}
-.nav-card .card-title{font-size:14px;font-weight:700}
-.nav-card .card-desc{font-size:11px;color:var(--muted);line-height:1.4}
-.nav-card.disabled{opacity:.45;pointer-events:none}
-.nav-card.disabled .card-desc::after{content:" (준비중)";font-weight:600}
+/* === Roadmap Steps === */
+.roadmap{display:flex;flex-direction:column;gap:0;margin-bottom:20px;position:relative}
+.roadmap-step{background:var(--surface);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:14px;-webkit-tap-highlight-color:transparent;position:relative;z-index:1}
+.roadmap-step:hover,.roadmap-step:active{transform:translateY(-1px);box-shadow:var(--shadow-md);border-color:var(--accent)}
+.step-num-circle{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step-body{flex:1;min-width:0}
+.step-title{font-size:15px;font-weight:700;margin-bottom:2px}
+.step-desc{font-size:12px;color:var(--muted);line-height:1.4;word-break:keep-all}
+.step-arrow-wrap{display:flex;justify-content:center;padding:4px 0;position:relative;z-index:0}
+.step-arrow{width:2px;height:20px;background:var(--border);position:relative}
+.step-arrow::after{content:"";position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid var(--border)}
 
 /* === Page Views === */
 .page{display:none;animation:fadeIn .25s ease}
@@ -197,28 +199,41 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       </a>
     </div>
 
-    <div class="nav-cards">
-      <a class="nav-card" onclick="goPage('product')">
-        <span class="card-icon">&#x1F45F;</span>
-        <span class="card-title">제품 소개</span>
-        <span class="card-desc">BR-001 핵심 정보</span>
+    <div class="roadmap">
+      <a class="roadmap-step" onclick="goPage('product')">
+        <span class="step-num-circle">1</span>
+        <div class="step-body">
+          <div class="step-title">제품 소개 확인하기</div>
+          <div class="step-desc">BR-001 핵심 정보를 먼저 확인하세요</div>
+        </div>
+        <span style="font-size:16px;color:var(--muted);flex-shrink:0">&rsaquo;</span>
       </a>
-      <a class="nav-card" onclick="goPage('guide')">
-        <span class="card-icon">&#x1F3AC;</span>
-        <span class="card-title">콘텐츠 가이드</span>
-        <span class="card-desc">릴스 제작 가이드</span>
+      <div class="step-arrow-wrap"><div class="step-arrow"></div></div>
+      <a class="roadmap-step" onclick="goPage('guide')">
+        <span class="step-num-circle">2</span>
+        <div class="step-body">
+          <div class="step-title">콘텐츠 가이드 읽기</div>
+          <div class="step-desc">릴스 방향과 레퍼런스를 참고하세요</div>
+        </div>
+        <span style="font-size:16px;color:var(--muted);flex-shrink:0">&rsaquo;</span>
       </a>
-      <a class="nav-card" onclick="goPage('submit')">
-        <span class="card-icon">&#x1F4DD;</span>
-        <span class="card-title">기획안 제출</span>
-        <span class="card-desc">릴스 기획안 작성</span>
-        <span class="card-status status-pending" id="submitStatus">제출 전</span>
+      <div class="step-arrow-wrap"><div class="step-arrow"></div></div>
+      <a class="roadmap-step" onclick="goPage('submit')">
+        <span class="step-num-circle">3</span>
+        <div class="step-body">
+          <div class="step-title">기획안 제출하기</div>
+          <div class="step-desc">촬영 전 기획안을 먼저 제출해주세요</div>
+        </div>
+        <span class="card-status status-pending" id="submitStatus" style="flex-shrink:0">제출 전</span>
       </a>
-      <a class="nav-card" onclick="goPage('checklist')">
-        <span class="card-icon">&#x2705;</span>
-        <span class="card-title">필수사항 확인</span>
-        <span class="card-desc">업로드 전 체크</span>
-        <span class="card-status status-pending" id="checkStatus">확인 전</span>
+      <div class="step-arrow-wrap"><div class="step-arrow"></div></div>
+      <a class="roadmap-step" onclick="goPage('checklist')">
+        <span class="step-num-circle">4</span>
+        <div class="step-body">
+          <div class="step-title">필수사항 확인하기</div>
+          <div class="step-desc">업로드 전 체크리스트를 확인하세요</div>
+        </div>
+        <span class="card-status status-pending" id="checkStatus" style="flex-shrink:0">확인 전</span>
       </a>
     </div>
 
