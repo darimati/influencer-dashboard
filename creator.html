@@ -178,61 +178,53 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <button class="admin-edit" id="adminEditBtn" onclick="openAdminGreeting()">수정</button>
     </div>
 
-    <!-- Roadmap Flow Guide -->
     <div class="roadmap">
-      <div class="roadmap-step" onclick="goPage('product')">
-        <span class="roadmap-num">1</span>
-        <span class="roadmap-label">제품 소개</span>
-      </div>
-      <span class="roadmap-arrow">&#x276F;</span>
-      <div class="roadmap-step" onclick="goPage('guide')">
-        <span class="roadmap-num">2</span>
-        <span class="roadmap-label">콘텐츠 가이드</span>
-      </div>
-      <span class="roadmap-arrow">&#x276F;</span>
-      <div class="roadmap-step" onclick="goPage('submit')">
-        <span class="roadmap-num">3</span>
-        <span class="roadmap-label">기획안 제출</span>
-      </div>
-      <span class="roadmap-arrow">&#x276F;</span>
-      <div class="roadmap-step" onclick="goPage('checklist')">
-        <span class="roadmap-num">4</span>
-        <span class="roadmap-label">필수사항 확인</span>
-      </div>
-    </div>
-
-    <div class="nav-cards">
-      <a class="nav-card" onclick="goPage('product')">
-        <span class="card-icon">&#x1F45F;</span>
-        <span class="card-title">제품 소개</span>
-        <span class="card-desc">BR-001 핵심 정보</span>
+      <a class="roadmap-step" onclick="goPage('product')">
+        <span class="step-num-circle">1</span>
+        <div class="step-body">
+          <div class="step-title">제품 소개 확인하기</div>
+          <div class="step-desc">BR-001 핵심 정보를 먼저 확인하세요</div>
+        </div>
+        <span style="font-size:16px;color:var(--muted);flex-shrink:0">&rsaquo;</span>
       </a>
-      <a class="nav-card" onclick="goPage('guide')">
-        <span class="card-icon">&#x1F3AC;</span>
-        <span class="card-title">콘텐츠 가이드</span>
-        <span class="card-desc">릴스 제작 가이드</span>
+      <div class="step-arrow-wrap"><div class="step-arrow"></div></div>
+      <a class="roadmap-step" onclick="goPage('guide')">
+        <span class="step-num-circle">2</span>
+        <div class="step-body">
+          <div class="step-title">콘텐츠 가이드 읽기</div>
+          <div class="step-desc">릴스 방향과 레퍼런스를 참고하세요</div>
+        </div>
+        <span style="font-size:16px;color:var(--muted);flex-shrink:0">&rsaquo;</span>
       </a>
-      <a class="nav-card" onclick="goPage('submit')">
-        <span class="card-icon">&#x1F4DD;</span>
-        <span class="card-title">기획안 제출</span>
-        <span class="card-desc">릴스 기획안 작성</span>
-        <span class="card-status status-pending" id="submitStatus">제출 전</span>
+      <div class="step-arrow-wrap"><div class="step-arrow"></div></div>
+      <a class="roadmap-step" onclick="goPage('submit')">
+        <span class="step-num-circle">3</span>
+        <div class="step-body">
+          <div class="step-title">기획안 제출하기</div>
+          <div class="step-desc">촬영 전 기획안을 먼저 제출해주세요</div>
+        </div>
+        <span class="card-status status-pending" id="submitStatus" style="flex-shrink:0">제출 전</span>
       </a>
-      <a class="nav-card" onclick="goPage('checklist')">
-        <span class="card-icon">&#x2705;</span>
-        <span class="card-title">필수사항 확인</span>
-        <span class="card-desc">업로드 전 체크</span>
-        <span class="card-status status-pending" id="checkStatus">확인 전</span>
+      <div class="step-arrow-wrap"><div class="step-arrow"></div></div>
+      <a class="roadmap-step" onclick="goPage('checklist')">
+        <span class="step-num-circle">4</span>
+        <div class="step-body">
+          <div class="step-title">필수사항 확인하기</div>
+          <div class="step-desc">업로드 전 체크리스트를 확인하세요</div>
+        </div>
+        <span class="card-status status-pending" id="checkStatus" style="flex-shrink:0">확인 전</span>
       </a>
     </div>
 
-    <!-- Quick Actions (하단, 한 줄 버튼) -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-      <div onclick="goPage('mylink')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 8px;background:#2563eb;color:#fff;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;text-align:center;-webkit-tap-highlight-color:transparent">
-        <span style="font-size:15px">&#x1F517;</span> 전용 구매링크
+    <!-- Quick Actions (2-col below roadmap) -->
+    <div class="quick-actions">
+      <div class="quick-btn qb-purchase" onclick="goPage('mylink')">
+        <div class="qb-title">전용 구매링크 만들기</div>
+        <div class="qb-desc">내 링크 복사</div>
       </div>
-      <a id="driveLink" href="#" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 8px;background:#16a34a;color:#fff;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;text-align:center;text-decoration:none;-webkit-tap-highlight-color:transparent">
-        <span style="font-size:15px">&#x1F4C1;</span> 클린본 드라이브
+      <a class="quick-btn qb-drive" id="driveLink" href="#" target="_blank">
+        <div class="qb-title">클린본 제출 드라이브</div>
+        <div class="qb-desc">영상 원본 업로드</div>
       </a>
     </div>
 
