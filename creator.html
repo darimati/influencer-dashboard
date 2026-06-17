@@ -52,7 +52,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .content-card{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
 .content-card h2{font-size:18px;font-weight:700;margin-bottom:12px;line-height:1.3}
 .content-card h3{font-size:15px;font-weight:700;margin:16px 0 8px;color:var(--text)}
-.content-card p{font-size:14px;color:#333;line-height:1.7;margin-bottom:10px}
+.content-card p{font-size:14px;color:#333;line-height:1.7;margin-bottom:10px;word-break:keep-all}
 .content-card .label{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:10px}
 .label-target{background:#fff0f0;color:#e53e3e}
 .label-usp{background:#e8f0fe;color:#2563eb}
@@ -65,11 +65,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .feature-section{margin-bottom:10px}
 .feature-header{font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.4}
 .feature-sub{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px}
-.feature-detail{font-size:14px;color:#444;line-height:1.7;margin-bottom:10px}
+.feature-detail{font-size:14px;color:#444;line-height:1.7;margin-bottom:10px;word-break:keep-all}
 
 /* === Bullet List === */
 .feat-list{list-style:none;padding:0;margin:10px 0}
-.feat-list li{padding:8px 0;font-size:14px;color:#444;line-height:1.5;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;gap:8px}
+.feat-list li{padding:8px 0;font-size:14px;color:#444;line-height:1.5;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;gap:8px;word-break:keep-all}
 .feat-list li:last-child{border-bottom:none}
 .feat-list li .dot{flex-shrink:0;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:7px}
 
@@ -255,35 +255,35 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       </div>
     </div>
 
-    <!-- ① 피팅 -->
+    <!-- ① ATPU 미드솔 (소재) -->
     <div class="content-card">
       <div class="feature-section">
         <div class="badge-row"><span class="badge badge-blue">01</span></div>
-        <div class="feature-header">신기 편한데 안 벗겨집니다</div>
-        <div class="feature-sub">러너들의 오래된 딜레마: 잡아주려면 불편하고, 편하면 벗겨진다</div>
-        <div class="feature-detail">DARIMATI는 끈의 장력이 아니라 <strong>신발 자체의 구조</strong>로 이 문제를 해결했습니다.</div>
-        <ul class="feat-list">
-          <li><span class="dot"></span>레이스 가이드 구조: 끈이 발등 위에서 균일하게 장력을 분산, 느슨하게 묶어도 감싸는 느낌 유지</li>
-          <li><span class="dot"></span>힐 카운터 설계: 뒤꿈치 안쪽 곡면이 발을 자연스럽게 감싸 슬립 최소화</li>
-          <li><span class="dot"></span>탈착 편의성: 끈을 풀지 않고도 신고 벗기가 수월</li>
-        </ul>
-        <div class="quote-block">느슨하게 묶어도 쉽게 벗겨지지 않습니다.<br>편하게 신으면서도 안정적으로 달릴 수 있는 신발, 그게 출발점이었습니다.</div>
-      </div>
-    </div>
-
-    <!-- ② ATPU 미드솔 -->
-    <div class="content-card">
-      <div class="feature-section">
-        <div class="badge-row"><span class="badge badge-blue">02</span></div>
         <div class="feature-header">가장 좋은 러닝화 소재를 넣었습니다</div>
         <div class="feature-sub">고반발 소재는 왜 비싼 신발에만 들어갈까?</div>
         <div class="feature-detail">DARIMATI는 <strong>ATPU 100% 미드솔</strong>을 채택했습니다. 일반 EVA 폼 대비 뛰어난 에너지 리턴율을 보이면서도, 과도한 반발로 인한 불안정성을 줄인 소재입니다.</div>
         <ul class="feat-list">
-          <li><span class="dot"></span><strong>쿠션감</strong> — 30분 이상 러닝에서도 발바닥 피로가 축적되지 않는 충격 흡수력</li>
+          <li><span class="dot"></span><strong>쿠션감</strong> — 30분 이상 러닝에서도 발바닥 피로가 쌓이지 않는 충격 흡수력</li>
           <li><span class="dot"></span><strong>반발력</strong> — 착지 에너지를 다음 보폭으로 자연스럽게 전환</li>
-          <li><span class="dot"></span><strong>안정성</strong> — 워킹과 러닝 전환 시 발이 흔들리지 않는 균형</li>
+          <li><span class="dot"></span><strong>안정성</strong> — 워킹과 러닝 전환 시에도 발이 흔들리지 않는 균형</li>
         </ul>
         <div class="quote-block">기록 경쟁이 아니라, 매일 30분을 달리는 사람을 위한 고급 소재.<br>비싼 레이싱 슈즈의 기술을, 매일 신는 신발에 담았습니다.</div>
+      </div>
+    </div>
+
+    <!-- ② 피팅 -->
+    <div class="content-card">
+      <div class="feature-section">
+        <div class="badge-row"><span class="badge badge-blue">02</span></div>
+        <div class="feature-header">신기 편한데 안 벗겨집니다</div>
+        <div class="feature-sub">러너들의 오래된 딜레마: 잡아주려면 불편하고, 편하면 벗겨진다</div>
+        <div class="feature-detail">DARIMATI는 끈의 장력이 아니라 <strong>신발 자체의 구조</strong>로 이 문제를 해결했습니다.</div>
+        <ul class="feat-list">
+          <li><span class="dot"></span><strong>레이스 가이드</strong> — 끈이 발등 위에서 균일하게 장력을 분산, 느슨하게 묶어도 감싸는 느낌 유지</li>
+          <li><span class="dot"></span><strong>힐 카운터</strong> — 뒤꿈치 안쪽 곡면이 발을 자연스럽게 감싸 슬립 최소화</li>
+          <li><span class="dot"></span><strong>탈착 편의성</strong> — 끈을 풀지 않고도 신고 벗기가 수월</li>
+        </ul>
+        <div class="quote-block">느슨하게 묶어도 쉽게 벗겨지지 않습니다.<br>편하게 신으면서도 안정적으로 달릴 수 있는 신발, 그게 출발점이었습니다.</div>
       </div>
     </div>
 
@@ -374,15 +374,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         </div>
 
         <div class="field">
-          <label class="req">첫 3초 후킹 — 장면</label>
+          <label class="req">첫 3초 후킹 장면</label>
           <div class="hint">시청자가 스크롤 멈추게 할 첫 장면</div>
-          <textarea id="hookScene" placeholder="예: 새벽 한강에서 신발 클로즈업 + 달리기 시작" required></textarea>
-        </div>
-
-        <div class="field">
-          <label class="req">첫 3초 후킹 — 메시지</label>
-          <div class="hint">영상 시작에 나올 텍스트나 멘트</div>
-          <textarea id="hookMessage" placeholder="예: 살 빼려고 러닝 시작했는데, 발목부터 아프셨나요?" required></textarea>
+          <textarea id="hook" placeholder="예: 새벽 한강에서 신발 클로즈업 + 달리기 시작" rows="4" required></textarea>
         </div>
 
         <div class="field">
@@ -957,8 +951,7 @@ async function handleSubmit(e) {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       igHandle: document.getElementById('igHandle').value.trim(),
       topic: document.getElementById('topic').value.trim(),
-      hookScene: document.getElementById('hookScene').value.trim(),
-      hookMessage: document.getElementById('hookMessage').value.trim(),
+      hook: document.getElementById('hook').value.trim(),
       message: document.getElementById('message').value.trim(),
       cta: document.getElementById('cta').value.trim(),
       memo: document.getElementById('memo').value.trim(),
