@@ -415,7 +415,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <div class="field">
           <label class="req">첫 3초 후킹 메시지</label>
           <div class="hint">첫 3초에 보여줄 자막이나 나레이션 (어떤 말?)</div>
-          <textarea id="hookMsg" placeholder="예: 살 빼려고 러닝 시작했는데, 발목부터 아프셨나요?" rows="4" required></textarea>
+          <textarea id="message" placeholder="예: 가볍고 쿠셔닝 좋아 장거리에도 무릎이 편했다" rows="4" required></textarea>
         </div>
 
         <div class="field">
@@ -1009,7 +1009,8 @@ async function handleSubmit(e) {
       igHandle: document.getElementById('igHandle').value.trim(),
       topic: document.getElementById('topic').value.trim(),
       hook: document.getElementById('hook').value.trim(),
-      hookMsg: document.getElementById('hookMsg').value.trim(),
+
+      message: document.getElementById('message').value.trim(),
       cta: document.getElementById('cta').value.trim(),
       memo: document.getElementById('memo').value.trim(),
       status: '검토중',
