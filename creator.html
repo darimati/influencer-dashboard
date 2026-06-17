@@ -663,7 +663,7 @@ async function loadCreatorProfile() {
   const cid = params.get('id') || '';
   const cname = params.get('name') || '';
 
-  // Try loading profile from Supabase
+  // Try loading profile from Supabase creator-profiles
   const data = await supaRead(CREATORS_PATH);
   if (data && cid && data[cid]) {
     creatorProfile = data[cid];
@@ -673,16 +673,17 @@ async function loadCreatorProfile() {
 
   // Build NT link
   const handle = creatorProfile.handle || cid || cname || '크리에이터';
-  const myLink = ntBuildUrl(handle);
+  const myLink = creatorProfile.ntLink || ntBuildUrl(handle);
   const el = document.getElementById('myLinkBox');
   if (el) el.textContent = myLink;
 
-  // Set drive link
-  if (creatorProfile.driveLink) {
-    document.getElementById('driveLink').href = creatorProfile.driveLink;
+  // Set drive link (priority: profile > URL param > none)
+  const driveEl = document.getElementById('driveLink');
+  if (creatorProfile.driveLink && creatorProfile.driveLink.startsWith('https://')) {
+    driveEl.href = creatorProfile.driveLink;
   } else {
     const driveParam = params.get('drive');
-    if (driveParam) document.getElementById('driveLink').href = driveParam;
+    if (driveParam) driveEl.href = driveParam;
   }
 
   // Update CTA text with creator handle
@@ -690,6 +691,12 @@ async function loadCreatorProfile() {
   const ctaEl = document.getElementById('ctaText');
   if (ctaEl) {
     ctaEl.innerHTML = '구매 시 비고란에 <strong>"@' + displayName + ' 릴스 보고 구매합니다!"</strong> 적어주시면 전용 선물을 보내드려요!';
+  }
+
+  // Pre-fill IG handle in form if available
+  const igInput = document.getElementById('igHandle');
+  if (igInput && handle && handle !== '크리에이터') {
+    igInput.value = handle.startsWith('@') ? handle : '@' + handle;
   }
 }
 
