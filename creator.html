@@ -147,6 +147,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .card-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px}
 .status-pending{background:#fff0f0;color:var(--red)}
 .status-done{background:#e8faf0;color:var(--green)}
+
+/* === Quick Action Buttons === */
+.quick-actions{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.quick-btn{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;text-decoration:none;color:var(--text);-webkit-tap-highlight-color:transparent;transition:all .15s}
+.quick-btn:active{transform:scale(.98);box-shadow:var(--shadow-md)}
+.quick-btn .qb-icon{font-size:24px;flex-shrink:0}
+.quick-btn .qb-body{flex:1;min-width:0}
+.quick-btn .qb-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.quick-btn .qb-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.quick-btn .qb-arrow{font-size:16px;color:var(--muted);flex-shrink:0}
+.copy-toast{font-size:12px;font-weight:600;color:var(--green);display:none}
 </style>
 </head>
 <body>
@@ -164,6 +175,36 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <div class="name" id="greetingName">크리에이터님, 안녕하세요!</div>
       <div class="msg" id="greetingMsg">다리마티와 협업해주셔서 진심으로 감사합니다. 아래 카드를 통해 제품 정보 확인, 기획안 제출까지 한번에 진행해주세요.</div>
       <button class="admin-edit" id="adminEditBtn" onclick="openAdminGreeting()">수정</button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <div class="quick-btn" onclick="copyPurchaseLink()">
+        <span class="qb-icon">&#x1F517;</span>
+        <div class="qb-body">
+          <div class="qb-title">전용 구매링크 복사하기 <span class="copy-toast" id="copyLinkToast">복사 완료!</span></div>
+          <div class="qb-desc">크리에이터님 팔로워분들께 전용 선물을 드립니다</div>
+        </div>
+        <span class="qb-arrow">&rsaquo;</span>
+      </div>
+      <a class="quick-btn" id="driveLink" href="#" target="_blank">
+        <span class="qb-icon">&#x1F4C1;</span>
+        <div class="qb-body">
+          <div class="qb-title">클린본 제출 드라이브</div>
+          <div class="qb-desc">영상 원본 업로드용 폴더</div>
+        </div>
+        <span class="qb-arrow">&rsaquo;</span>
+      </a>
+    </div>
+
+    <!-- 구매 선물 안내 -->
+    <div class="content-card" style="padding:16px 18px;margin-bottom:20px">
+      <p style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text)">팔로워 전용 선물 안내</p>
+      <div style="font-size:13px;color:#333;line-height:1.7;padding:12px 14px;background:#f8f9fa;border-radius:var(--radius-sm);cursor:pointer" onclick="copyCTAText()" id="ctaTextBlock">
+        <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:6px">&#x1F4CB; 탭하면 복사됩니다</span>
+        댓글 달고 &gt; 정보 DM 주실 때<br>구매 시 비고란에 <strong>"@크리에이터 릴스 보고 구매합니다!"</strong> 적어주시면 전용 선물을 보내드립니다!
+      </div>
+      <span class="copy-toast" id="copyCTAToast" style="margin-top:6px">복사 완료!</span>
     </div>
 
     <div class="nav-cards">
@@ -557,6 +598,18 @@ async function loadGreeting() {
     }
   }
 
+  // Set drive link from URL param or greeting data
+  const driveParam = params.get('drive');
+  if (driveParam) {
+    document.getElementById('driveLink').href = driveParam;
+  }
+
+  // Set purchase link from URL param
+  const linkParam = params.get('link');
+  if (linkParam) {
+    // purchase link will be read by copyPurchaseLink()
+  }
+
   // Show admin edit button if ?admin=1
   if (params.get('admin') === '1') {
     document.getElementById('adminEditBtn').style.display = 'block';
@@ -576,6 +629,32 @@ function openAdminGreeting() {
     creators: {},
     updatedAt: new Date().toISOString()
   }).then(() => showToast('인사말 저장 완료'));
+}
+
+/* ============================================================
+   QUICK ACTIONS (구매링크 복사, CTA 문구 복사)
+   ============================================================ */
+function copyPurchaseLink() {
+  const params = new URLSearchParams(window.location.search);
+  const link = params.get('link') || 'https://brand.naver.com/darimati';
+  navigator.clipboard.writeText(link).then(() => {
+    const t = document.getElementById('copyLinkToast');
+    t.style.display = 'inline';
+    setTimeout(() => t.style.display = 'none', 2000);
+    showToast('구매링크가 복사되었습니다!');
+  });
+}
+
+function copyCTAText() {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('name') || '크리에이터';
+  const text = '댓글 달고 > 정보 DM 주실 때\n구매 시 비고란에 "@' + name + ' 릴스 보고 구매합니다!" 적어주시면 전용 선물을 보내드립니다!';
+  navigator.clipboard.writeText(text).then(() => {
+    const t = document.getElementById('copyCTAToast');
+    t.style.display = 'inline';
+    setTimeout(() => t.style.display = 'none', 2000);
+    showToast('문구가 복사되었습니다!');
+  });
 }
 
 /* ============================================================
