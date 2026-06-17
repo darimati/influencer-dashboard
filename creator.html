@@ -52,7 +52,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .content-card{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
 .content-card h2{font-size:18px;font-weight:700;margin-bottom:12px;line-height:1.3}
 .content-card h3{font-size:15px;font-weight:700;margin:16px 0 8px;color:var(--text)}
-.content-card p{font-size:14px;color:#333;line-height:1.7;margin-bottom:10px;word-break:keep-all;overflow-wrap:break-word}
+.content-card p{font-size:14px;color:#333;line-height:1.7;margin-bottom:10px;word-break:keep-all}
 .content-card .label{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:10px}
 .label-target{background:#fff0f0;color:#e53e3e}
 .label-usp{background:#e8f0fe;color:#2563eb}
@@ -65,16 +65,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .feature-section{margin-bottom:10px}
 .feature-header{font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.4}
 .feature-sub{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px}
-.feature-detail{font-size:14px;color:#444;line-height:1.7;margin-bottom:10px;word-break:keep-all;overflow-wrap:break-word}
+.feature-detail{font-size:14px;color:#444;line-height:1.7;margin-bottom:10px;word-break:keep-all}
 
 /* === Bullet List === */
 .feat-list{list-style:none;padding:0;margin:10px 0}
-.feat-list li{padding:8px 0;font-size:14px;color:#444;line-height:1.6;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;gap:8px;word-break:keep-all;overflow-wrap:break-word}
+.feat-list li{padding:8px 0;font-size:14px;color:#444;line-height:1.5;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;gap:8px;word-break:keep-all}
 .feat-list li:last-child{border-bottom:none}
 .feat-list li .dot{flex-shrink:0;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:7px}
 
 /* === Quote Block === */
-.quote-block{padding:14px 16px;border-radius:var(--radius-sm);background:#f8f9fa;border-left:3px solid var(--accent);margin:12px 0;font-size:14px;font-weight:500;line-height:1.6;color:#333;font-style:italic;word-break:keep-all;overflow-wrap:break-word}
+.quote-block{padding:14px 16px;border-radius:var(--radius-sm);background:#f8f9fa;border-left:3px solid var(--accent);margin:12px 0;font-size:14px;font-weight:500;line-height:1.5;color:#333;font-style:italic}
 
 /* === Badge Row === */
 .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
@@ -157,14 +157,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .quick-btn .qb-title{font-size:14px;font-weight:700;margin-bottom:2px}
 .quick-btn .qb-desc{font-size:12px;color:var(--muted);line-height:1.4}
 .quick-btn .qb-arrow{font-size:16px;color:var(--muted);flex-shrink:0}
-
-/* === Roadmap Flow === */
-.roadmap{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px;padding:14px 8px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow-x:auto}
-.roadmap-step{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;padding:4px 6px;border-radius:8px;transition:background .15s}
-.roadmap-step:active{background:#f0f0f0}
-.roadmap-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.roadmap-label{font-size:10px;font-weight:600;color:#555;text-align:center;line-height:1.2;word-break:keep-all;max-width:56px}
-.roadmap-arrow{font-size:14px;color:var(--muted);flex-shrink:0;margin:0 2px}
 .copy-toast{font-size:12px;font-weight:600;color:var(--green);display:none}
 </style>
 </head>
@@ -185,27 +177,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <button class="admin-edit" id="adminEditBtn" onclick="openAdminGreeting()">수정</button>
     </div>
 
-    <!-- Roadmap Flow Guide -->
-    <div class="roadmap">
-      <div class="roadmap-step" onclick="goPage('product')">
-        <span class="roadmap-num">1</span>
-        <span class="roadmap-label">제품 소개</span>
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <div class="quick-btn" onclick="goPage('mylink')">
+        <span class="qb-icon">&#x1F517;</span>
+        <div class="qb-body">
+          <div class="qb-title">전용 구매링크 만들기</div>
+          <div class="qb-desc">팔로워 전용 선물 안내 + 내 링크 복사</div>
+        </div>
+        <span class="qb-arrow">&rsaquo;</span>
       </div>
-      <span class="roadmap-arrow">&#x276F;</span>
-      <div class="roadmap-step" onclick="goPage('guide')">
-        <span class="roadmap-num">2</span>
-        <span class="roadmap-label">콘텐츠 가이드</span>
-      </div>
-      <span class="roadmap-arrow">&#x276F;</span>
-      <div class="roadmap-step" onclick="goPage('submit')">
-        <span class="roadmap-num">3</span>
-        <span class="roadmap-label">기획안 제출</span>
-      </div>
-      <span class="roadmap-arrow">&#x276F;</span>
-      <div class="roadmap-step" onclick="goPage('checklist')">
-        <span class="roadmap-num">4</span>
-        <span class="roadmap-label">필수사항 확인</span>
-      </div>
+      <a class="quick-btn" id="driveLink" href="#" target="_blank">
+        <span class="qb-icon">&#x1F4C1;</span>
+        <div class="qb-body">
+          <div class="qb-title">클린본 제출 드라이브</div>
+          <div class="qb-desc">영상 원본 업로드용 폴더</div>
+        </div>
+        <span class="qb-arrow">&rsaquo;</span>
+      </a>
     </div>
 
     <div class="nav-cards">
@@ -230,26 +219,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <span class="card-title">필수사항 확인</span>
         <span class="card-desc">업로드 전 체크</span>
         <span class="card-status status-pending" id="checkStatus">확인 전</span>
-      </a>
-    </div>
-
-    <!-- Quick Actions (하단) -->
-    <div class="quick-actions">
-      <div class="quick-btn" onclick="goPage('mylink')">
-        <span class="qb-icon">&#x1F517;</span>
-        <div class="qb-body">
-          <div class="qb-title">전용 구매링크 만들기</div>
-          <div class="qb-desc">팔로워 전용 선물 안내 + 내 링크 복사</div>
-        </div>
-        <span class="qb-arrow">&rsaquo;</span>
-      </div>
-      <a class="quick-btn" id="driveLink" href="#" target="_blank">
-        <span class="qb-icon">&#x1F4C1;</span>
-        <div class="qb-body">
-          <div class="qb-title">클린본 제출 드라이브</div>
-          <div class="qb-desc">영상 원본 업로드용 폴더</div>
-        </div>
-        <span class="qb-arrow">&rsaquo;</span>
       </a>
     </div>
 
@@ -362,14 +331,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <div class="feature-sub">러닝화처럼 보이지 않는 러닝화</div>
         <div class="feature-detail">절제된 컬러, 미니멀한 실루엣. 캐주얼에서 비즈니스 캐주얼까지 자연스럽게 어우러지는 디자인.</div>
         <ul class="feat-list">
-          <li><span class="dot"></span><strong>청바지</strong> — 깔끔한 실루엣이 캐주얼룩을 정돈된 인상으로</li>
-          <li><span class="dot"></span><strong>슬랙스</strong> — 절제된 볼륨감으로 비즈니스 캐주얼과 자연스러운 매치</li>
-          <li><span class="dot"></span><strong>러닝팬츠</strong> — 애슬레저룩의 정석</li>
-          <li><span class="dot"></span><strong>캐주얼 자켓</strong> — 재킷 + 스니커즈, 러닝 기능까지 더한 조합</li>
+          <li><span class="dot"></span>청바지</li>
+          <li><span class="dot"></span>슬랙스</li>
+          <li><span class="dot"></span>러닝팬츠</li>
+          <li><span class="dot"></span>캐주얼 자켓</li>
         </ul>
         <div class="quote-block">아침 출근부터 저녁 러닝까지 한 켤레로.<br>신발을 바꾸지 않아도 되는 것, 그것이 DARIMATI가 생각하는 하이브리드입니다.</div>
       </div>
     </div>
+
+    <!-- 화보 이미지 -->
+    <img src="https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/lookbook-lifestyle.png" alt="DARIMATI Lookbook" class="product-img" loading="lazy">
 
     <!-- CTA -->
     <div class="content-card" style="text-align:center;padding:28px 20px">
