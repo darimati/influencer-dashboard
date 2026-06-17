@@ -179,11 +179,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
     <!-- Quick Actions -->
     <div class="quick-actions">
-      <div class="quick-btn" onclick="copyPurchaseLink()">
+      <div class="quick-btn" onclick="goPage('mylink')">
         <span class="qb-icon">&#x1F517;</span>
         <div class="qb-body">
-          <div class="qb-title">전용 구매링크 복사하기 <span class="copy-toast" id="copyLinkToast">복사 완료!</span></div>
-          <div class="qb-desc">크리에이터님 팔로워분들께 전용 선물을 드립니다</div>
+          <div class="qb-title">전용 구매링크 만들기</div>
+          <div class="qb-desc">팔로워 전용 선물 안내 + 내 링크 복사</div>
         </div>
         <span class="qb-arrow">&rsaquo;</span>
       </div>
@@ -195,16 +195,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         </div>
         <span class="qb-arrow">&rsaquo;</span>
       </a>
-    </div>
-
-    <!-- 구매 선물 안내 -->
-    <div class="content-card" style="padding:16px 18px;margin-bottom:20px">
-      <p style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text)">팔로워 전용 선물 안내</p>
-      <div style="font-size:13px;color:#333;line-height:1.7;padding:12px 14px;background:#f8f9fa;border-radius:var(--radius-sm);cursor:pointer" onclick="copyCTAText()" id="ctaTextBlock">
-        <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:6px">&#x1F4CB; 탭하면 복사됩니다</span>
-        댓글 달고 &gt; 정보 DM 주실 때<br>구매 시 비고란에 <strong>"@크리에이터 릴스 보고 구매합니다!"</strong> 적어주시면 전용 선물을 보내드립니다!
-      </div>
-      <span class="copy-toast" id="copyCTAToast" style="margin-top:6px">복사 완료!</span>
     </div>
 
     <div class="nav-cards">
@@ -541,6 +531,39 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     </div>
   </div>
 
+  <!-- ===== 전용 구매링크 PAGE ===== -->
+  <div class="page" id="page-mylink">
+    <button class="back-btn" onclick="goPage('home')">돌아가기</button>
+
+    <div class="content-card">
+      <h2>내 전용 구매링크</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">이 링크를 통해 구매하시는 분들의 주문이 크리에이터님의 실적으로 집계됩니다.</p>
+
+      <div id="myLinkBox" style="padding:12px 14px;background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:#333;word-break:break-all;line-height:1.5;margin-bottom:12px">
+        링크 생성 중...
+      </div>
+
+      <button class="submit-btn" style="font-size:14px;padding:14px" onclick="copyMyLink()">링크 복사하기</button>
+      <span class="copy-toast" id="myLinkToast" style="display:none;margin-top:8px">복사 완료!</span>
+    </div>
+
+    <!-- 팔로워 전용 선물 안내 -->
+    <div class="content-card">
+      <h2>팔로워 전용 선물 안내</h2>
+      <p style="font-size:14px;color:#333;line-height:1.7;margin-bottom:14px">크리에이터님의 릴스를 보고 구매하시는 분들께 전용 선물을 드립니다. 아래 문구를 릴스 댓글이나 DM 안내 시 활용해주세요.</p>
+
+      <div style="padding:14px 16px;background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;margin-bottom:10px" onclick="copyCTAText()">
+        <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:8px">탭하면 복사됩니다</span>
+        <p id="ctaText" style="font-size:14px;color:#333;line-height:1.7;margin:0">구매 시 비고란에 <strong>"@크리에이터 릴스 보고 구매합니다!"</strong> 적어주시면 전용 선물을 보내드려요!</p>
+      </div>
+      <span class="copy-toast" id="copyCTAToast" style="display:none">복사 완료!</span>
+    </div>
+
+    <div style="text-align:center;padding:8px 0 16px">
+      <button class="back-btn" onclick="goPage('home')">돌아가기</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -554,6 +577,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const BUCKET = 'playbook-data';
 const PLANS_PATH = 'sourcing/reel-plans.json';
 const GREETING_PATH = 'sourcing/creator-greeting.json';
+const CREATORS_PATH = 'sourcing/creator-profiles.json';
+const BASE_PRODUCT_URL = 'https://brand.naver.com/darimati/products/13462747167';
 
 /* ============================================================
    NAVIGATION
@@ -598,18 +623,6 @@ async function loadGreeting() {
     }
   }
 
-  // Set drive link from URL param or greeting data
-  const driveParam = params.get('drive');
-  if (driveParam) {
-    document.getElementById('driveLink').href = driveParam;
-  }
-
-  // Set purchase link from URL param
-  const linkParam = params.get('link');
-  if (linkParam) {
-    // purchase link will be read by copyPurchaseLink()
-  }
-
   // Show admin edit button if ?admin=1
   if (params.get('admin') === '1') {
     document.getElementById('adminEditBtn').style.display = 'block';
@@ -632,13 +645,58 @@ function openAdminGreeting() {
 }
 
 /* ============================================================
-   QUICK ACTIONS (구매링크 복사, CTA 문구 복사)
+   PERSONALIZED LINKS (NT parameter + Drive)
    ============================================================ */
-function copyPurchaseLink() {
+let creatorProfile = {};
+
+function ntBuildUrl(handle) {
+  const p = new URLSearchParams();
+  p.set('nt_source', 'Insta');
+  p.set('nt_medium', 'Creator');
+  p.set('nt_detail', handle.startsWith('@') ? handle : '@' + handle);
+  p.set('nt_keyword', 'June');
+  return BASE_PRODUCT_URL + '?' + p.toString();
+}
+
+async function loadCreatorProfile() {
   const params = new URLSearchParams(window.location.search);
-  const link = params.get('link') || 'https://brand.naver.com/darimati';
-  navigator.clipboard.writeText(link).then(() => {
-    const t = document.getElementById('copyLinkToast');
+  const cid = params.get('id') || '';
+  const cname = params.get('name') || '';
+
+  // Try loading profile from Supabase
+  const data = await supaRead(CREATORS_PATH);
+  if (data && cid && data[cid]) {
+    creatorProfile = data[cid];
+  } else {
+    creatorProfile = { handle: cid || cname, name: cname };
+  }
+
+  // Build NT link
+  const handle = creatorProfile.handle || cid || cname || '크리에이터';
+  const myLink = ntBuildUrl(handle);
+  const el = document.getElementById('myLinkBox');
+  if (el) el.textContent = myLink;
+
+  // Set drive link
+  if (creatorProfile.driveLink) {
+    document.getElementById('driveLink').href = creatorProfile.driveLink;
+  } else {
+    const driveParam = params.get('drive');
+    if (driveParam) document.getElementById('driveLink').href = driveParam;
+  }
+
+  // Update CTA text with creator handle
+  const displayName = creatorProfile.handle || cid || cname || '크리에이터';
+  const ctaEl = document.getElementById('ctaText');
+  if (ctaEl) {
+    ctaEl.innerHTML = '구매 시 비고란에 <strong>"@' + displayName + ' 릴스 보고 구매합니다!"</strong> 적어주시면 전용 선물을 보내드려요!';
+  }
+}
+
+function copyMyLink() {
+  const el = document.getElementById('myLinkBox');
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const t = document.getElementById('myLinkToast');
     t.style.display = 'inline';
     setTimeout(() => t.style.display = 'none', 2000);
     showToast('구매링크가 복사되었습니다!');
@@ -646,10 +704,8 @@ function copyPurchaseLink() {
 }
 
 function copyCTAText() {
-  const params = new URLSearchParams(window.location.search);
-  const name = params.get('name') || '크리에이터';
-  const text = '댓글 달고 > 정보 DM 주실 때\n구매 시 비고란에 "@' + name + ' 릴스 보고 구매합니다!" 적어주시면 전용 선물을 보내드립니다!';
-  navigator.clipboard.writeText(text).then(() => {
+  const el = document.getElementById('ctaText');
+  navigator.clipboard.writeText(el.textContent).then(() => {
     const t = document.getElementById('copyCTAToast');
     t.style.display = 'inline';
     setTimeout(() => t.style.display = 'none', 2000);
@@ -796,6 +852,7 @@ document.addEventListener('click', function(e) {
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   loadGreeting();
+  loadCreatorProfile();
 });
 </script>
 </body>
