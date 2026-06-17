@@ -554,7 +554,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
       <div style="padding:14px 16px;background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;margin-bottom:10px" onclick="copyCTAText()">
         <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:8px">탭하면 복사됩니다</span>
-        <p id="ctaText" style="font-size:14px;color:#333;line-height:1.7;margin:0">구매 시 비고란에 <strong>"@크리에이터 릴스 보고 구매합니다!"</strong> 적어주시면 전용 선물을 보내드려요!</p>
+        <p id="ctaText" style="font-size:14px;color:#333;line-height:1.7;margin:0">구매 시 배송요청란에 <strong>"@크리에이터 릴스 보고 구매합니다"</strong> 적어주시면 전용 선물을 보내드려요!</p>
       </div>
       <span class="copy-toast" id="copyCTAToast" style="display:none">복사 완료!</span>
     </div>
@@ -602,10 +602,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <div class="step-item"><span class="step-num">1</span><div style="font-size:13px;line-height:1.5"><strong>초보 러닝 꿀팁 정보 공유</strong><br>러닝 시작할 때 알아야 할 것들</div></div>
       <div class="step-item"><span class="step-num">2</span><div style="font-size:13px;line-height:1.5"><strong>러닝 초보자들의 발목·무릎 부담 이야기</strong><br>입문자가 겪는 현실적인 문제</div></div>
       <div class="step-item"><span class="step-num">3</span><div style="font-size:13px;line-height:1.5"><strong>요즘 잘 신고 있는 러닝화 소개</strong><br>ATPU 100% 미드솔, 쿠셔닝+안정성</div></div>
-      <div class="step-item"><span class="step-num">4</span><div style="font-size:13px;line-height:1.5"><strong>구매 링크 및 혜택 안내</strong><br>프로필 링크 + 전용 선물 안내</div></div>
+      <div class="step-item"><span class="step-num">4</span><div style="font-size:13px;line-height:1.5"><strong>구매 링크 및 혜택 안내</strong><br>CTA → 댓글 유도 → DM 발송</div></div>
 
       <h3>CTA 예시</h3>
-      <div class="quote-block" id="cta1Text">"프로필 링크에서 확인해보세요! 구매 시 비고란에 '@크리에이터 릴스 보고 구매합니다!' 적어주시면 전용 선물을 보내드려요"</div>
+      <div class="quote-block" id="cta1Text">"댓글에 '러닝' 남겨주시면 DM으로 선물과 함께 구매 링크 드릴게요!"</div>
 
       <h3>핵심 포인트</h3>
       <ul class="feat-list">
@@ -660,10 +660,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <div class="step-item"><span class="step-num">1</span><div style="font-size:13px;line-height:1.5"><strong>러닝화 묵혀두는 현실</strong><br>화려한 러닝화, 일상에서 매치가 어려운 문제</div></div>
       <div class="step-item"><span class="step-num">2</span><div style="font-size:13px;line-height:1.5"><strong>하루종일 한 켤레 = 하이브리드</strong><br>출퇴근, 등하교, 장보기, 저녁 러닝까지</div></div>
       <div class="step-item"><span class="step-num">3</span><div style="font-size:13px;line-height:1.5"><strong>일상복 코디 매칭</strong><br>청바지, 슬랙스, 치마 등 자연스러운 스타일링</div></div>
-      <div class="step-item"><span class="step-num">4</span><div style="font-size:13px;line-height:1.5"><strong>구매 링크 및 혜택 안내</strong><br>프로필 링크 + 전용 선물 안내</div></div>
+      <div class="step-item"><span class="step-num">4</span><div style="font-size:13px;line-height:1.5"><strong>구매 링크 및 혜택 안내</strong><br>CTA → 댓글 유도 → DM 발송</div></div>
 
       <h3>CTA 예시</h3>
-      <div class="quote-block" id="cta2Text">"프로필 링크에서 확인해보세요! 구매 시 비고란에 '@크리에이터 릴스 보고 구매합니다!' 적어주시면 전용 선물을 보내드려요"</div>
+      <div class="quote-block" id="cta2Text">"댓글에 '러닝' 남겨주시면 DM으로 선물과 함께 구매 링크 드릴게요!"</div>
 
       <h3>핵심 포인트</h3>
       <ul class="feat-list">
@@ -679,6 +679,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <a href="https://www.instagram.com/reel/DLYYgG8hyoT/" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13px;font-weight:600">릴스 보기</a> <span style="font-size:12px;color:var(--muted)">@early_doit</span>
         <div style="font-size:13px;color:#444;margin-top:4px;line-height:1.5">하루 동안의 생활 — 출근, 운동, 등하교, 약속 등 다양한 상황 속에서 한 켤레로 잘 신고 다니는 모습</div>
       </div>
+    </div>
+
+    <!-- ===== CTA & DM 가이드 ===== -->
+    <div class="content-card">
+      <h2>CTA & DM 가이드</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">릴스 마지막에 시청자 행동을 유도하는 멘트입니다. 댓글 → DM 흐름으로 진행합니다.</p>
+
+      <h3 style="margin-bottom:8px">릴스 CTA (영상 마지막 멘트)</h3>
+      <div style="padding:14px 16px;background:#f8f9fa;border-radius:var(--radius-sm);font-size:14px;color:#333;line-height:1.7;cursor:pointer;border:1px solid var(--border);margin-bottom:10px" onclick="copyText(this,'ctaCopyToast')">
+        <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:6px">탭하면 복사됩니다</span>
+        댓글에 "러닝" 남겨주시면 DM으로 선물과 함께 구매 링크 드릴게요!
+      </div>
+      <span class="copy-toast" id="ctaCopyToast" style="margin-top:6px;display:none">복사 완료!</span>
+
+      <h3 style="margin-bottom:8px;margin-top:16px">DM 예시 (댓글 달면 보내는 메시지)</h3>
+      <div style="padding:14px 16px;background:#f8f9fa;border-radius:var(--radius-sm);font-size:14px;color:#333;line-height:1.8;cursor:pointer;border:1px solid var(--border);margin-bottom:10px" onclick="copyText(this,'dmCopyToast')">
+        <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:6px">탭하면 복사됩니다</span>
+        [구매링크]<br><br>
+        스토어 알림받기 하고 5% 쿠폰 꼭 적용해서 구매하세요!<br>
+        구매 시 배송요청란에 <strong>"@크리에이터ID 릴스 보고 구매합니다"</strong> 적으시면<br>
+        선물 같이 보내 드려용!!
+      </div>
+      <span class="copy-toast" id="dmCopyToast" style="margin-top:6px;display:none">복사 완료!</span>
     </div>
 
     <!-- 촬영 팁 -->
@@ -702,11 +725,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
       <div id="captionTemplate" style="padding:16px;background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;margin-bottom:10px" onclick="copyCaptionTemplate()">
         <span style="color:var(--muted);font-size:11px;display:block;margin-bottom:8px">탭하면 복사됩니다</span>
-        <p id="captionText" style="font-size:14px;color:#333;line-height:1.8;margin:0;white-space:pre-line">러닝화인데 출근할 때도 신어요 👟
+        <p id="captionText" style="font-size:14px;color:#333;line-height:1.8;margin:0;white-space:pre-line">러닝화인데 출근할 때도 신어요
 하루종일 한 켤레로 끝!
 
-🔗 프로필 링크에서 확인
-구매 시 비고란에 "@크리에이터 릴스 보고 구매합니다!" 적으면 전용 선물 🎁
+댓글에 "러닝" 남겨주시면 DM으로 선물과 함께 구매 링크 드릴게요!
 
 #다리마티 #DARIMATI #러닝화 #하이브리드러닝화</p>
       </div>
@@ -850,7 +872,7 @@ async function loadCreatorProfile() {
   const displayName = creatorProfile.handle || cid || cname || '크리에이터';
   const ctaEl = document.getElementById('ctaText');
   if (ctaEl) {
-    ctaEl.innerHTML = '구매 시 비고란에 <strong>"@' + displayName + ' 릴스 보고 구매합니다!"</strong> 적어주시면 전용 선물을 보내드려요!';
+    ctaEl.innerHTML = '구매 시 배송요청란에 <strong>"@' + displayName + ' 릴스 보고 구매합니다"</strong> 적어주시면 전용 선물을 보내드려요!';
   }
 
   // Pre-fill IG handle in form if available
@@ -866,11 +888,11 @@ async function loadCreatorProfile() {
     // Caption template
     const captionEl = document.getElementById('captionText');
     if (captionEl) {
-      captionEl.textContent = '러닝화인데 출근할 때도 신어요 👟\n하루종일 한 켤레로 끝!\n\n🔗 프로필 링크에서 확인\n구매 시 비고란에 "' + atHandle + ' 릴스 보고 구매합니다!" 적으면 전용 선물 🎁\n\n#다리마티 #DARIMATI #러닝화 #하이브리드러닝화';
+      captionEl.textContent = '러닝화인데 출근할 때도 신어요\n하루종일 한 켤레로 끝!\n\n댓글에 "러닝" 남겨주시면 DM으로 선물과 함께 구매 링크 드릴게요!\n\n#다리마티 #DARIMATI #러닝화 #하이브리드러닝화';
     }
 
     // CTA examples in guide
-    const ctaMsg = '"프로필 링크에서 확인해보세요! 구매 시 비고란에 \'' + atHandle + ' 릴스 보고 구매합니다!\' 적어주시면 전용 선물을 보내드려요"';
+    const ctaMsg = '"댓글에 \'러닝\' 남겨주시면 DM으로 선물과 함께 구매 링크 드릴게요!"';
     ['cta1Text', 'cta2Text'].forEach(function(id) {
       const el = document.getElementById(id);
       if (el) el.textContent = ctaMsg;
@@ -895,6 +917,15 @@ function copyCTAText() {
     t.style.display = 'inline';
     setTimeout(() => t.style.display = 'none', 2000);
     showToast('문구가 복사되었습니다!');
+  });
+}
+
+function copyText(el, toastId) {
+  const text = el.innerText.replace(/^탭하면 복사됩니다\n?/, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const t = document.getElementById(toastId);
+    if (t) { t.style.display = 'inline'; setTimeout(() => t.style.display = 'none', 2000); }
+    showToast('복사 완료!');
   });
 }
 
