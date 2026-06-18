@@ -387,6 +387,7 @@ a:hover{text-decoration:underline}
           <th>브콜</th>
           <th>송장</th>
           <th>메모</th>
+          <th>가이드</th>
         </tr>
       </thead>
       <tbody id="submissionsBody"></tbody>
@@ -1379,6 +1380,7 @@ function renderSubmissions() {
       <td style="text-align:center"><input type="checkbox" ${brandCallChecked} data-ig="${escHtml(ig)}" onchange="toggleBrandCall(this)" style="cursor:pointer;width:16px;height:16px"></td>
       <td><input type="text" value="${escHtml(invoiceVal)}" placeholder="송장번호" onchange="savePipelineField('${escHtml(ig)}','invoice',this.value)" style="min-width:100px"></td>
       <td style="max-width:200px;font-size:12px;cursor:pointer" title="${escHtml(displayMemo)}" onclick="editMemo(this,'${escHtml(ig)}')">${displayMemo || '<span style=&quot;color:var(--muted)&quot;>클릭하여 입력</span>'}</td>
+      <td style="text-align:center"><button onclick="copyGuideLink('${escHtml(ig)}')" style="border:none;background:#2563eb;color:#fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">링크복사</button></td>
     </tr>`;
   }).join('');
 }
@@ -1780,6 +1782,16 @@ async function toggleShipping(checkbox) {
   creatorMeta[ig].updatedAt = new Date().toISOString();
   await saveCreatorMeta();
   showToast(`${ig} 출고 ${checkbox.checked ? '완료' : '해제'}`);
+}
+
+function copyGuideLink(ig) {
+  const handle = ig.replace(/^@/, '');
+  const url = 'https://darimati.github.io/influencer-dashboard/creator.html?id=' + encodeURIComponent(handle);
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('@' + handle + ' 가이드 링크 복사 완료');
+  }).catch(() => {
+    prompt('가이드 링크:', url);
+  });
 }
 
 function editMemo(td, ig) {
