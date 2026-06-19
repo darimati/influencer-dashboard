@@ -984,6 +984,36 @@ async function supaWrite(path, data) {
   return r.ok;
 }
 
+// ---- Read-Merge-Write helpers ----
+// For key-value objects (creatorMeta, pipelineData, shippingData):
+// merge remote + local per-key using updatedAt timestamp
+function mergeByKey(local, remote) {
+  const merged = { ...remote };
+  for (const key of Object.keys(local)) {
+    const lv = local[key];
+    const rv = remote[key];
+    if (!rv) { merged[key] = lv; continue; }
+    const lt = lv?.updatedAt ? new Date(lv.updatedAt).getTime() : 0;
+    const rt = rv?.updatedAt ? new Date(rv.updatedAt).getTime() : 0;
+    merged[key] = lt >= rt ? lv : rv;
+  }
+  return merged;
+}
+
+// For arrays: merge by unique field, newest wins
+function mergeByField(local, remote, idField) {
+  const map = new Map();
+  for (const item of remote) map.set(item[idField], item);
+  for (const item of local) {
+    const existing = map.get(item[idField]);
+    if (!existing) { map.set(item[idField], item); continue; }
+    const lt = item.updatedAt ? new Date(item.updatedAt).getTime() : (item.addedAt ? new Date(item.addedAt).getTime() : 0);
+    const rt = existing.updatedAt ? new Date(existing.updatedAt).getTime() : (existing.addedAt ? new Date(existing.addedAt).getTime() : 0);
+    if (lt >= rt) map.set(item[idField], item);
+  }
+  return [...map.values()];
+}
+
 // ============================================================
 // CSV PARSER
 // ============================================================
@@ -1045,10 +1075,23 @@ async function loadTargets() {
 }
 
 async function saveDailyLogs() {
+  const remote = await supaRead('sourcing/daily-logs.json');
+  const remoteLogs = remote?.logs || [];
+  // Union by createdAt to prevent duplicates and data loss
+  const seen = new Set();
+  const merged = [];
+  for (const log of [...dailyLogs, ...remoteLogs]) {
+    const key = log.createdAt || `${log.date}-${log.member}-${log.account}-${log.contacts}`;
+    if (!seen.has(key)) { seen.add(key); merged.push(log); }
+  }
+  dailyLogs = merged;
   await supaWrite('sourcing/daily-logs.json', { logs: dailyLogs, updatedAt: new Date().toISOString() });
 }
 
 async function saveTargets() {
+  const remote = await supaRead('sourcing/targets.json');
+  const remoteTargets = remote?.targets || [];
+  targets = mergeByField(targets, remoteTargets, 'weekStart');
   await supaWrite('sourcing/targets.json', { targets: targets, updatedAt: new Date().toISOString() });
 }
 
@@ -1058,6 +1101,9 @@ async function loadShipping() {
 }
 
 async function saveShipping() {
+  const remote = await supaRead('sourcing/shipping.json');
+  const remoteShipping = remote?.shipping || {};
+  shippingData = mergeByKey(shippingData, remoteShipping);
   await supaWrite('sourcing/shipping.json', { shipping: shippingData, updatedAt: new Date().toISOString() });
 }
 
@@ -1067,6 +1113,9 @@ async function loadCreatorMeta() {
 }
 
 async function saveCreatorMeta() {
+  const remote = await supaRead('sourcing/creator-meta.json');
+  const remoteMeta = remote?.meta || {};
+  creatorMeta = mergeByKey(creatorMeta, remoteMeta);
   await supaWrite('sourcing/creator-meta.json', { meta: creatorMeta, updatedAt: new Date().toISOString() });
 }
 
@@ -1076,6 +1125,9 @@ async function loadManualCreators() {
 }
 
 async function saveManualCreators() {
+  const remote = await supaRead('sourcing/manual-creators.json');
+  const remoteCreators = remote?.creators || [];
+  manualCreators = mergeByField(manualCreators, remoteCreators, 'instagram');
   await supaWrite('sourcing/manual-creators.json', { creators: manualCreators, updatedAt: new Date().toISOString() });
 }
 
@@ -1116,6 +1168,9 @@ async function loadPipelineData() {
 }
 
 async function savePipelineData() {
+  const remote = await supaRead('sourcing/pipeline.json');
+  const remotePipeline = remote?.pipeline || {};
+  pipelineData = mergeByKey(pipelineData, remotePipeline);
   await supaWrite('sourcing/pipeline.json', { pipeline: pipelineData, updatedAt: new Date().toISOString() });
 }
 
@@ -2453,7 +2508,8 @@ async function kmodalSaveField(field, value) {
   } else if (pdFields.includes(field)) {
     if (!pipelineData[ig]) pipelineData[ig] = {};
     pipelineData[ig][field] = value;
-    await supaWrite('sourcing/pipeline.json', pipelineData);
+    pipelineData[ig].updatedAt = new Date().toISOString();
+    await savePipelineData();
   }
 
   // Refresh views
@@ -2494,6 +2550,9 @@ async function loadPaidBoard() {
 }
 
 async function savePaidBoard() {
+  const remote = await supaRead('sourcing/paid-creators.json');
+  const remoteList = (remote && Array.isArray(remote)) ? remote : [];
+  paidCreators = mergeByField(paidCreators, remoteList, 'instagram');
   await supaWrite('sourcing/paid-creators.json', paidCreators);
 }
 
@@ -2602,6 +2661,9 @@ async function loadHyroxEntries() {
 }
 
 async function saveHyroxEntries() {
+  const remote = await supaRead('sourcing/hyrox-entries.json');
+  const remoteList = (remote && Array.isArray(remote)) ? remote : [];
+  hyroxEntries = mergeByField(hyroxEntries, remoteList, 'id');
   await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
 }
 
@@ -2908,6 +2970,14 @@ function renderReelPlans() {
   loadPaidBoard();
   loadReelPlans();
   await syncAll();
+
+  // Auto-refresh every 30 seconds to pick up other users' changes
+  setInterval(async () => {
+    try {
+      await Promise.all([loadCreatorMeta(), loadPipelineData(), loadShipping(), loadManualCreators(), loadDailyLogs(), loadHyroxEntries()]);
+      renderAll();
+    } catch(e) { console.warn('Auto-refresh failed:', e); }
+  }, 30000);
 })();
 </script>
 </body>
