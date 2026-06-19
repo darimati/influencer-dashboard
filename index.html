@@ -1015,6 +1015,71 @@ function mergeByField(local, remote, idField) {
 }
 
 // ============================================================
+// CONCURRENT ACCESS: Save Queue + Dirty Flag + Debounce
+// ============================================================
+
+// --- Save Queue: serialize writes per-path to prevent race conditions ---
+const _saveQueue = {};  // path -> Promise chain
+const _savingPaths = new Set();
+
+async function queuedSave(path, saveFn) {
+  const chain = _saveQueue[path] || Promise.resolve();
+  _saveQueue[path] = chain.then(async () => {
+    _savingPaths.add(path);
+    _updateSaveIndicator();
+    try {
+      await saveFn();
+    } catch (e) {
+      console.error(`Save failed [${path}]:`, e);
+      showToast(`저장 실패: ${e.message}`, 'error');
+      throw e;
+    } finally {
+      _savingPaths.delete(path);
+      _updateSaveIndicator();
+    }
+  }).catch(() => {}); // prevent chain breakage
+  return _saveQueue[path];
+}
+
+// --- Save status indicator ---
+let _saveIndicatorEl = null;
+function _updateSaveIndicator() {
+  if (!_saveIndicatorEl) {
+    _saveIndicatorEl = document.createElement('div');
+    _saveIndicatorEl.id = 'saveIndicator';
+    _saveIndicatorEl.style.cssText = 'position:fixed;bottom:16px;left:16px;padding:6px 14px;border-radius:6px;font-size:13px;z-index:9999;transition:opacity 0.3s;pointer-events:none;';
+    document.body.appendChild(_saveIndicatorEl);
+  }
+  if (_savingPaths.size > 0) {
+    _saveIndicatorEl.textContent = '저장 중...';
+    _saveIndicatorEl.style.background = '#fbbf24';
+    _saveIndicatorEl.style.color = '#78350f';
+    _saveIndicatorEl.style.opacity = '1';
+  } else {
+    _saveIndicatorEl.textContent = '✓ 저장 완료';
+    _saveIndicatorEl.style.background = '#22c55e';
+    _saveIndicatorEl.style.color = '#fff';
+    _saveIndicatorEl.style.opacity = '1';
+    setTimeout(() => { if (_savingPaths.size === 0) _saveIndicatorEl.style.opacity = '0'; }, 1500);
+  }
+}
+
+// --- Dirty Flag: track which stores have unsaved local edits ---
+const dirtyStores = new Set(); // e.g. 'creatorMeta', 'pipelineData', 'shipping', ...
+
+function markDirty(store) { dirtyStores.add(store); }
+function clearDirty(store) { dirtyStores.delete(store); }
+
+// --- Debounce utility ---
+function debounce(fn, ms = 800) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
+
+// ============================================================
 // CSV PARSER
 // ============================================================
 function* csvRows(text) {
@@ -1075,24 +1140,31 @@ async function loadTargets() {
 }
 
 async function saveDailyLogs() {
-  const remote = await supaRead('sourcing/daily-logs.json');
-  const remoteLogs = remote?.logs || [];
-  // Union by createdAt to prevent duplicates and data loss
-  const seen = new Set();
-  const merged = [];
-  for (const log of [...dailyLogs, ...remoteLogs]) {
-    const key = log.createdAt || `${log.date}-${log.member}-${log.account}-${log.contacts}`;
-    if (!seen.has(key)) { seen.add(key); merged.push(log); }
-  }
-  dailyLogs = merged;
-  await supaWrite('sourcing/daily-logs.json', { logs: dailyLogs, updatedAt: new Date().toISOString() });
+  markDirty('dailyLogs');
+  return queuedSave('sourcing/daily-logs.json', async () => {
+    const remote = await supaRead('sourcing/daily-logs.json');
+    const remoteLogs = remote?.logs || [];
+    const seen = new Set();
+    const merged = [];
+    for (const log of [...dailyLogs, ...remoteLogs]) {
+      const key = log.createdAt || `${log.date}-${log.member}-${log.account}-${log.contacts}`;
+      if (!seen.has(key)) { seen.add(key); merged.push(log); }
+    }
+    dailyLogs = merged;
+    await supaWrite('sourcing/daily-logs.json', { logs: dailyLogs, updatedAt: new Date().toISOString() });
+    clearDirty('dailyLogs');
+  });
 }
 
 async function saveTargets() {
-  const remote = await supaRead('sourcing/targets.json');
-  const remoteTargets = remote?.targets || [];
-  targets = mergeByField(targets, remoteTargets, 'weekStart');
-  await supaWrite('sourcing/targets.json', { targets: targets, updatedAt: new Date().toISOString() });
+  markDirty('targets');
+  return queuedSave('sourcing/targets.json', async () => {
+    const remote = await supaRead('sourcing/targets.json');
+    const remoteTargets = remote?.targets || [];
+    targets = mergeByField(targets, remoteTargets, 'weekStart');
+    await supaWrite('sourcing/targets.json', { targets: targets, updatedAt: new Date().toISOString() });
+    clearDirty('targets');
+  });
 }
 
 async function loadShipping() {
@@ -1101,10 +1173,14 @@ async function loadShipping() {
 }
 
 async function saveShipping() {
-  const remote = await supaRead('sourcing/shipping.json');
-  const remoteShipping = remote?.shipping || {};
-  shippingData = mergeByKey(shippingData, remoteShipping);
-  await supaWrite('sourcing/shipping.json', { shipping: shippingData, updatedAt: new Date().toISOString() });
+  markDirty('shipping');
+  return queuedSave('sourcing/shipping.json', async () => {
+    const remote = await supaRead('sourcing/shipping.json');
+    const remoteShipping = remote?.shipping || {};
+    shippingData = mergeByKey(shippingData, remoteShipping);
+    await supaWrite('sourcing/shipping.json', { shipping: shippingData, updatedAt: new Date().toISOString() });
+    clearDirty('shipping');
+  });
 }
 
 async function loadCreatorMeta() {
@@ -1113,10 +1189,14 @@ async function loadCreatorMeta() {
 }
 
 async function saveCreatorMeta() {
-  const remote = await supaRead('sourcing/creator-meta.json');
-  const remoteMeta = remote?.meta || {};
-  creatorMeta = mergeByKey(creatorMeta, remoteMeta);
-  await supaWrite('sourcing/creator-meta.json', { meta: creatorMeta, updatedAt: new Date().toISOString() });
+  markDirty('creatorMeta');
+  return queuedSave('sourcing/creator-meta.json', async () => {
+    const remote = await supaRead('sourcing/creator-meta.json');
+    const remoteMeta = remote?.meta || {};
+    creatorMeta = mergeByKey(creatorMeta, remoteMeta);
+    await supaWrite('sourcing/creator-meta.json', { meta: creatorMeta, updatedAt: new Date().toISOString() });
+    clearDirty('creatorMeta');
+  });
 }
 
 async function loadManualCreators() {
@@ -1125,10 +1205,14 @@ async function loadManualCreators() {
 }
 
 async function saveManualCreators() {
-  const remote = await supaRead('sourcing/manual-creators.json');
-  const remoteCreators = remote?.creators || [];
-  manualCreators = mergeByField(manualCreators, remoteCreators, 'instagram');
-  await supaWrite('sourcing/manual-creators.json', { creators: manualCreators, updatedAt: new Date().toISOString() });
+  markDirty('manualCreators');
+  return queuedSave('sourcing/manual-creators.json', async () => {
+    const remote = await supaRead('sourcing/manual-creators.json');
+    const remoteCreators = remote?.creators || [];
+    manualCreators = mergeByField(manualCreators, remoteCreators, 'instagram');
+    await supaWrite('sourcing/manual-creators.json', { creators: manualCreators, updatedAt: new Date().toISOString() });
+    clearDirty('manualCreators');
+  });
 }
 
 async function loadFulfillments() {
@@ -1168,10 +1252,14 @@ async function loadPipelineData() {
 }
 
 async function savePipelineData() {
-  const remote = await supaRead('sourcing/pipeline.json');
-  const remotePipeline = remote?.pipeline || {};
-  pipelineData = mergeByKey(pipelineData, remotePipeline);
-  await supaWrite('sourcing/pipeline.json', { pipeline: pipelineData, updatedAt: new Date().toISOString() });
+  markDirty('pipelineData');
+  return queuedSave('sourcing/pipeline.json', async () => {
+    const remote = await supaRead('sourcing/pipeline.json');
+    const remotePipeline = remote?.pipeline || {};
+    pipelineData = mergeByKey(pipelineData, remotePipeline);
+    await supaWrite('sourcing/pipeline.json', { pipeline: pipelineData, updatedAt: new Date().toISOString() });
+    clearDirty('pipelineData');
+  });
 }
 
 async function loadSortOrder() {
@@ -1180,7 +1268,9 @@ async function loadSortOrder() {
 }
 
 async function saveSortOrder() {
-  await supaWrite('sourcing/sort-order.json', { order: sortOrderData, updatedAt: new Date().toISOString() });
+  return queuedSave('sourcing/sort-order.json', async () => {
+    await supaWrite('sourcing/sort-order.json', { order: sortOrderData, updatedAt: new Date().toISOString() });
+  });
 }
 
 function normalizeDate(str) {
@@ -1772,6 +1862,12 @@ async function addDailyLog() {
   document.getElementById('logNote').value = '';
 }
 
+const _debouncedTrackingSave = debounce(async (ig, val) => {
+  await saveShipping();
+  renderPipeline();
+  showToast(val ? `${ig} 운송장 저장` : `${ig} 운송장 삭제`);
+}, 600);
+
 async function saveTracking(input) {
   const ig = input.dataset.ig;
   const val = input.value.trim();
@@ -1780,9 +1876,7 @@ async function saveTracking(input) {
   } else {
     delete shippingData[ig];
   }
-  await saveShipping();
-  renderPipeline();
-  showToast(val ? `${ig} 운송장 저장` : `${ig} 운송장 삭제`);
+  _debouncedTrackingSave(ig, val);
 }
 
 async function saveStatus(select) {
@@ -2079,9 +2173,10 @@ function populateAccountFilter() {
   }
 }
 
-function showToast(msg) {
+function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
+  t.style.background = type === 'error' ? '#ef4444' : '#333';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
@@ -2550,10 +2645,14 @@ async function loadPaidBoard() {
 }
 
 async function savePaidBoard() {
-  const remote = await supaRead('sourcing/paid-creators.json');
-  const remoteList = (remote && Array.isArray(remote)) ? remote : [];
-  paidCreators = mergeByField(paidCreators, remoteList, 'instagram');
-  await supaWrite('sourcing/paid-creators.json', paidCreators);
+  markDirty('paidCreators');
+  return queuedSave('sourcing/paid-creators.json', async () => {
+    const remote = await supaRead('sourcing/paid-creators.json');
+    const remoteList = (remote && Array.isArray(remote)) ? remote : [];
+    paidCreators = mergeByField(paidCreators, remoteList, 'instagram');
+    await supaWrite('sourcing/paid-creators.json', paidCreators);
+    clearDirty('paidCreators');
+  });
 }
 
 async function addPaidCreator() {
@@ -2661,10 +2760,14 @@ async function loadHyroxEntries() {
 }
 
 async function saveHyroxEntries() {
-  const remote = await supaRead('sourcing/hyrox-entries.json');
-  const remoteList = (remote && Array.isArray(remote)) ? remote : [];
-  hyroxEntries = mergeByField(hyroxEntries, remoteList, 'id');
-  await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
+  markDirty('hyroxEntries');
+  return queuedSave('sourcing/hyrox-entries.json', async () => {
+    const remote = await supaRead('sourcing/hyrox-entries.json');
+    const remoteList = (remote && Array.isArray(remote)) ? remote : [];
+    hyroxEntries = mergeByField(hyroxEntries, remoteList, 'id');
+    await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
+    clearDirty('hyroxEntries');
+  });
 }
 
 function autoFillHyroxDate() {
@@ -2901,7 +3004,9 @@ async function loadReelPlans() {
 async function updateReelPlanStatus(idx, newStatus) {
   reelPlans[idx].status = newStatus;
   reelPlans[idx].reviewedAt = new Date().toISOString();
-  await supaWrite('sourcing/reel-plans.json', { plans: reelPlans, updatedAt: new Date().toISOString() });
+  await queuedSave('sourcing/reel-plans.json', async () => {
+    await supaWrite('sourcing/reel-plans.json', { plans: reelPlans, updatedAt: new Date().toISOString() });
+  });
   renderReelPlans();
   showToast(`기획안 상태 → ${newStatus}`);
 }
@@ -2970,11 +3075,17 @@ function renderReelPlans() {
   await Promise.all([loadPaidBoard(), loadReelPlans()]);
   await syncAll();
 
-  // Auto-refresh every 30 seconds to pick up other users' changes
+  // Auto-refresh every 30 seconds — skip stores with unsaved local changes
   setInterval(async () => {
     try {
-      await Promise.all([loadCreatorMeta(), loadPipelineData(), loadShipping(), loadManualCreators(), loadDailyLogs(), loadHyroxEntries()]);
-      renderAll();
+      const loads = [];
+      if (!dirtyStores.has('creatorMeta')) loads.push(loadCreatorMeta());
+      if (!dirtyStores.has('pipelineData')) loads.push(loadPipelineData());
+      if (!dirtyStores.has('shipping')) loads.push(loadShipping());
+      if (!dirtyStores.has('manualCreators')) loads.push(loadManualCreators());
+      if (!dirtyStores.has('dailyLogs')) loads.push(loadDailyLogs());
+      if (!dirtyStores.has('hyroxEntries')) loads.push(loadHyroxEntries());
+      if (loads.length > 0) { await Promise.all(loads); renderAll(); }
     } catch(e) { console.warn('Auto-refresh failed:', e); }
   }, 30000);
 })();
