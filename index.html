@@ -93,6 +93,24 @@ tr:hover{background:var(--surface2)}
 .link-wrap input{flex:1;min-width:0}
 .link-wrap a{font-size:12px;flex-shrink:0;text-decoration:none}
 
+/* Reel Plan Detail Modal */
+.rp-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;justify-content:center;align-items:center;padding:24px}
+.rp-modal-overlay.open{display:flex}
+.rp-modal{background:var(--surface);border-radius:var(--radius);max-width:560px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);padding:28px 24px 20px}
+.rp-modal .rp-close{float:right;border:none;background:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px 8px;line-height:1}
+.rp-modal .rp-close:hover{color:var(--text)}
+.rp-modal h3{font-size:18px;font-weight:700;margin-bottom:20px}
+.rp-field{margin-bottom:14px}
+.rp-field .rp-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.rp-field .rp-value{font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.rp-field .rp-value a{color:var(--accent);text-decoration:underline}
+.rp-field .rp-value.empty{color:var(--muted);font-style:italic}
+.rp-divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.rp-nav{display:flex;justify-content:space-between;margin-top:18px;gap:8px}
+.rp-nav button{padding:8px 18px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font)}
+.rp-nav button:hover{background:var(--surface2)}
+.rp-nav button:disabled{opacity:.3;cursor:not-allowed}
+
 /* Forms */
 .form-row{display:flex;gap:12px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap}
 .form-group{display:flex;flex-direction:column;gap:4px;min-width:140px}
@@ -900,6 +918,7 @@ a:hover{text-decoration:underline}
             <th>상태</th>
             <th>제출일</th>
             <th style="width:50px">메모</th>
+            <th style="width:40px"></th>
           </tr>
         </thead>
         <tbody id="reelPlanBody"></tbody>
@@ -908,6 +927,19 @@ a:hover{text-decoration:underline}
   </div>
 </div>
 
+</div>
+
+<!-- Reel Plan Detail Modal -->
+<div class="rp-modal-overlay" id="rpModal" onclick="if(event.target===this)closeRpModal()">
+  <div class="rp-modal">
+    <button class="rp-close" onclick="closeRpModal()">&times;</button>
+    <h3 id="rpModalTitle">기획안 상세</h3>
+    <div id="rpModalBody"></div>
+    <div class="rp-nav">
+      <button id="rpPrev" onclick="navRpModal(-1)">&larr; 이전</button>
+      <button id="rpNext" onclick="navRpModal(1)">다음 &rarr;</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -3053,9 +3085,62 @@ function renderReelPlans() {
       </td>
       <td style="font-size:12px;white-space:nowrap">${dateStr}</td>
       <td title="${(p.memo||'').replace(/"/g,'&quot;')}" style="font-size:11px;cursor:help">${memoShort}</td>
+      <td><button onclick="openRpModal(${realIdx})" style="padding:3px 8px;border:1px solid var(--accent);border-radius:4px;font-size:11px;background:var(--accent-light);color:var(--accent);cursor:pointer;font-weight:600;white-space:nowrap">보기</button></td>
     </tr>`;
   }).join('');
 }
+
+/* Reel Plan Detail Modal */
+let rpModalCurrent = -1;
+function openRpModal(idx) {
+  rpModalCurrent = idx;
+  const p = reelPlans[idx];
+  if (!p) return;
+  const fields = [
+    { label: '인스타그램 핸들', value: p.igHandle },
+    { label: '릴스 주제', value: p.topic },
+    { label: '후킹 장면 (첫 1~3초)', value: p.hook },
+    { label: '핵심 메시지', value: p.message },
+    { label: 'CTA (Call To Action)', value: p.cta },
+    { label: '사용 음원', value: p.musicTrack },
+    { label: '레퍼런스 링크', value: p.refLink, isLink: true },
+    { label: '촬영 예정일', value: p.shootDate },
+    { label: '기타 메모', value: p.memo },
+  ];
+  const statusColors = { '검토중': 'orange', '승인': 'green', '수정요청': 'blue', '반려': 'red' };
+  const dt = p.submittedAt ? new Date(p.submittedAt) : null;
+  const dateStr = dt ? `${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}` : '-';
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <span class="badge ${statusColors[p.status]||'orange'}" style="font-size:12px;padding:4px 12px">${p.status||'검토중'}</span>
+    <span style="font-size:12px;color:var(--muted)">제출: ${dateStr}</span>
+  </div>`;
+  fields.forEach((f, i) => {
+    const val = f.value ? (f.isLink ? `<a href="${f.value}" target="_blank">${f.value}</a>` : f.value) : '';
+    html += `<div class="rp-field"><div class="rp-label">${f.label}</div><div class="rp-value${val?'':' empty'}">${val || '(없음)'}</div></div>`;
+    if (i === 4) html += '<hr class="rp-divider">';
+  });
+
+  document.getElementById('rpModalTitle').textContent = `${p.igHandle || '기획안'} 상세`;
+  document.getElementById('rpModalBody').innerHTML = html;
+  document.getElementById('rpPrev').disabled = idx <= 0;
+  document.getElementById('rpNext').disabled = idx >= reelPlans.length - 1;
+  document.getElementById('rpModal').classList.add('open');
+}
+function closeRpModal() {
+  document.getElementById('rpModal').classList.remove('open');
+  rpModalCurrent = -1;
+}
+function navRpModal(dir) {
+  const next = rpModalCurrent + dir;
+  if (next >= 0 && next < reelPlans.length) openRpModal(next);
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('rpModal').classList.contains('open')) return;
+  if (e.key === 'Escape') closeRpModal();
+  if (e.key === 'ArrowLeft') navRpModal(-1);
+  if (e.key === 'ArrowRight') navRpModal(1);
+});
 
 // ============================================================
 // INIT
