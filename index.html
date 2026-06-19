@@ -1751,7 +1751,7 @@ function changeAnalyticsWeek(dir) {
 // ============================================================
 // ACTIONS
 // ============================================================
-function addDailyLog() {
+async function addDailyLog() {
   const date = document.getElementById('logDate').value;
   const member = document.getElementById('logMember').value;
   const account = document.getElementById('logAccount').value;
@@ -1764,7 +1764,7 @@ function addDailyLog() {
   }
 
   dailyLogs.push({ date, member, account, contacts: count, note, createdAt: new Date().toISOString() });
-  saveDailyLogs();
+  await saveDailyLogs();
   renderAll();
   showToast(`${member} (${account}) DM ${count}건 기록 완료`);
 
@@ -1998,7 +1998,7 @@ async function deleteDailyLog(idx) {
   showToast('기록 삭제 완료');
 }
 
-function saveTarget() {
+async function saveTarget() {
   const weekStart = document.getElementById('targetWeekStart').value;
   const weekEnd = document.getElementById('targetWeekEnd').value;
   const perDay = parseInt(document.getElementById('targetPerDay').value) || 0;
@@ -2024,7 +2024,7 @@ function saveTarget() {
     targets.push(targetObj);
   }
 
-  saveTargets();
+  await saveTargets();
   renderAll();
   showToast(`${weekStart} ~ ${weekEnd} 목표 저장 완료`);
 }
@@ -2556,7 +2556,7 @@ async function savePaidBoard() {
   await supaWrite('sourcing/paid-creators.json', paidCreators);
 }
 
-function addPaidCreator() {
+async function addPaidCreator() {
   const ig = document.getElementById('paidCreatorIg').value.trim();
   const status = document.getElementById('paidCreatorStatus').value;
   const budget = parseInt(document.getElementById('paidCreatorBudget').value) || 0;
@@ -2567,7 +2567,7 @@ function addPaidCreator() {
     status, budget, contentType: '', uploadDate: '', settlementDate: '',
     memo, addedAt: new Date().toISOString()
   });
-  savePaidBoard();
+  await savePaidBoard();
   renderPaidBoard();
   document.getElementById('paidCreatorIg').value = '';
   document.getElementById('paidCreatorBudget').value = '';
@@ -2575,10 +2575,10 @@ function addPaidCreator() {
   showToast('유가 협찬 크리에이터 추가됨');
 }
 
-function deletePaidCreator(idx) {
+async function deletePaidCreator(idx) {
   if (!confirm('삭제할까요?')) return;
   paidCreators.splice(idx, 1);
-  savePaidBoard();
+  await savePaidBoard();
   renderPaidBoard();
 }
 
@@ -2597,9 +2597,9 @@ function editPaidField(idx, field) {
   }
 }
 
-function savePaidField(idx, field, val) {
+async function savePaidField(idx, field, val) {
   paidCreators[idx][field] = field === 'budget' ? (parseInt(val) || 0) : val;
-  savePaidBoard();
+  await savePaidBoard();
   renderPaidBoard();
 }
 
@@ -2967,8 +2967,7 @@ function renderReelPlans() {
   populateAccountFilter();
   calcSimulator();
   ntInit();
-  loadPaidBoard();
-  loadReelPlans();
+  await Promise.all([loadPaidBoard(), loadReelPlans()]);
   await syncAll();
 
   // Auto-refresh every 30 seconds to pick up other users' changes
