@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>인스타 릴스 협업 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
   --bg:#f5f5f7;--surface:#fff;--surface2:#f8f8fa;--border:#e5e5ea;
@@ -325,6 +326,18 @@ a:hover{text-decoration:underline}
 
   <div class="card-grid" id="statCards">
     <!-- dynamically filled -->
+  </div>
+
+  <div class="card" id="contentChartCard" style="margin-top:16px;padding:16px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:15px;font-weight:700">콘텐츠 발행 추이</h3>
+      <div style="display:flex;gap:6px">
+        <button onclick="setChartView('daily')" id="chartViewDaily" class="chip active" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--accent);color:#fff;cursor:pointer">일별</button>
+        <button onclick="setChartView('weekly')" id="chartViewWeekly" class="chip" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);cursor:pointer">주별</button>
+      </div>
+    </div>
+    <canvas id="contentChart" height="220"></canvas>
+    <div id="contentChartSummary" style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.6"></div>
   </div>
 
   <div class="section-header">
@@ -1345,6 +1358,7 @@ async function syncAll() {
 function renderAll() {
   renderPipeline();
   renderOverview();
+  renderContentChart();
   renderSubmissions();
   renderDailyLogs();
   renderAnalytics();
@@ -1377,6 +1391,205 @@ function getLogsForDateRange(start, end) {
 
 function getLogsForDate(date) {
   return dailyLogs.filter(l => l.date === date);
+}
+
+// ============================================================
+// CONTENT CHART
+// ============================================================
+let contentChart = null;
+let chartView = 'daily';
+
+function setChartView(view) {
+  chartView = view;
+  document.getElementById('chartViewDaily').style.background = view === 'daily' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('chartViewDaily').style.color = view === 'daily' ? '#fff' : 'var(--text)';
+  document.getElementById('chartViewWeekly').style.background = view === 'weekly' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('chartViewWeekly').style.color = view === 'weekly' ? '#fff' : 'var(--text)';
+  renderContentChart();
+}
+
+function getContentPublicationDates() {
+  const dates = [];
+  const seen = new Set();
+  // From submissions uploadDate
+  for (const s of submissions) {
+    const d = normalizeDate(s.uploadDate);
+    if (d && !seen.has(s.instagram + d)) {
+      seen.add(s.instagram + d);
+      dates.push(d);
+    }
+  }
+  // From pipelineData postLink (use uploadSchedule or shipDate+15 as approx date)
+  for (const [ig, pd] of Object.entries(pipelineData)) {
+    if (!pd.postLink) continue;
+    const sub = submissions.find(s => s.instagram === ig);
+    let d = normalizeDate(pd.uploadSchedule) || normalizeDate(sub?.uploadDate) || '';
+    if (!d && pd.shipDate) d = addDays(normalizeDate(pd.shipDate), 15);
+    if (!d && pd.guideDate) d = addDays(normalizeDate(pd.guideDate), 14);
+    if (d && !seen.has(ig + d)) {
+      seen.add(ig + d);
+      dates.push(d);
+    }
+  }
+  return dates.filter(d => d).sort();
+}
+
+function aggregateByDay(dates) {
+  const counts = {};
+  for (const d of dates) { counts[d] = (counts[d] || 0) + 1; }
+  return counts;
+}
+
+function aggregateByWeek(dates) {
+  const weeks = {};
+  for (const d of dates) {
+    const dt = new Date(d + 'T00:00:00');
+    const day = dt.getDay();
+    const mon = new Date(dt);
+    mon.setDate(dt.getDate() - (day === 0 ? 6 : day - 1));
+    const weekKey = fmtDate(mon);
+    weeks[weekKey] = (weeks[weekKey] || 0) + 1;
+  }
+  return weeks;
+}
+
+function linearRegression(points) {
+  const n = points.length;
+  if (n < 2) return { slope: 0, intercept: 0 };
+  let sx = 0, sy = 0, sxy = 0, sxx = 0;
+  for (const [x, y] of points) { sx += x; sy += y; sxy += x * y; sxx += x * x; }
+  const slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  const intercept = (sy - slope * sx) / n;
+  return { slope: isFinite(slope) ? slope : 0, intercept: isFinite(intercept) ? intercept : 0 };
+}
+
+function renderContentChart() {
+  const canvas = document.getElementById('contentChart');
+  if (!canvas) return;
+  const pubDates = getContentPublicationDates();
+  if (pubDates.length === 0) {
+    document.getElementById('contentChartSummary').innerHTML = '아직 발행된 콘텐츠 데이터가 없습니다.';
+    return;
+  }
+
+  const isWeekly = chartView === 'weekly';
+  const counts = isWeekly ? aggregateByWeek(pubDates) : aggregateByDay(pubDates);
+  const sortedKeys = Object.keys(counts).sort();
+
+  // Fill gaps
+  const filled = {};
+  if (sortedKeys.length >= 2) {
+    const start = new Date(sortedKeys[0] + 'T00:00:00');
+    const end = new Date(sortedKeys[sortedKeys.length - 1] + 'T00:00:00');
+    const step = isWeekly ? 7 : 1;
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + step)) {
+      const key = fmtDate(d);
+      filled[key] = counts[key] || 0;
+    }
+  } else {
+    for (const k of sortedKeys) filled[k] = counts[k];
+  }
+
+  const labels = Object.keys(filled).sort();
+  const values = labels.map(l => filled[l]);
+
+  // Cumulative
+  let cum = 0;
+  const cumValues = values.map(v => { cum += v; return cum; });
+
+  // Trend prediction (linear regression on last data, project 4 periods forward)
+  const regPoints = values.map((v, i) => [i, v]);
+  const { slope, intercept } = linearRegression(regPoints);
+  const predCount = isWeekly ? 4 : 14;
+  const trendLabels = [...labels];
+  const trendValues = [...values.map((_, i) => Math.max(0, Math.round((slope * i + intercept) * 10) / 10))];
+  const lastDate = new Date(labels[labels.length - 1] + 'T00:00:00');
+  const step = isWeekly ? 7 : 1;
+  for (let i = 1; i <= predCount; i++) {
+    const nd = new Date(lastDate);
+    nd.setDate(lastDate.getDate() + step * i);
+    trendLabels.push(fmtDate(nd));
+    trendValues.push(Math.max(0, Math.round((slope * (values.length - 1 + i) + intercept) * 10) / 10));
+  }
+
+  // Extend bar/cum arrays with nulls for prediction period
+  const barData = [...values, ...Array(predCount).fill(null)];
+  const cumData = [...cumValues, ...Array(predCount).fill(null)];
+
+  // Format labels for display
+  const displayLabels = trendLabels.map(l => {
+    const parts = l.split('-');
+    return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+  });
+
+  if (contentChart) contentChart.destroy();
+  contentChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: displayLabels,
+      datasets: [
+        {
+          label: isWeekly ? '주간 발행' : '일별 발행',
+          data: barData,
+          backgroundColor: 'rgba(0,122,255,0.6)',
+          borderRadius: 4,
+          yAxisID: 'y',
+          order: 2,
+        },
+        {
+          label: '누적 발행',
+          data: cumData,
+          type: 'line',
+          borderColor: '#34c759',
+          backgroundColor: 'rgba(52,199,89,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+          borderWidth: 2,
+          yAxisID: 'y1',
+          order: 1,
+        },
+        {
+          label: '예측 추세',
+          data: trendValues,
+          type: 'line',
+          borderColor: '#ff9500',
+          borderDash: [6, 3],
+          pointRadius: 0,
+          borderWidth: 2,
+          yAxisID: 'y',
+          order: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, usePointStyle: true, padding: 16 } },
+        tooltip: {
+          callbacks: {
+            title: (items) => trendLabels[items[0].dataIndex] || items[0].label,
+          },
+        },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { position: 'left', title: { display: true, text: isWeekly ? '주간 발행 수' : '일별 발행 수', font: { size: 11 } }, beginAtZero: true, ticks: { stepSize: 1 } },
+        y1: { position: 'right', title: { display: true, text: '누적', font: { size: 11 } }, beginAtZero: true, grid: { drawOnChartArea: false } },
+      },
+    },
+  });
+
+  // Summary text
+  const total = pubDates.length;
+  const weeklyAvg = isWeekly ? (total / Math.max(1, Object.keys(aggregateByWeek(pubDates)).length)).toFixed(1) : null;
+  const dailyAvg = (total / Math.max(1, Object.keys(aggregateByDay(pubDates)).length)).toFixed(1);
+  const predWeekly = slope * 7;
+  const predText = slope > 0 ? `증가 추세 (주당 +${predWeekly.toFixed(1)}건)` : slope < -0.01 ? `감소 추세 (주당 ${predWeekly.toFixed(1)}건)` : '안정적 추세';
+  document.getElementById('contentChartSummary').innerHTML =
+    `총 <b>${total}건</b> 발행 · 일평균 <b>${dailyAvg}건</b>${weeklyAvg ? ` · 주평균 <b>${weeklyAvg}건</b>` : ''} · ${predText}`;
 }
 
 function renderOverview() {
