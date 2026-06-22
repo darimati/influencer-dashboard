@@ -328,16 +328,16 @@ a:hover{text-decoration:underline}
     <!-- dynamically filled -->
   </div>
 
-  <div class="card" id="contentChartCard" style="margin-top:16px;padding:16px 20px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <h3 style="margin:0;font-size:15px;font-weight:700">콘텐츠 발행 추이</h3>
-      <div style="display:flex;gap:6px">
-        <button onclick="setChartView('daily')" id="chartViewDaily" class="chip active" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--accent);color:#fff;cursor:pointer">일별</button>
-        <button onclick="setChartView('weekly')" id="chartViewWeekly" class="chip" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);cursor:pointer">주별</button>
+  <div class="card" id="contentChartCard" style="margin-top:16px;padding:14px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="margin:0;font-size:14px;font-weight:700">콘텐츠 발행 추이</h3>
+      <div style="display:flex;gap:4px">
+        <button onclick="setChartView('weekly')" id="chartViewWeekly" class="chip" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:16px;background:var(--accent);color:#fff;cursor:pointer">주별</button>
+        <button onclick="setChartView('daily')" id="chartViewDaily" class="chip" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text);cursor:pointer">최근30일</button>
       </div>
     </div>
-    <canvas id="contentChart" height="220"></canvas>
-    <div id="contentChartSummary" style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.6"></div>
+    <div style="height:160px"><canvas id="contentChart"></canvas></div>
+    <div id="contentChartSummary" style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5"></div>
   </div>
 
   <div class="section-header">
@@ -1397,47 +1397,35 @@ function getLogsForDate(date) {
 // CONTENT CHART
 // ============================================================
 let contentChart = null;
-let chartView = 'daily';
+let chartView = 'weekly';
 
 function setChartView(view) {
   chartView = view;
-  document.getElementById('chartViewDaily').style.background = view === 'daily' ? 'var(--accent)' : 'var(--surface)';
-  document.getElementById('chartViewDaily').style.color = view === 'daily' ? '#fff' : 'var(--text)';
-  document.getElementById('chartViewWeekly').style.background = view === 'weekly' ? 'var(--accent)' : 'var(--surface)';
-  document.getElementById('chartViewWeekly').style.color = view === 'weekly' ? '#fff' : 'var(--text)';
+  const wBtn = document.getElementById('chartViewWeekly');
+  const dBtn = document.getElementById('chartViewDaily');
+  wBtn.style.background = view === 'weekly' ? 'var(--accent)' : 'var(--surface)';
+  wBtn.style.color = view === 'weekly' ? '#fff' : 'var(--text)';
+  dBtn.style.background = view === 'daily' ? 'var(--accent)' : 'var(--surface)';
+  dBtn.style.color = view === 'daily' ? '#fff' : 'var(--text)';
   renderContentChart();
 }
 
 function getContentPublicationDates() {
   const dates = [];
   const seen = new Set();
-  // From submissions uploadDate
   for (const s of submissions) {
     const d = normalizeDate(s.uploadDate);
-    if (d && !seen.has(s.instagram + d)) {
-      seen.add(s.instagram + d);
-      dates.push(d);
-    }
+    if (d && !seen.has(s.instagram + d)) { seen.add(s.instagram + d); dates.push(d); }
   }
-  // From pipelineData postLink (use uploadSchedule or shipDate+15 as approx date)
   for (const [ig, pd] of Object.entries(pipelineData)) {
     if (!pd.postLink) continue;
     const sub = submissions.find(s => s.instagram === ig);
     let d = normalizeDate(pd.uploadSchedule) || normalizeDate(sub?.uploadDate) || '';
     if (!d && pd.shipDate) d = addDays(normalizeDate(pd.shipDate), 15);
     if (!d && pd.guideDate) d = addDays(normalizeDate(pd.guideDate), 14);
-    if (d && !seen.has(ig + d)) {
-      seen.add(ig + d);
-      dates.push(d);
-    }
+    if (d && !seen.has(ig + d)) { seen.add(ig + d); dates.push(d); }
   }
   return dates.filter(d => d).sort();
-}
-
-function aggregateByDay(dates) {
-  const counts = {};
-  for (const d of dates) { counts[d] = (counts[d] || 0) + 1; }
-  return counts;
 }
 
 function aggregateByWeek(dates) {
@@ -1447,8 +1435,7 @@ function aggregateByWeek(dates) {
     const day = dt.getDay();
     const mon = new Date(dt);
     mon.setDate(dt.getDate() - (day === 0 ? 6 : day - 1));
-    const weekKey = fmtDate(mon);
-    weeks[weekKey] = (weeks[weekKey] || 0) + 1;
+    weeks[fmtDate(mon)] = (weeks[fmtDate(mon)] || 0) + 1;
   }
   return weeks;
 }
@@ -1468,128 +1455,99 @@ function renderContentChart() {
   if (!canvas) return;
   const pubDates = getContentPublicationDates();
   if (pubDates.length === 0) {
-    document.getElementById('contentChartSummary').innerHTML = '아직 발행된 콘텐츠 데이터가 없습니다.';
+    document.getElementById('contentChartSummary').innerHTML = '발행 데이터 없음';
     return;
   }
 
   const isWeekly = chartView === 'weekly';
-  const counts = isWeekly ? aggregateByWeek(pubDates) : aggregateByDay(pubDates);
-  const sortedKeys = Object.keys(counts).sort();
+  let labels, values;
 
-  // Fill gaps
-  const filled = {};
-  if (sortedKeys.length >= 2) {
-    const start = new Date(sortedKeys[0] + 'T00:00:00');
-    const end = new Date(sortedKeys[sortedKeys.length - 1] + 'T00:00:00');
-    const step = isWeekly ? 7 : 1;
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + step)) {
-      const key = fmtDate(d);
-      filled[key] = counts[key] || 0;
-    }
+  if (isWeekly) {
+    const weeks = aggregateByWeek(pubDates);
+    const keys = Object.keys(weeks).sort();
+    // Fill gaps between weeks
+    if (keys.length >= 2) {
+      const filled = {};
+      const s = new Date(keys[0] + 'T00:00:00'), e = new Date(keys[keys.length-1] + 'T00:00:00');
+      for (let d = new Date(s); d <= e; d.setDate(d.getDate()+7)) filled[fmtDate(d)] = weeks[fmtDate(d)] || 0;
+      labels = Object.keys(filled).sort();
+      values = labels.map(l => filled[l]);
+    } else { labels = keys; values = keys.map(k => weeks[k]); }
   } else {
-    for (const k of sortedKeys) filled[k] = counts[k];
+    // Daily: last 30 days only
+    const today = new Date(); const cutoff = new Date(today); cutoff.setDate(today.getDate() - 30);
+    const cutStr = fmtDate(cutoff);
+    const recent = pubDates.filter(d => d >= cutStr);
+    const counts = {};
+    for (const d of recent) counts[d] = (counts[d] || 0) + 1;
+    // Fill all 30 days
+    const filled = {};
+    for (let d = new Date(cutoff); d <= today; d.setDate(d.getDate()+1)) filled[fmtDate(d)] = counts[fmtDate(d)] || 0;
+    labels = Object.keys(filled).sort();
+    values = labels.map(l => filled[l]);
   }
-
-  const labels = Object.keys(filled).sort();
-  const values = labels.map(l => filled[l]);
 
   // Cumulative
   let cum = 0;
   const cumValues = values.map(v => { cum += v; return cum; });
 
-  // Trend prediction (linear regression on last data, project 4 periods forward)
-  const regPoints = values.map((v, i) => [i, v]);
-  const { slope, intercept } = linearRegression(regPoints);
-  const predCount = isWeekly ? 4 : 14;
-  const trendLabels = [...labels];
-  const trendValues = [...values.map((_, i) => Math.max(0, Math.round((slope * i + intercept) * 10) / 10))];
-  const lastDate = new Date(labels[labels.length - 1] + 'T00:00:00');
+  // Trend: regression + 3 future periods
+  const regPts = values.map((v, i) => [i, v]);
+  const { slope, intercept } = linearRegression(regPts);
+  const predN = isWeekly ? 3 : 7;
+  const allLabels = [...labels];
+  const trendVals = values.map((_, i) => Math.max(0, +(slope * i + intercept).toFixed(1)));
+  const lastD = new Date(labels[labels.length-1] + 'T00:00:00');
   const step = isWeekly ? 7 : 1;
-  for (let i = 1; i <= predCount; i++) {
-    const nd = new Date(lastDate);
-    nd.setDate(lastDate.getDate() + step * i);
-    trendLabels.push(fmtDate(nd));
-    trendValues.push(Math.max(0, Math.round((slope * (values.length - 1 + i) + intercept) * 10) / 10));
+  for (let i = 1; i <= predN; i++) {
+    const nd = new Date(lastD); nd.setDate(lastD.getDate() + step * i);
+    allLabels.push(fmtDate(nd));
+    trendVals.push(Math.max(0, +(slope * (values.length - 1 + i) + intercept).toFixed(1)));
   }
+  const barData = [...values, ...Array(predN).fill(null)];
+  const cumData = [...cumValues, ...Array(predN).fill(null)];
 
-  // Extend bar/cum arrays with nulls for prediction period
-  const barData = [...values, ...Array(predCount).fill(null)];
-  const cumData = [...cumValues, ...Array(predCount).fill(null)];
-
-  // Format labels for display
-  const displayLabels = trendLabels.map(l => {
-    const parts = l.split('-');
-    return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+  // Short labels: M/D, skip some in daily for density
+  const dispLabels = allLabels.map((l, i) => {
+    const p = l.split('-');
+    const short = `${+p[1]}/${+p[2]}`;
+    if (!isWeekly && allLabels.length > 20 && i % 3 !== 0 && i !== allLabels.length - 1) return '';
+    return short;
   });
 
   if (contentChart) contentChart.destroy();
   contentChart = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels: displayLabels,
+      labels: dispLabels,
       datasets: [
-        {
-          label: isWeekly ? '주간 발행' : '일별 발행',
-          data: barData,
-          backgroundColor: 'rgba(0,122,255,0.6)',
-          borderRadius: 4,
-          yAxisID: 'y',
-          order: 2,
-        },
-        {
-          label: '누적 발행',
-          data: cumData,
-          type: 'line',
-          borderColor: '#34c759',
-          backgroundColor: 'rgba(52,199,89,0.1)',
-          fill: true,
-          tension: 0.3,
-          pointRadius: 2,
-          borderWidth: 2,
-          yAxisID: 'y1',
-          order: 1,
-        },
-        {
-          label: '예측 추세',
-          data: trendValues,
-          type: 'line',
-          borderColor: '#ff9500',
-          borderDash: [6, 3],
-          pointRadius: 0,
-          borderWidth: 2,
-          yAxisID: 'y',
-          order: 0,
-        },
+        { label: isWeekly ? '주간' : '일별', data: barData, backgroundColor: 'rgba(0,122,255,0.55)', borderRadius: 3, yAxisID: 'y', order: 2, barPercentage: 0.7 },
+        { label: '누적', data: cumData, type: 'line', borderColor: '#34c759', backgroundColor: 'rgba(52,199,89,0.08)', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 1.5, yAxisID: 'y1', order: 1 },
+        { label: '예측', data: trendVals, type: 'line', borderColor: '#ff9500', borderDash: [5, 3], pointRadius: 0, borderWidth: 1.5, yAxisID: 'y', order: 0 },
       ],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { position: 'bottom', labels: { font: { size: 11 }, usePointStyle: true, padding: 16 } },
-        tooltip: {
-          callbacks: {
-            title: (items) => trendLabels[items[0].dataIndex] || items[0].label,
-          },
-        },
+        legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true, padding: 10, boxWidth: 8 } },
+        tooltip: { callbacks: { title: (items) => allLabels[items[0].dataIndex] || '' } },
       },
       scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
-        y: { position: 'left', title: { display: true, text: isWeekly ? '주간 발행 수' : '일별 발행 수', font: { size: 11 } }, beginAtZero: true, ticks: { stepSize: 1 } },
-        y1: { position: 'right', title: { display: true, text: '누적', font: { size: 11 } }, beginAtZero: true, grid: { drawOnChartArea: false } },
+        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 0, autoSkip: false } },
+        y: { position: 'left', beginAtZero: true, ticks: { stepSize: 1, font: { size: 9 } }, title: { display: false } },
+        y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { font: { size: 9 } }, title: { display: false } },
       },
     },
   });
 
-  // Summary text
+  // Summary
   const total = pubDates.length;
-  const weeklyAvg = isWeekly ? (total / Math.max(1, Object.keys(aggregateByWeek(pubDates)).length)).toFixed(1) : null;
-  const dailyAvg = (total / Math.max(1, Object.keys(aggregateByDay(pubDates)).length)).toFixed(1);
-  const predWeekly = slope * 7;
-  const predText = slope > 0 ? `증가 추세 (주당 +${predWeekly.toFixed(1)}건)` : slope < -0.01 ? `감소 추세 (주당 ${predWeekly.toFixed(1)}건)` : '안정적 추세';
-  document.getElementById('contentChartSummary').innerHTML =
-    `총 <b>${total}건</b> 발행 · 일평균 <b>${dailyAvg}건</b>${weeklyAvg ? ` · 주평균 <b>${weeklyAvg}건</b>` : ''} · ${predText}`;
+  const wkCount = Object.keys(aggregateByWeek(pubDates)).length;
+  const wkAvg = (total / Math.max(1, wkCount)).toFixed(1);
+  const predWk = slope * (isWeekly ? 1 : 7);
+  const trend = predWk > 0.1 ? `↑ 주당 +${predWk.toFixed(1)}` : predWk < -0.1 ? `↓ 주당 ${predWk.toFixed(1)}` : '→ 안정';
+  document.getElementById('contentChartSummary').innerHTML = `총 <b>${total}건</b> · 주평균 <b>${wkAvg}건</b> · ${trend}`;
 }
 
 function renderOverview() {
