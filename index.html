@@ -3161,8 +3161,14 @@ async function addHyroxEntry() {
 async function deleteHyroxEntry(id) {
   if (!confirm('삭제하시겠습니까?')) return;
   hyroxEntries = hyroxEntries.filter(e => e.id !== id);
-  await saveHyroxEntries();
+  // Write directly without merge to prevent remote from resurrecting deleted entry
+  markDirty('hyroxEntries');
+  await queuedSave('sourcing/hyrox-entries.json', async () => {
+    await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
+    clearDirty('hyroxEntries');
+  });
   renderHyrox();
+  showToast('참가자 삭제 완료');
 }
 
 async function saveHyroxField(id, field, value) {
