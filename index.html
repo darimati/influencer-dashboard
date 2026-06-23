@@ -3190,6 +3190,27 @@ async function saveHyroxField(id, field, value) {
   if (field === 'category') renderHyrox();
 }
 
+function hyroxInlineEdit(td, id, field) {
+  const entry = hyroxEntries.find(e => e.id === id);
+  if (!entry) return;
+  const cur = entry[field] || '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = cur;
+  Object.assign(input.style, {width:'100%',padding:'2px 4px',border:'1px solid var(--accent)',borderRadius:'4px',fontSize:'12px',boxSizing:'border-box'});
+  td.textContent = '';
+  td.appendChild(input);
+  input.focus();
+  input.select();
+  const finish = async () => {
+    const v = input.value.trim().replace(/^@/, '');
+    if (v !== cur) { await saveHyroxField(id, field, v); }
+    renderHyrox();
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', ev => { if (ev.key === 'Enter') input.blur(); if (ev.key === 'Escape') { input.value = cur; input.blur(); } });
+}
+
 function renderHyrox() {
   const body = document.getElementById('hyroxBody');
   document.getElementById('hyroxCount').textContent = hyroxEntries.length + '명';
@@ -3200,10 +3221,10 @@ function renderHyrox() {
   body.innerHTML = hyroxEntries.map((e, i) => `
     <tr>
       <td>${i + 1}</td>
-      <td>${escHtml(e.name1)}</td>
-      <td><a href="https://instagram.com/${escHtml(e.ig1)}" target="_blank" style="color:var(--accent)">@${escHtml(e.ig1)}</a></td>
-      <td>${escHtml(e.name2 || '-')}</td>
-      <td>${e.ig2 ? `<a href="https://instagram.com/${escHtml(e.ig2)}" target="_blank" style="color:var(--accent)">@${escHtml(e.ig2)}</a>` : '-'}</td>
+      <td ondblclick="hyroxInlineEdit(this,'${e.id}','name1')" style="cursor:pointer" title="더블클릭하여 수정">${escHtml(e.name1)}</td>
+      <td ondblclick="hyroxInlineEdit(this,'${e.id}','ig1')" style="cursor:pointer" title="더블클릭하여 수정"><a href="https://instagram.com/${escHtml(e.ig1)}" target="_blank" style="color:var(--accent)" onclick="event.stopPropagation()">@${escHtml(e.ig1)}</a></td>
+      <td ondblclick="hyroxInlineEdit(this,'${e.id}','name2')" style="cursor:pointer" title="더블클릭하여 수정">${escHtml(e.name2 || '-')}</td>
+      <td ondblclick="hyroxInlineEdit(this,'${e.id}','ig2')" style="cursor:pointer" title="더블클릭하여 수정">${e.ig2 ? `<a href="https://instagram.com/${escHtml(e.ig2)}" target="_blank" style="color:var(--accent)" onclick="event.stopPropagation()">@${escHtml(e.ig2)}</a>` : '-'}</td>
       <td><input type="text" value="${escHtml(e.memo || '')}" onchange="saveHyroxField('${e.id}','memo',this.value)" style="width:100px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px"></td>
       <td><select onchange="saveHyroxField('${e.id}','category',this.value)" style="padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:11px">
         ${Object.keys(HYROX_SCHEDULE).map(k => `<option value="${k}" ${k === e.category ? 'selected' : ''}>${k}</option>`).join('')}
