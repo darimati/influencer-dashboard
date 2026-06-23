@@ -760,22 +760,21 @@ a:hover{text-decoration:underline}
     <span class="count" id="hyroxCount">0명</span>
   </div>
 
-  <!-- Progress + Weekly Trend -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-    <div class="card" style="margin-bottom:0">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
-        <h3 style="margin-bottom:0">목표 달성률</h3>
-        <span id="hxGoalText" style="font-size:24px;font-weight:700;color:var(--accent)">0 / 100</span>
+  <!-- HYROX 약식 현황표 -->
+  <div class="card" style="margin-bottom:12px;padding:12px 16px">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-weight:700;font-size:13px">목표 100팀</span>
+      <span id="hxGoalText" style="font-size:20px;font-weight:800;color:var(--accent)">0/100</span>
+      <div style="flex:1;min-width:120px;max-width:300px;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div id="hxGoalBar" style="height:100%;background:var(--accent);border-radius:4px;width:0%;transition:width .4s"></div>
       </div>
-      <div class="progress-wrap">
-        <div class="progress-bar"><div id="hxGoalBar" class="progress-fill accent" style="width:0%"></div></div>
-        <div class="progress-label"><span id="hxGoalPct">0%</span><span>목표 100팀</span></div>
-      </div>
-      <div id="hxCategoryBreakdown" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px"></div>
+      <span id="hxGoalPct" style="font-size:12px;font-weight:600;color:var(--muted)">0%</span>
     </div>
-    <div class="card" style="margin-bottom:0">
-      <h3>주별 추가 추이</h3>
-      <canvas id="hxWeeklyChart" height="140"></canvas>
+    <div style="overflow-x:auto">
+      <table style="width:100%;font-size:12px;border-collapse:collapse">
+        <thead><tr id="hxWeekHead" style="background:var(--surface)"></tr></thead>
+        <tbody><tr id="hxWeekBody"></tr><tr id="hxWeekCum"></tr></tbody>
+      </table>
     </div>
   </div>
 
@@ -3135,11 +3134,6 @@ async function loadHyroxEntries() {
     let needsSave = false;
     hyroxEntries = d.map(e => {
       if (!e.id) { e.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5); needsSave = true; }
-      // migrate single category string → categories array
-      if (!e.categories) {
-        e.categories = e.category ? [e.category] : [];
-        needsSave = true;
-      }
       return e;
     });
     if (needsSave) await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
@@ -3173,7 +3167,7 @@ async function addHyroxEntry() {
   if (!name1 || !ig1 || !category) { showToast('1번 성함, 인스타, 출전 형태는 필수입니다'); return; }
   hyroxEntries.push({
     id: Date.now().toString(36),
-    name1, ig1, name2, ig2, category, categories: category ? [category] : [], date, memo,
+    name1, ig1, name2, ig2, category, date, memo,
     shoeSize1: '', shoeSize2: '',
     shoe1: '', shoe2: '', shoeComp: '',
     addedAt: new Date().toISOString()
@@ -3249,52 +3243,6 @@ function hyroxDragEnd(e) {
   document.querySelectorAll('#hyroxBody tr').forEach(r => r.style.borderTop = '');
 }
 
-function hyroxCategoryDates(cats) {
-  if (!cats || !cats.length) return '-';
-  const unique = [...new Set(cats.map(c => HYROX_SCHEDULE[c]).filter(Boolean))];
-  return unique.join(', ') || '-';
-}
-
-function toggleHyroxCategory(id, cat) {
-  const entry = hyroxEntries.find(e => e.id === id);
-  if (!entry) return;
-  if (!entry.categories) entry.categories = entry.category ? [entry.category] : [];
-  const idx = entry.categories.indexOf(cat);
-  if (idx >= 0) entry.categories.splice(idx, 1);
-  else entry.categories.push(cat);
-  entry.category = entry.categories[0] || '';
-  entry.date = hyroxCategoryDates(entry.categories);
-  saveHyroxEntries();
-  renderHyrox();
-}
-
-function openHyroxCategoryPicker(btn, id) {
-  // close any existing picker
-  document.querySelectorAll('.hyrox-cat-picker').forEach(el => el.remove());
-  const entry = hyroxEntries.find(e => e.id === id);
-  if (!entry) return;
-  const cats = entry.categories || (entry.category ? [entry.category] : []);
-  const picker = document.createElement('div');
-  picker.className = 'hyrox-cat-picker';
-  Object.assign(picker.style, {position:'absolute',zIndex:'999',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'8px',boxShadow:'0 4px 12px rgba(0,0,0,0.15)',padding:'6px 0',maxHeight:'260px',overflowY:'auto',width:'180px',fontSize:'12px'});
-  Object.keys(HYROX_SCHEDULE).forEach(k => {
-    const checked = cats.includes(k);
-    const row = document.createElement('label');
-    Object.assign(row.style, {display:'flex',alignItems:'center',gap:'6px',padding:'4px 10px',cursor:'pointer',whiteSpace:'nowrap'});
-    row.onmouseenter = () => row.style.background = 'var(--hover)';
-    row.onmouseleave = () => row.style.background = '';
-    row.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''} style="margin:0"> <span>${k}</span> <span style="color:var(--muted);font-size:10px;margin-left:auto">${HYROX_SCHEDULE[k]}</span>`;
-    row.querySelector('input').addEventListener('change', () => toggleHyroxCategory(id, k));
-    picker.appendChild(row);
-  });
-  const rect = btn.getBoundingClientRect();
-  picker.style.top = (rect.bottom + window.scrollY + 2) + 'px';
-  picker.style.left = (rect.left + window.scrollX) + 'px';
-  document.body.appendChild(picker);
-  const closePicker = (ev) => { if (!picker.contains(ev.target) && ev.target !== btn) { picker.remove(); document.removeEventListener('mousedown', closePicker); } };
-  setTimeout(() => document.addEventListener('mousedown', closePicker), 0);
-}
-
 function hyroxInlineEdit(td, id, field) {
   const entry = hyroxEntries.find(e => e.id === id);
   if (!entry) return;
@@ -3332,17 +3280,15 @@ function renderHyrox() {
       <td ondblclick="hyroxInlineEdit(this,'${e.id}','name2')" style="cursor:pointer" title="더블클릭하여 수정">${escHtml(e.name2 || '-')}</td>
       <td ondblclick="hyroxInlineEdit(this,'${e.id}','ig2')" style="cursor:pointer" title="더블클릭하여 수정">${e.ig2 ? `<a href="https://instagram.com/${escHtml(e.ig2)}" target="_blank" style="color:var(--accent)" onclick="event.stopPropagation()">@${escHtml(e.ig2)}</a>` : '-'}</td>
       <td><input type="text" value="${escHtml(e.memo || '')}" onchange="saveHyroxField('${e.id}','memo',this.value)" style="width:100px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px"></td>
-      <td style="position:relative">
-        <button onclick="openHyroxCategoryPicker(this,'${e.id}')" style="padding:2px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface);cursor:pointer;text-align:left;max-width:160px;white-space:normal;line-height:1.4">
-          ${(e.categories && e.categories.length) ? e.categories.map(c => `<span style="display:inline-block;background:var(--accent);color:#fff;padding:1px 5px;border-radius:3px;font-size:10px;margin:1px">${escHtml(c)}</span>`).join('') : (e.category ? `<span style="display:inline-block;background:var(--accent);color:#fff;padding:1px 5px;border-radius:3px;font-size:10px;margin:1px">${escHtml(e.category)}</span>` : '<span style="color:var(--muted)">선택</span>')}
-        </button>
-      </td>
+      <td><select onchange="saveHyroxField('${e.id}','category',this.value)" style="padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:11px">
+        ${Object.keys(HYROX_SCHEDULE).map(k => `<option value="${k}" ${k === e.category ? 'selected' : ''}>${k}</option>`).join('')}
+      </select></td>
       <td><select onchange="saveHyroxField('${e.id}','compWear',this.value)" style="padding:2px 3px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:${e.compWear==='확정'?'#e8f5e9':e.compWear==='미정'?'#fff3e0':'var(--surface)'};font-weight:600">
         <option value="" ${!e.compWear?'selected':''}>-</option>
         <option value="확정" ${e.compWear==='확정'?'selected':''}>확정</option>
         <option value="미정" ${e.compWear==='미정'?'selected':''}>미정</option>
       </select></td>
-      <td style="white-space:nowrap;font-size:11px">${(e.categories && e.categories.length) ? hyroxCategoryDates(e.categories) : escHtml(e.date || '')}</td>
+      <td style="white-space:nowrap">${escHtml(e.date || '')}</td>
       <td><input type="text" value="${escHtml(e.shoeSize1 || e.shoeSize || '')}" onchange="saveHyroxField('${e.id}','shoeSize1',this.value)" placeholder="ex) 260" style="width:70px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center"></td>
       <td><input type="text" value="${escHtml(e.shoeSize2 || '')}" onchange="saveHyroxField('${e.id}','shoeSize2',this.value)" placeholder="ex) 260" style="width:70px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center"></td>
       <td><input type="date" value="${escHtml(e.shoe1 || '')}" onchange="saveHyroxField('${e.id}','shoe1',this.value)" style="width:120px;padding:2px;border:1px solid var(--border);border-radius:4px;font-size:11px"></td>
@@ -3354,86 +3300,60 @@ function renderHyrox() {
   renderHyroxStats();
 }
 
-/* ---------- HYROX 목표 달성 + 주간 추이 ---------- */
-let hxWeeklyChartInstance = null;
+/* ---------- HYROX 약식 현황표 ---------- */
 function renderHyroxStats() {
   const total = hyroxEntries.length;
   const goal = 100;
   const pct = Math.min(Math.round((total / goal) * 100), 100);
 
-  // Progress bar
   const goalText = document.getElementById('hxGoalText');
   const goalBar = document.getElementById('hxGoalBar');
   const goalPct = document.getElementById('hxGoalPct');
-  if (goalText) goalText.textContent = `${total} / ${goal}`;
+  if (goalText) goalText.textContent = `${total}/${goal}`;
   if (goalBar) goalBar.style.width = pct + '%';
   if (goalPct) goalPct.textContent = pct + '%';
 
-  // Category breakdown
-  const bdEl = document.getElementById('hxCategoryBreakdown');
-  if (bdEl) {
-    const cats = {};
-    hyroxEntries.forEach(e => { cats[e.category] = (cats[e.category] || 0) + 1; });
-    bdEl.innerHTML = Object.entries(cats)
-      .sort((a, b) => b[1] - a[1])
-      .map(([k, v]) => `<span style="display:flex;justify-content:space-between;padding:2px 6px;background:var(--surface);border-radius:4px"><span>${k}</span><strong>${v}</strong></span>`)
-      .join('');
-  }
-
-  // Weekly trend chart
-  const canvas = document.getElementById('hxWeeklyChart');
-  if (!canvas) return;
-
-  // Build weekly buckets from addedAt
-  const weekMap = {};
+  // Build weekly buckets (last 8 weeks)
   const now = new Date();
-  // Ensure at least 8 weeks shown
+  const weeks = [];
   for (let i = 7; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i * 7);
-    const key = weekLabel(d);
-    weekMap[key] = 0;
+    const end = new Date(now); end.setDate(end.getDate() - i * 7);
+    const start = new Date(end); start.setDate(start.getDate() - 6);
+    weeks.push({ start, end, label: `${end.getMonth()+1}/${end.getDate()}주`, count: 0 });
   }
   hyroxEntries.forEach(e => {
     if (!e.addedAt) return;
-    const key = weekLabel(new Date(e.addedAt));
-    weekMap[key] = (weekMap[key] || 0) + 1;
+    const d = new Date(e.addedAt);
+    for (const w of weeks) { if (d >= w.start && d <= w.end) { w.count++; break; } }
   });
-  const labels = Object.keys(weekMap);
-  const data = Object.values(weekMap);
 
-  // Cumulative line data
-  let cum = total - data.reduce((s, v) => s + v, 0);
-  const cumData = data.map(v => { cum += v; return cum; });
+  // Cumulative
+  let cum = total - weeks.reduce((s, w) => s + w.count, 0);
+  weeks.forEach(w => { cum += w.count; w.cum = cum; });
 
-  if (hxWeeklyChartInstance) hxWeeklyChartInstance.destroy();
-  hxWeeklyChartInstance = new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: '주간 추가', data, backgroundColor: 'rgba(0,122,255,0.6)', borderRadius: 4, order: 2 },
-        { label: '누적', data: cumData, type: 'line', borderColor: '#34c759', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, borderWidth: 2, order: 1, yAxisID: 'y1' }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: true, labels: { boxWidth: 10, font: { size: 11 } } } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, title: { display: false } },
-        y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { font: { size: 10 } } },
-        x: { ticks: { font: { size: 10 } } }
-      }
-    }
-  });
-}
+  const headEl = document.getElementById('hxWeekHead');
+  const bodyEl = document.getElementById('hxWeekBody');
+  const cumEl = document.getElementById('hxWeekCum');
+  if (!headEl) return;
 
-function weekLabel(d) {
-  const jan1 = new Date(d.getFullYear(), 0, 1);
-  const wk = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
-  return `${d.getMonth() + 1}월 ${wk}주`;
+  const thisWeekIdx = weeks.length - 1;
+  const thStyle = 'padding:4px 8px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap';
+  const tdStyle = 'padding:4px 8px;text-align:center;border-bottom:1px solid var(--border)';
+
+  headEl.innerHTML = `<th style="${thStyle}"></th>` + weeks.map((w, i) =>
+    `<th style="${thStyle};${i === thisWeekIdx ? 'background:#e3f2fd;font-weight:700' : ''}">${w.label}</th>`
+  ).join('') + `<th style="${thStyle};font-weight:700">합계</th>`;
+
+  bodyEl.innerHTML = `<td style="${tdStyle};font-weight:600;white-space:nowrap">주간 추가</td>` + weeks.map((w, i) => {
+    const highlight = i === thisWeekIdx ? 'background:#e3f2fd;' : '';
+    const color = w.count > 0 ? 'color:var(--accent);font-weight:700' : 'color:var(--muted)';
+    return `<td style="${tdStyle};${highlight}${color}">${w.count || '-'}</td>`;
+  }).join('') + `<td style="${tdStyle};font-weight:800;color:var(--accent)">${total}</td>`;
+
+  cumEl.innerHTML = `<td style="${tdStyle};font-weight:600;white-space:nowrap;color:var(--muted)">누적</td>` + weeks.map((w, i) => {
+    const highlight = i === thisWeekIdx ? 'background:#e3f2fd;' : '';
+    return `<td style="${tdStyle};${highlight}color:var(--muted)">${w.cum}</td>`;
+  }).join('') + `<td style="${tdStyle}"></td>`;
 }
 
 // ============================================================
