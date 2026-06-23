@@ -804,7 +804,8 @@ a:hover{text-decoration:underline}
           <th>메모</th>
           <th>출전 형태</th>
           <th>출전일시</th>
-          <th>신발사이즈</th>
+          <th>1번 사이즈</th>
+          <th>2번 사이즈</th>
           <th>훈련화 1차</th>
           <th>훈련화 2차</th>
           <th>대회화</th>
@@ -3140,7 +3141,7 @@ async function addHyroxEntry() {
   hyroxEntries.push({
     id: Date.now().toString(36),
     name1, ig1, name2, ig2, category, date, memo,
-    shoeSize: '',
+    shoeSize1: '', shoeSize2: '',
     shoe1: '', shoe2: '', shoeComp: '',
     addedAt: new Date().toISOString()
   });
@@ -3179,7 +3180,7 @@ function renderHyrox() {
   const body = document.getElementById('hyroxBody');
   document.getElementById('hyroxCount').textContent = hyroxEntries.length + '명';
   if (!hyroxEntries.length) {
-    body.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--muted)">참가자를 추가해 주세요</td></tr>';
+    body.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--muted)">참가자를 추가해 주세요</td></tr>';
     return;
   }
   body.innerHTML = hyroxEntries.map((e, i) => `
@@ -3194,7 +3195,8 @@ function renderHyrox() {
         ${Object.keys(HYROX_SCHEDULE).map(k => `<option value="${k}" ${k === e.category ? 'selected' : ''}>${k}</option>`).join('')}
       </select></td>
       <td style="white-space:nowrap">${escHtml(e.date || '')}</td>
-      <td><input type="text" value="${escHtml(e.shoeSize || '')}" onchange="saveHyroxField('${e.id}','shoeSize',this.value)" placeholder="ex) 260" style="width:70px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center"></td>
+      <td><input type="text" value="${escHtml(e.shoeSize1 || e.shoeSize || '')}" onchange="saveHyroxField('${e.id}','shoeSize1',this.value)" placeholder="ex) 260" style="width:70px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center"></td>
+      <td><input type="text" value="${escHtml(e.shoeSize2 || '')}" onchange="saveHyroxField('${e.id}','shoeSize2',this.value)" placeholder="ex) 260" style="width:70px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center"></td>
       <td><input type="date" value="${escHtml(e.shoe1 || '')}" onchange="saveHyroxField('${e.id}','shoe1',this.value)" style="width:120px;padding:2px;border:1px solid var(--border);border-radius:4px;font-size:11px"></td>
       <td><input type="date" value="${escHtml(e.shoe2 || '')}" onchange="saveHyroxField('${e.id}','shoe2',this.value)" style="width:120px;padding:2px;border:1px solid var(--border);border-radius:4px;font-size:11px"></td>
       <td><input type="date" value="${escHtml(e.shoeComp || '')}" onchange="saveHyroxField('${e.id}','shoeComp',this.value)" style="width:120px;padding:2px;border:1px solid var(--border);border-radius:4px;font-size:11px"></td>
