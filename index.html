@@ -3111,7 +3111,14 @@ const HYROX_SCHEDULE = {
 
 async function loadHyroxEntries() {
   const d = await supaRead('sourcing/hyrox-entries.json');
-  if (d) hyroxEntries = d;
+  if (d) {
+    let needsSave = false;
+    hyroxEntries = d.map(e => {
+      if (!e.id) { e.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5); needsSave = true; }
+      return e;
+    });
+    if (needsSave) await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
+  }
 }
 
 async function saveHyroxEntries() {
