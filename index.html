@@ -2169,29 +2169,34 @@ function copyGuideLink(ig) {
 // ============================================================
 const TAG_PRESETS = {
   '중요도': [
-    { value: '높음', bg: '#ffebee', fg: '#c62828' },
-    { value: '중간', bg: '#fff3e0', fg: '#e65100' },
+    { value: '높은', bg: '#ffebee', fg: '#c62828' },
+    { value: '보통', bg: '#fff3e0', fg: '#e65100' },
     { value: '낮음', bg: '#f5f5f5', fg: '#757575' },
   ],
   '주제': [
-    { value: '뷰티', bg: '#fce4ec', fg: '#ad1457' },
-    { value: '라이프', bg: '#e8f5e9', fg: '#2e7d32' },
-    { value: '운동', bg: '#e3f2fd', fg: '#1565c0' },
+    { value: '다이어트 정보', bg: '#e8f5e9', fg: '#2e7d32' },
+    { value: '자기관리', bg: '#fce4ec', fg: '#ad1457' },
+    { value: '러닝', bg: '#e3f2fd', fg: '#1565c0' },
+    { value: '라이프스타일', bg: '#f3e5f5', fg: '#6a1b9a' },
+    { value: '뷰티', bg: '#fce4ec', fg: '#880e4f' },
     { value: '요리', bg: '#fff8e1', fg: '#f57f17' },
     { value: '여행', bg: '#e0f7fa', fg: '#00695c' },
-    { value: '패션', bg: '#f3e5f5', fg: '#6a1b9a' },
+    { value: '패션', bg: '#f3e5f5', fg: '#4a148c' },
     { value: '육아', bg: '#fff3e0', fg: '#bf360c' },
-    { value: '반려동물', bg: '#e8eaf6', fg: '#283593' },
-    { value: '인테리어', bg: '#efebe9', fg: '#4e342e' },
-    { value: '기타', bg: '#eceff1', fg: '#37474f' },
+    { value: '운동', bg: '#e3f2fd', fg: '#0d47a1' },
   ],
 };
 
+// Follower tag uses a special prefix for identification
+const FOLLOWER_PREFIX = '팔로워:';
+
 function getTagStyle(tag) {
+  if (tag.startsWith(FOLLOWER_PREFIX)) return { bg: '#e8eaf6', fg: '#283593' };
   for (const grp of Object.values(TAG_PRESETS)) {
     const found = grp.find(t => t.value === tag);
     if (found) return found;
   }
+  // Custom topic tags get a default style
   return { bg: '#eceff1', fg: '#37474f' };
 }
 
@@ -2201,7 +2206,8 @@ function renderTagCell(ig) {
   let html = '<div class="tag-cell">';
   tags.forEach(t => {
     const s = getTagStyle(t);
-    html += `<span class="tag-chip" style="background:${s.bg};color:${s.fg}" onclick="event.stopPropagation();removeTag('${escHtml(ig)}','${escHtml(t)}')" title="클릭하여 제거">${escHtml(t)}<span class="tag-x">✕</span></span>`;
+    const label = t.startsWith(FOLLOWER_PREFIX) ? t.replace(FOLLOWER_PREFIX, '') + '명' : t;
+    html += `<span class="tag-chip" style="background:${s.bg};color:${s.fg}" onclick="event.stopPropagation();removeTag('${escHtml(ig)}','${escHtml(t)}')" title="클릭하여 제거">${escHtml(label)}<span class="tag-x">✕</span></span>`;
   });
   html += `<button class="tag-add-btn" onclick="event.stopPropagation();openTagDropdown(this,'${escHtml(ig)}')">+</button>`;
   html += '</div>';
@@ -2209,19 +2215,30 @@ function renderTagCell(ig) {
 }
 
 function openTagDropdown(btn, ig) {
-  // Close any existing dropdown
   document.querySelectorAll('.tag-dropdown').forEach(d => d.remove());
   const meta = creatorMeta[ig] || {};
   const existing = meta.tags || [];
   const dd = document.createElement('div');
   dd.className = 'tag-dropdown';
+
+  // 중요도 group
   for (const [group, options] of Object.entries(TAG_PRESETS)) {
     dd.innerHTML += `<div class="tag-group-label">${group}</div>`;
     options.forEach(opt => {
       const already = existing.includes(opt.value);
       dd.innerHTML += `<div class="tag-option" onclick="event.stopPropagation();${already ? `removeTag('${escHtml(ig)}','${escHtml(opt.value)}')` : `addTag('${escHtml(ig)}','${escHtml(opt.value)}')`}" style="${already ? 'opacity:.4;text-decoration:line-through' : ''}"><span class="tag-dot" style="background:${opt.fg}"></span>${opt.value}${already ? ' ✓' : ''}</div>`;
     });
+    if (group === '주제') {
+      // Custom topic input
+      dd.innerHTML += `<div style="padding:4px 10px"><input type="text" placeholder="직접 입력..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font)" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation();addTag('${escHtml(ig)}',this.value.trim());this.value=''}"></div>`;
+    }
   }
+
+  // 팔로워 group
+  const existingFollower = existing.find(t => t.startsWith(FOLLOWER_PREFIX));
+  dd.innerHTML += `<div class="tag-group-label">팔로워</div>`;
+  dd.innerHTML += `<div style="padding:4px 10px"><input type="text" placeholder="${existingFollower ? existingFollower.replace(FOLLOWER_PREFIX,'') : '팔로워 수 입력...'}" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font)" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation();setFollowerTag('${escHtml(ig)}',this.value.trim());this.value=''}"></div>`;
+
   btn.parentElement.style.position = 'relative';
   btn.parentElement.appendChild(dd);
   const close = (e) => { if (!dd.contains(e.target) && e.target !== btn) { dd.remove(); document.removeEventListener('click', close); } };
@@ -2229,6 +2246,7 @@ function openTagDropdown(btn, ig) {
 }
 
 async function addTag(ig, tag) {
+  if (!tag) return;
   if (!creatorMeta[ig]) creatorMeta[ig] = {};
   if (!creatorMeta[ig].tags) creatorMeta[ig].tags = [];
   if (!creatorMeta[ig].tags.includes(tag)) {
@@ -2238,6 +2256,7 @@ async function addTag(ig, tag) {
     renderSubmissions();
     showToast(`@${ig} 태그 추가: ${tag}`);
   }
+  document.querySelectorAll('.tag-dropdown').forEach(d => d.remove());
 }
 
 async function removeTag(ig, tag) {
@@ -2247,6 +2266,20 @@ async function removeTag(ig, tag) {
   await saveCreatorMeta();
   renderSubmissions();
   showToast(`@${ig} 태그 제거: ${tag}`);
+}
+
+async function setFollowerTag(ig, val) {
+  if (!val) return;
+  if (!creatorMeta[ig]) creatorMeta[ig] = {};
+  if (!creatorMeta[ig].tags) creatorMeta[ig].tags = [];
+  // Remove existing follower tag
+  creatorMeta[ig].tags = creatorMeta[ig].tags.filter(t => !t.startsWith(FOLLOWER_PREFIX));
+  creatorMeta[ig].tags.push(FOLLOWER_PREFIX + val);
+  creatorMeta[ig].updatedAt = new Date().toISOString();
+  await saveCreatorMeta();
+  renderSubmissions();
+  showToast(`@${ig} 팔로워: ${val}`);
+  document.querySelectorAll('.tag-dropdown').forEach(d => d.remove());
 }
 
 // ============================================================
