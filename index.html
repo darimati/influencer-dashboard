@@ -759,6 +759,26 @@ a:hover{text-decoration:underline}
     <h2>11월 HYROX — BR-001 출전 리스트</h2>
     <span class="count" id="hyroxCount">0명</span>
   </div>
+
+  <!-- Progress + Weekly Trend -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card" style="margin-bottom:0">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <h3 style="margin-bottom:0">목표 달성률</h3>
+        <span id="hxGoalText" style="font-size:24px;font-weight:700;color:var(--accent)">0 / 100</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div id="hxGoalBar" class="progress-fill accent" style="width:0%"></div></div>
+        <div class="progress-label"><span id="hxGoalPct">0%</span><span>목표 100팀</span></div>
+      </div>
+      <div id="hxCategoryBreakdown" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px"></div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <h3>주별 추가 추이</h3>
+      <canvas id="hxWeeklyChart" height="140"></canvas>
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:16px">
     <h3>참가자 추가</h3>
     <div class="form-row">
@@ -3250,6 +3270,7 @@ function renderHyrox() {
   document.getElementById('hyroxCount').textContent = hyroxEntries.length + '명';
   if (!hyroxEntries.length) {
     body.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">참가자를 추가해 주세요</td></tr>';
+    renderHyroxStats();
     return;
   }
   body.innerHTML = hyroxEntries.map((e, i) => `
@@ -3277,6 +3298,89 @@ function renderHyrox() {
       <td><button onclick="deleteHyroxEntry('${e.id}')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:14px" title="삭제">✕</button></td>
     </tr>
   `).join('');
+  renderHyroxStats();
+}
+
+/* ---------- HYROX 목표 달성 + 주간 추이 ---------- */
+let hxWeeklyChartInstance = null;
+function renderHyroxStats() {
+  const total = hyroxEntries.length;
+  const goal = 100;
+  const pct = Math.min(Math.round((total / goal) * 100), 100);
+
+  // Progress bar
+  const goalText = document.getElementById('hxGoalText');
+  const goalBar = document.getElementById('hxGoalBar');
+  const goalPct = document.getElementById('hxGoalPct');
+  if (goalText) goalText.textContent = `${total} / ${goal}`;
+  if (goalBar) goalBar.style.width = pct + '%';
+  if (goalPct) goalPct.textContent = pct + '%';
+
+  // Category breakdown
+  const bdEl = document.getElementById('hxCategoryBreakdown');
+  if (bdEl) {
+    const cats = {};
+    hyroxEntries.forEach(e => { cats[e.category] = (cats[e.category] || 0) + 1; });
+    bdEl.innerHTML = Object.entries(cats)
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `<span style="display:flex;justify-content:space-between;padding:2px 6px;background:var(--surface);border-radius:4px"><span>${k}</span><strong>${v}</strong></span>`)
+      .join('');
+  }
+
+  // Weekly trend chart
+  const canvas = document.getElementById('hxWeeklyChart');
+  if (!canvas) return;
+
+  // Build weekly buckets from addedAt
+  const weekMap = {};
+  const now = new Date();
+  // Ensure at least 8 weeks shown
+  for (let i = 7; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i * 7);
+    const key = weekLabel(d);
+    weekMap[key] = 0;
+  }
+  hyroxEntries.forEach(e => {
+    if (!e.addedAt) return;
+    const key = weekLabel(new Date(e.addedAt));
+    weekMap[key] = (weekMap[key] || 0) + 1;
+  });
+  const labels = Object.keys(weekMap);
+  const data = Object.values(weekMap);
+
+  // Cumulative line data
+  let cum = total - data.reduce((s, v) => s + v, 0);
+  const cumData = data.map(v => { cum += v; return cum; });
+
+  if (hxWeeklyChartInstance) hxWeeklyChartInstance.destroy();
+  hxWeeklyChartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: '주간 추가', data, backgroundColor: 'rgba(0,122,255,0.6)', borderRadius: 4, order: 2 },
+        { label: '누적', data: cumData, type: 'line', borderColor: '#34c759', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, borderWidth: 2, order: 1, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: true, labels: { boxWidth: 10, font: { size: 11 } } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, title: { display: false } },
+        y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { font: { size: 10 } } },
+        x: { ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+function weekLabel(d) {
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const wk = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${d.getMonth() + 1}월 ${wk}주`;
 }
 
 // ============================================================
