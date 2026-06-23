@@ -3190,6 +3190,40 @@ async function saveHyroxField(id, field, value) {
   if (field === 'category') renderHyrox();
 }
 
+let hyroxDragIdx = null;
+
+function hyroxDragStart(e, idx) {
+  hyroxDragIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  e.target.closest('tr').style.opacity = '0.4';
+}
+function hyroxDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const tr = e.target.closest('tr');
+  if (tr) tr.style.borderTop = '2px solid var(--accent)';
+}
+function hyroxDragLeave(e) {
+  const tr = e.target.closest('tr');
+  if (tr) tr.style.borderTop = '';
+}
+async function hyroxDrop(e, toIdx) {
+  e.preventDefault();
+  const tr = e.target.closest('tr');
+  if (tr) tr.style.borderTop = '';
+  if (hyroxDragIdx === null || hyroxDragIdx === toIdx) return;
+  const [moved] = hyroxEntries.splice(hyroxDragIdx, 1);
+  hyroxEntries.splice(toIdx, 0, moved);
+  hyroxDragIdx = null;
+  renderHyrox();
+  await supaWrite('sourcing/hyrox-entries.json', hyroxEntries);
+}
+function hyroxDragEnd(e) {
+  hyroxDragIdx = null;
+  e.target.closest('tr').style.opacity = '';
+  document.querySelectorAll('#hyroxBody tr').forEach(r => r.style.borderTop = '');
+}
+
 function hyroxInlineEdit(td, id, field) {
   const entry = hyroxEntries.find(e => e.id === id);
   if (!entry) return;
@@ -3219,8 +3253,8 @@ function renderHyrox() {
     return;
   }
   body.innerHTML = hyroxEntries.map((e, i) => `
-    <tr>
-      <td>${i + 1}</td>
+    <tr draggable="true" ondragstart="hyroxDragStart(event,${i})" ondragover="hyroxDragOver(event)" ondragleave="hyroxDragLeave(event)" ondrop="hyroxDrop(event,${i})" ondragend="hyroxDragEnd(event)">
+      <td style="cursor:grab;user-select:none" title="드래그하여 순서 변경">☰ ${i + 1}</td>
       <td ondblclick="hyroxInlineEdit(this,'${e.id}','name1')" style="cursor:pointer" title="더블클릭하여 수정">${escHtml(e.name1)}</td>
       <td ondblclick="hyroxInlineEdit(this,'${e.id}','ig1')" style="cursor:pointer" title="더블클릭하여 수정"><a href="https://instagram.com/${escHtml(e.ig1)}" target="_blank" style="color:var(--accent)" onclick="event.stopPropagation()">@${escHtml(e.ig1)}</a></td>
       <td ondblclick="hyroxInlineEdit(this,'${e.id}','name2')" style="cursor:pointer" title="더블클릭하여 수정">${escHtml(e.name2 || '-')}</td>
