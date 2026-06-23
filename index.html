@@ -415,6 +415,7 @@ a:hover{text-decoration:underline}
     <table id="submissionsTable">
       <thead>
         <tr>
+          <th>태그</th>
           <th style="width:24px"></th>
           <th>인스타그램</th>
           <th>이메일</th>
@@ -430,7 +431,6 @@ a:hover{text-decoration:underline}
           <th>광고코드</th>
           <th>브콜</th>
           <th>송장</th>
-          <th>태그</th>
           <th>메모</th>
           <th>가이드</th>
           <th>기획안</th>
@@ -1728,6 +1728,7 @@ function renderSubmissions() {
     const deleteBtn = s.isManual ? ` <button onclick="deleteManualCreator('${escHtml(ig)}')" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:10px;padding:0 2px" title="삭제">✕</button>` : '';
 
     return `<tr draggable="true" data-ig="${escHtml(ig)}">
+      <td style="position:relative">${renderTagCell(ig)}</td>
       <td class="drag-handle" title="드래그하여 순서 변경">⠿</td>
       <td style="white-space:nowrap"><a href="https://instagram.com/${ig}" target="_blank" style="font-size:11px">@${ig}</a>${deleteBtn}</td>
       <td><input type="email" value="${escHtml(pd.email || s.email || '')}" placeholder="이메일" onchange="savePipelineField('${escHtml(ig)}','email',this.value)" style="min-width:140px"></td>
@@ -1743,7 +1744,6 @@ function renderSubmissions() {
       <td><div class="link-wrap"><input type="text" value="${escHtml(adCodeVal)}" placeholder="URL" onchange="savePipelineField('${escHtml(ig)}','adCodeLink',this.value)">${adCodeVal ? `<a href="${escHtml(adCodeVal)}" target="_blank">↗</a>` : ''}</div></td>
       <td style="text-align:center"><input type="checkbox" ${brandCallChecked} data-ig="${escHtml(ig)}" onchange="toggleBrandCall(this)" style="cursor:pointer;width:16px;height:16px"></td>
       <td><input type="text" value="${escHtml(invoiceVal)}" placeholder="송장번호" onchange="savePipelineField('${escHtml(ig)}','invoice',this.value)" style="min-width:100px"></td>
-      <td style="position:relative">${renderTagCell(ig)}</td>
       <td style="max-width:200px;font-size:12px;cursor:pointer" title="${escHtml(displayMemo)}" onclick="editMemo(this,'${escHtml(ig)}')">${displayMemo || '<span style=&quot;color:var(--muted)&quot;>클릭하여 입력</span>'}</td>
       <td style="text-align:center"><button onclick="copyGuideLink('${escHtml(ig)}')" style="border:none;background:#2563eb;color:#fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">링크복사</button></td>
       <td style="text-align:center">${renderReelPlanBtn(ig)}</td>
