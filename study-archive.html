@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DARIMATI - 학습기록 보관함</title>
+<style>
+:root{
+  --bg:#f5f5f7;--surface:#fff;--surface2:#f8f8fa;--border:#e5e5ea;
+  --text:#1d1d1f;--muted:#86868b;--accent:#007aff;--accent-light:#e8f0fe;
+  --green:#34c759;--green-light:#e8faf0;--red:#ff3b30;--red-light:#ffecea;
+  --orange:#ff9500;--orange-light:#fff4e6;--purple:#af52de;--purple-light:#f5eeff;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  --mono:'SF Mono','Menlo',monospace;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* Header */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.header h1{font-size:18px;font-weight:700;flex:1}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{opacity:.9}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.record-count{font-size:12px;color:var(--muted)}
+
+/* Main */
+.main{padding:24px;max-width:960px;margin:0 auto}
+
+/* Search */
+.search-bar{display:flex;gap:10px;margin-bottom:20px}
+.search-bar input{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s}
+.search-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,122,255,.12)}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s}
+.chip:hover,.chip.active{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
+
+/* Record list */
+.record-list{display:flex;flex-direction:column;gap:10px}
+.record-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:18px 20px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:16px}
+.record-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.record-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.record-icon.pdf{background:#ffecea;color:#ff3b30}
+.record-icon.html{background:var(--accent-light);color:var(--accent)}
+.record-icon.md{background:var(--purple-light);color:var(--purple)}
+.record-icon.other{background:var(--surface2);color:var(--muted)}
+.record-body{flex:1;min-width:0}
+.record-title{font-size:15px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.record-meta{font-size:12px;color:var(--muted);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.record-summary{font-size:13px;color:var(--muted);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.record-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;background:var(--surface2);color:var(--muted)}
+.record-arrow{color:var(--muted);font-size:18px;flex-shrink:0}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .icon{font-size:48px;margin-bottom:12px}
+.empty h3{font-size:17px;color:var(--text);margin-bottom:6px}
+.empty p{font-size:14px;max-width:360px;margin:0 auto;line-height:1.6}
+
+/* Modal overlay */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:200;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;position:relative}
+.modal-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-header h2{font-size:17px;font-weight:700}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--surface2);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--border)}
+.modal-body{padding:20px 24px 24px}
+
+/* Form */
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
+.field .hint{font-size:11px;color:var(--muted);margin-bottom:5px}
+.field input,.field textarea,.field select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s}
+.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,122,255,.12)}
+.field textarea{resize:vertical;min-height:80px}
+.required-mark::after{content:" *";color:var(--red)}
+
+/* File dropzone */
+.dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
+.dropzone:hover,.dropzone.dragover{border-color:var(--accent);background:var(--accent-light)}
+.dropzone .dz-icon{font-size:32px;margin-bottom:8px}
+.dropzone .dz-text{font-size:14px;font-weight:500;margin-bottom:4px}
+.dropzone .dz-hint{font-size:12px;color:var(--muted)}
+.dropzone.has-file{border-style:solid;border-color:var(--green);background:var(--green-light)}
+.dropzone.has-file .dz-text{color:#1b7a37}
+.file-input{display:none}
+
+/* Detail view */
+.detail-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;flex-direction:column}
+.detail-overlay.open{display:flex}
+.detail-header{padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.detail-header .back-btn{padding:6px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px}
+.detail-header .back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.detail-header .detail-title{flex:1;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.detail-header .detail-actions{display:flex;gap:6px}
+.detail-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.detail-info{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.detail-info .info-row{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.detail-info .info-row span{display:flex;align-items:center;gap:4px}
+.detail-info .info-summary{margin-top:8px;font-size:14px;color:var(--text);line-height:1.6}
+.detail-info .info-tags{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
+.viewer-frame{flex:1;border:none;background:#fff}
+
+/* Markdown rendered */
+.md-view{flex:1;overflow-y:auto;padding:32px 40px;max-width:800px;margin:0 auto;width:100%}
+.md-view h1{font-size:24px;font-weight:700;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.md-view h2{font-size:20px;font-weight:600;margin:20px 0 10px}
+.md-view h3{font-size:16px;font-weight:600;margin:16px 0 8px}
+.md-view p{margin:8px 0;font-size:15px;line-height:1.8}
+.md-view ul,.md-view ol{margin:8px 0 8px 24px}
+.md-view li{margin:4px 0;font-size:15px;line-height:1.6}
+.md-view code{background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:13px}
+.md-view pre{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;overflow-x:auto;margin:12px 0}
+.md-view pre code{background:none;padding:0}
+.md-view blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:8px 16px;background:var(--accent-light);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+.md-view a{color:var(--accent);text-decoration:none}
+.md-view a:hover{text-decoration:underline}
+.md-view img{max-width:100%;border-radius:var(--radius-sm)}
+.md-view table{width:100%;border-collapse:collapse;margin:12px 0}
+.md-view th,.md-view td{border:1px solid var(--border);padding:8px 12px;text-align:left;font-size:14px}
+.md-view th{background:var(--surface2);font-weight:600}
+
+/* Progress bar for upload */
+.upload-progress{margin-top:8px;display:none}
+.upload-progress.show{display:block}
+.upload-bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.upload-fill{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width .3s}
+.upload-text{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+
+/* Delete confirm */
+.confirm-bar{display:none;gap:8px;align-items:center;padding:8px 12px;background:var(--red-light);border-radius:var(--radius-sm);margin-top:8px}
+.confirm-bar.show{display:flex}
+.confirm-bar span{font-size:13px;color:#c62828;flex:1}
+
+/* Loading spinner */
+.loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--muted);font-size:14px;gap:8px}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:640px){
+  .header{padding:12px 16px}
+  .header h1{font-size:16px}
+  .main{padding:16px}
+  .record-card{padding:14px 16px}
+  .search-bar{flex-direction:column}
+  .detail-info{padding:12px 16px}
+  .md-view{padding:20px 16px}
+  .modal{margin:10px;max-height:85vh}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>학습기록 보관함</h1>
+  <span class="record-count" id="recordCount"></span>
+  <div class="header-actions">
+    <button class="btn primary" onclick="openUploadModal()">+ 기록 추가</button>
+  </div>
+</div>
+
+<!-- Main list view -->
+<div class="main" id="mainView">
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="제목, 요약, 태그로 검색..." oninput="renderList()">
+  </div>
+  <div class="filter-chips" id="filterChips"></div>
+  <div id="listContainer">
+    <div class="loading"><div class="spinner"></div> 불러오는 중...</div>
+  </div>
+</div>
+
+<!-- Upload modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>학습 기록 추가</h2>
+      <button class="modal-close" onclick="closeUploadModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label class="required-mark">파일 업로드</label>
+        <div class="hint">PDF, HTML, Markdown(.md) 파일을 업로드하세요</div>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="handleDrop(event)">
+          <div class="dz-icon" id="dzIcon">📄</div>
+          <div class="dz-text" id="dzText">클릭하거나 파일을 드래그하세요</div>
+          <div class="dz-hint" id="dzHint">PDF, HTML, MD 지원 (최대 10MB)</div>
+        </div>
+        <input type="file" id="fileInput" class="file-input" accept=".pdf,.html,.htm,.md,.markdown,.txt" onchange="handleFileSelect(event)">
+        <div class="upload-progress" id="uploadProgress">
+          <div class="upload-bar"><div class="upload-fill" id="uploadFill"></div></div>
+          <div class="upload-text" id="uploadText">업로드 중...</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="required-mark">제목</label>
+        <input type="text" id="inputTitle" placeholder="학습 내용의 제목">
+      </div>
+      <div class="field">
+        <label>요약</label>
+        <textarea id="inputSummary" placeholder="학습 내용을 간단히 정리해주세요 (선택)"></textarea>
+      </div>
+      <div class="field">
+        <label>태그</label>
+        <div class="hint">쉼표(,)로 구분하여 입력. 예: 마케팅, 브랜딩, SNS</div>
+        <input type="text" id="inputTags" placeholder="태그1, 태그2, ...">
+      </div>
+      <button class="btn primary" style="width:100%;padding:12px" id="submitBtn" onclick="submitRecord()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail view -->
+<div class="detail-overlay" id="detailView">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">&#8592; 목록</button>
+    <div class="detail-title" id="detailTitle"></div>
+    <div class="detail-actions">
+      <button class="btn" id="openOriginalBtn" onclick="openOriginal()" title="새 탭에서 열기">원본 보기</button>
+      <button class="btn" style="color:var(--red);border-color:var(--red)" onclick="confirmDelete()">삭제</button>
+    </div>
+  </div>
+  <div class="detail-info" id="detailInfo">
+    <div class="info-row" id="detailMeta"></div>
+    <div class="info-summary" id="detailSummary"></div>
+    <div class="info-tags" id="detailTags"></div>
+    <div class="confirm-bar" id="confirmBar">
+      <span>정말 삭제하시겠습니까?</span>
+      <button class="btn" style="font-size:12px;padding:4px 10px;color:var(--red);border-color:var(--red)" onclick="deleteRecord()">삭제</button>
+      <button class="btn" style="font-size:12px;padding:4px 10px" onclick="document.getElementById('confirmBar').classList.remove('show')">취소</button>
+    </div>
+  </div>
+  <div class="detail-content" id="detailContent"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── Config ── */
+const SUPABASE_URL = 'https://chvxkfvimnqmmzsnyqrx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodnhrZnZpbW5xbW16c255cXJ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDE2NjY3NiwiZXhwIjoyMDg1NzQyNjc2fQ.M8ptMiW7j5newWUPfEnptkPwry21ROiQXWEmSQNwIkw';
+const BUCKET = 'playbook-data';
+const INDEX_PATH = 'learning/records.json';
+
+let records = [];
+let selectedFile = null;
+let currentRecord = null;
+let activeFilter = '';
+
+/* ── Supabase helpers ── */
+async function supaReadJSON(path) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY }
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function supaWriteJSON(path, data) {
+  const body = JSON.stringify(data);
+  let r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json', 'x-upsert': 'true' },
+    body
+  });
+  if (r.status === 400) {
+    r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body
+    });
+  }
+  return r.ok;
+}
+
+async function supaUploadFile(path, file, contentType) {
+  let r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'apikey': SUPABASE_KEY,
+      'Content-Type': contentType,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if (r.status === 400) {
+    r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': SUPABASE_KEY,
+        'Content-Type': contentType
+      },
+      body: file
+    });
+  }
+  return r.ok;
+}
+
+async function supaDeleteFile(path) {
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY }
+  });
+  return r.ok;
+}
+
+function supaPublicURL(path) {
+  return `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`;
+}
+
+/* ── Utils ── */
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function getFileExt(name) {
+  return (name.split('.').pop() || '').toLowerCase();
+}
+
+function getFileType(name) {
+  const ext = getFileExt(name);
+  if (ext === 'pdf') return 'pdf';
+  if (['html', 'htm'].includes(ext)) return 'html';
+  if (['md', 'markdown'].includes(ext)) return 'md';
+  return 'other';
+}
+
+function getContentType(name) {
+  const type = getFileType(name);
+  if (type === 'pdf') return 'application/pdf';
+  if (type === 'html') return 'text/html';
+  return 'text/plain';
+}
+
+function getFileIcon(type) {
+  if (type === 'pdf') return '📕';
+  if (type === 'html') return '🌐';
+  if (type === 'md') return '📝';
+  return '📄';
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}.${m}.${day}`;
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ── Data ── */
+async function loadRecords() {
+  const data = await supaReadJSON(INDEX_PATH);
+  records = (data && data.records) ? data.records : [];
+  records.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  renderList();
+  renderFilterChips();
+}
+
+async function saveRecords() {
+  return await supaWriteJSON(INDEX_PATH, { records, updatedAt: new Date().toISOString() });
+}
+
+/* ── File handling ── */
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) setSelectedFile(file);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) setSelectedFile(file);
+}
+
+function setSelectedFile(file) {
+  const allowed = ['pdf', 'html', 'htm', 'md', 'markdown', 'txt'];
+  const ext = getFileExt(file.name);
+  if (!allowed.includes(ext)) {
+    showToast('지원하지 않는 파일 형식입니다');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('파일 크기가 10MB를 초과합니다');
+    return;
+  }
+  selectedFile = file;
+  const dz = document.getElementById('dropzone');
+  dz.classList.add('has-file');
+  document.getElementById('dzIcon').textContent = getFileIcon(getFileType(file.name));
+  document.getElementById('dzText').textContent = file.name;
+  document.getElementById('dzHint').textContent = formatSize(file.size);
+
+  // Auto-fill title from filename
+  const titleInput = document.getElementById('inputTitle');
+  if (!titleInput.value) {
+    titleInput.value = file.name.replace(/\.[^/.]+$/, '');
+  }
+}
+
+/* ── Upload modal ── */
+function openUploadModal() {
+  resetUploadForm();
+  document.getElementById('uploadModal').classList.add('open');
+}
+
+function closeUploadModal() {
+  document.getElementById('uploadModal').classList.remove('open');
+}
+
+function resetUploadForm() {
+  selectedFile = null;
+  document.getElementById('inputTitle').value = '';
+  document.getElementById('inputSummary').value = '';
+  document.getElementById('inputTags').value = '';
+  document.getElementById('fileInput').value = '';
+  const dz = document.getElementById('dropzone');
+  dz.classList.remove('has-file');
+  document.getElementById('dzIcon').textContent = '📄';
+  document.getElementById('dzText').textContent = '클릭하거나 파일을 드래그하세요';
+  document.getElementById('dzHint').textContent = 'PDF, HTML, MD 지원 (최대 10MB)';
+  document.getElementById('uploadProgress').classList.remove('show');
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = '저장하기';
+}
+
+/* ── Submit ── */
+async function submitRecord() {
+  const title = document.getElementById('inputTitle').value.trim();
+  if (!title) { showToast('제목을 입력해주세요'); return; }
+  if (!selectedFile) { showToast('파일을 선택해주세요'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '업로드 중...';
+
+  const prog = document.getElementById('uploadProgress');
+  prog.classList.add('show');
+  document.getElementById('uploadFill').style.width = '30%';
+  document.getElementById('uploadText').textContent = '파일 업로드 중...';
+
+  try {
+    const id = genId();
+    const ext = getFileExt(selectedFile.name);
+    const filePath = `learning/files/${id}.${ext}`;
+    const contentType = getContentType(selectedFile.name);
+
+    // For text files, read as text to handle encoding
+    let uploadBody = selectedFile;
+    if (contentType !== 'application/pdf') {
+      uploadBody = await selectedFile.text();
+    }
+
+    const uploadOk = await supaUploadFile(filePath, uploadBody, contentType);
+    if (!uploadOk) {
+      showToast('파일 업로드 실패');
+      btn.disabled = false;
+      btn.textContent = '저장하기';
+      prog.classList.remove('show');
+      return;
+    }
+
+    document.getElementById('uploadFill').style.width = '70%';
+    document.getElementById('uploadText').textContent = '기록 저장 중...';
+
+    const tagsRaw = document.getElementById('inputTags').value.trim();
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+    const record = {
+      id,
+      title,
+      summary: document.getElementById('inputSummary').value.trim(),
+      tags,
+      fileName: selectedFile.name,
+      fileSize: selectedFile.size,
+      fileType: getFileType(selectedFile.name),
+      filePath,
+      createdAt: new Date().toISOString()
+    };
+
+    records.unshift(record);
+    const saveOk = await saveRecords();
+
+    document.getElementById('uploadFill').style.width = '100%';
+    document.getElementById('uploadText').textContent = '완료!';
+
+    if (saveOk) {
+      showToast('학습 기록이 저장되었습니다');
+      setTimeout(() => {
+        closeUploadModal();
+        renderList();
+        renderFilterChips();
+      }, 500);
+    } else {
+      showToast('메타데이터 저장 실패 — 파일은 업로드됨');
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('오류 발생: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '저장하기';
+    prog.classList.remove('show');
+  }
+}
+
+/* ── Render list ── */
+function renderList() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const container = document.getElementById('listContainer');
+
+  let filtered = records;
+  if (q) {
+    filtered = filtered.filter(r =>
+      r.title.toLowerCase().includes(q) ||
+      (r.summary && r.summary.toLowerCase().includes(q)) ||
+      (r.tags && r.tags.some(t => t.toLowerCase().includes(q)))
+    );
+  }
+  if (activeFilter) {
+    filtered = filtered.filter(r => r.fileType === activeFilter);
+  }
+
+  document.getElementById('recordCount').textContent = `${records.length}개 기록`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = records.length === 0
+      ? `<div class="empty">
+           <div class="icon">📚</div>
+           <h3>아직 기록이 없습니다</h3>
+           <p>상단의 "기록 추가" 버튼으로 학습 자료를 업로드해보세요. PDF, HTML, Markdown 파일을 원본 그대로 보관할 수 있습니다.</p>
+         </div>`
+      : `<div class="empty">
+           <div class="icon">🔍</div>
+           <h3>검색 결과가 없습니다</h3>
+           <p>다른 키워드로 검색해보세요</p>
+         </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="record-list">' + filtered.map(r => `
+    <div class="record-card" onclick="openDetail('${r.id}')">
+      <div class="record-icon ${r.fileType}">${getFileIcon(r.fileType)}</div>
+      <div class="record-body">
+        <div class="record-title">${escHtml(r.title)}</div>
+        <div class="record-meta">
+          <span>${formatDate(r.createdAt)}</span>
+          <span>${r.fileType.toUpperCase()}</span>
+          <span>${formatSize(r.fileSize)}</span>
+        </div>
+        ${r.summary ? `<div class="record-summary">${escHtml(r.summary)}</div>` : ''}
+        ${r.tags && r.tags.length ? `<div class="record-tags">${r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="record-arrow">&#8250;</div>
+    </div>
+  `).join('') + '</div>';
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/* ── Filter chips ── */
+function renderFilterChips() {
+  const types = {};
+  records.forEach(r => { types[r.fileType] = (types[r.fileType] || 0) + 1; });
+  const chips = document.getElementById('filterChips');
+  if (Object.keys(types).length <= 1) { chips.innerHTML = ''; return; }
+
+  const labels = { pdf: 'PDF', html: 'HTML', md: 'Markdown', other: '기타' };
+  chips.innerHTML = `<div class="chip ${!activeFilter ? 'active' : ''}" onclick="setFilter('')">전체 (${records.length})</div>` +
+    Object.entries(types).map(([t, n]) =>
+      `<div class="chip ${activeFilter === t ? 'active' : ''}" onclick="setFilter('${t}')">${labels[t] || t} (${n})</div>`
+    ).join('');
+}
+
+function setFilter(type) {
+  activeFilter = type;
+  renderFilterChips();
+  renderList();
+}
+
+/* ── Detail view ── */
+async function openDetail(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  currentRecord = r;
+
+  document.getElementById('detailTitle').textContent = r.title;
+  document.getElementById('detailMeta').innerHTML = `
+    <span>${formatDate(r.createdAt)}</span>
+    <span>${r.fileType.toUpperCase()} &middot; ${formatSize(r.fileSize)}</span>
+    <span>${r.fileName}</span>
+  `;
+  document.getElementById('detailSummary').textContent = r.summary || '';
+  document.getElementById('detailSummary').style.display = r.summary ? 'block' : 'none';
+  document.getElementById('detailTags').innerHTML = r.tags && r.tags.length
+    ? r.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')
+    : '';
+  document.getElementById('confirmBar').classList.remove('show');
+
+  const content = document.getElementById('detailContent');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div> 원본 로딩 중...</div>';
+
+  document.getElementById('detailView').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Render based on type
+  const fileUrl = supaPublicURL(r.filePath) + '?t=' + Date.now();
+  const headers = { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY };
+
+  try {
+    if (r.fileType === 'pdf') {
+      // PDF: use iframe with authenticated URL
+      const resp = await fetch(fileUrl, { headers });
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      content.innerHTML = `<iframe class="viewer-frame" src="${blobUrl}#toolbar=1" style="width:100%;height:100%"></iframe>`;
+    } else if (r.fileType === 'html') {
+      // HTML: render in sandboxed iframe
+      const resp = await fetch(fileUrl, { headers });
+      const html = await resp.text();
+      content.innerHTML = '<iframe class="viewer-frame" id="htmlFrame" sandbox="allow-same-origin" style="width:100%;height:100%"></iframe>';
+      const frame = document.getElementById('htmlFrame');
+      frame.onload = () => {
+        // Inject base styles for readability
+        try {
+          const doc = frame.contentDocument;
+          const style = doc.createElement('style');
+          style.textContent = 'body{font-family:-apple-system,sans-serif;padding:20px;max-width:800px;margin:0 auto;line-height:1.7}img{max-width:100%}';
+          doc.head.appendChild(style);
+        } catch(e) {}
+      };
+      frame.srcdoc = html;
+    } else if (r.fileType === 'md') {
+      // Markdown: simple renderer
+      const resp = await fetch(fileUrl, { headers });
+      const md = await resp.text();
+      content.innerHTML = `<div class="md-view">${renderMarkdown(md)}</div>`;
+    } else {
+      const resp = await fetch(fileUrl, { headers });
+      const text = await resp.text();
+      content.innerHTML = `<div class="md-view"><pre style="white-space:pre-wrap;word-break:break-word">${escHtml(text)}</pre></div>`;
+    }
+  } catch (err) {
+    content.innerHTML = `<div class="empty"><div class="icon">⚠️</div><h3>파일을 불러올 수 없습니다</h3><p>${escHtml(err.message)}</p></div>`;
+  }
+}
+
+function closeDetail() {
+  document.getElementById('detailView').classList.remove('open');
+  document.body.style.overflow = '';
+  currentRecord = null;
+}
+
+function openOriginal() {
+  if (!currentRecord) return;
+  const url = supaPublicURL(currentRecord.filePath);
+  window.open(url, '_blank');
+}
+
+/* ── Delete ── */
+function confirmDelete() {
+  document.getElementById('confirmBar').classList.add('show');
+}
+
+async function deleteRecord() {
+  if (!currentRecord) return;
+  const id = currentRecord.id;
+
+  // Delete file from storage
+  await supaDeleteFile(currentRecord.filePath);
+
+  // Remove from index
+  records = records.filter(r => r.id !== id);
+  await saveRecords();
+
+  closeDetail();
+  renderList();
+  renderFilterChips();
+  showToast('기록이 삭제되었습니다');
+}
+
+/* ── Simple Markdown renderer ── */
+function renderMarkdown(md) {
+  let html = md;
+
+  // Code blocks first (``` ... ```)
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+    `<pre><code>${escHtml(code.trim())}</code></pre>`
+  );
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Headers
+  html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // Blockquotes
+  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Bold & Italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  // Images
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+  // Horizontal rules
+  html = html.replace(/^---+$/gm, '<hr>');
+
+  // Unordered list items
+  html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+
+  // Ordered list items
+  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // Wrap consecutive <li> in <ul>
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+  // Paragraphs: wrap remaining lines
+  html = html.split('\n\n').map(block => {
+    block = block.trim();
+    if (!block) return '';
+    if (/^<(h[1-6]|ul|ol|li|pre|blockquote|hr|img|table)/i.test(block)) return block;
+    return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+  }).join('\n');
+
+  return html;
+}
+
+/* ── Keyboard ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('detailView').classList.contains('open')) closeDetail();
+    else if (document.getElementById('uploadModal').classList.contains('open')) closeUploadModal();
+  }
+});
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', loadRecords);
+</script>
+</body>
+</html>
