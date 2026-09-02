@@ -43,8 +43,51 @@ body {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: url('https://cdn.shopify.com/s/files/1/0775/5956/2452/files/hero.png') center/cover no-repeat;
-  opacity: 0.35;
+  background: url('https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/product-lifestyle.jpg') center/cover no-repeat;
+  opacity: 0.4;
+}
+
+/* ── LIFESTYLE IMAGE GALLERY ─────── */
+.lifestyle-banner {
+  width: 100%;
+  overflow: hidden;
+}
+.lifestyle-banner img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  max-height: 560px;
+}
+.lifestyle-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 48px;
+}
+.lifestyle-duo img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  height: 400px;
+  border-radius: 12px;
+}
+.lifestyle-trio {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2px;
+  margin-top: 2px;
+}
+.lifestyle-trio img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  height: 360px;
+}
+@media (max-width: 768px) {
+  .lifestyle-duo { grid-template-columns: 1fr; }
+  .lifestyle-duo img { height: 280px; }
+  .lifestyle-trio { grid-template-columns: 1fr; }
+  .lifestyle-trio img { height: 280px; }
 }
 .hero-content {
   position: relative;
@@ -607,10 +650,15 @@ body {
       </div>
     </div>
     <div class="intro-img">
-      <img src="https://cdn.shopify.com/s/files/1/0775/5956/2452/files/darimati_shoes.jpg?v=1776313172" alt="DARIMATI BR-001 Collection">
+      <img src="https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/lookbook-lifestyle.png" alt="DARIMATI — Hybrid Sport Lifestyle">
     </div>
   </div>
 </section>
+
+<!-- ═══ LIFESTYLE GALLERY ═════════════════ -->
+<div class="lifestyle-banner">
+  <img src="https://cdn.shopify.com/s/files/1/0775/5956/2452/files/hero.png" alt="DARIMATI — Hybrid Training in Action">
+</div>
 
 <!-- ═══ GLOBAL NETWORK ════════════════════ -->
 <section class="section-dark" style="padding-top:80px;padding-bottom:80px;">
@@ -643,7 +691,7 @@ body {
 
   <div class="product-showcase">
     <div class="product-img">
-      <img src="https://cdn.shopify.com/s/files/1/0775/5956/2452/files/dariamti_shoe.jpg?v=1776313172" alt="DARIMATI BR-001">
+      <img src="https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/product-hero.jpeg" alt="DARIMATI BR-001 — Hybrid Performance">
     </div>
     <div>
       <ul class="product-features">
@@ -656,8 +704,12 @@ body {
     </div>
   </div>
 
-  <!-- Tech detail strip -->
-  <div class="tech-strip">
+  <!-- Product + Lifestyle image grid -->
+  <div class="lifestyle-duo" style="margin-top:48px;">
+    <img src="https://www.darimati.us/cdn/shop/files/01.png?v=1787811727" alt="DARIMATI BR-001 — On Foot">
+    <img src="https://www.darimati.us/cdn/shop/files/03.png?v=1787811727" alt="DARIMATI BR-001 — In Action">
+  </div>
+  <div class="tech-strip" style="margin-top:2px;">
     <div class="tech-item">
       <img src="https://cdn.shopify.com/s/files/1/0775/5956/2452/files/04.png?v=1776313172" alt="Side Profile">
       <div class="tech-item-label">Side Profile</div>
@@ -761,6 +813,11 @@ body {
     </div>
   </div>
 </section>
+
+<!-- ═══ LIFESTYLE BREAK ══════════════════ -->
+<div class="lifestyle-banner">
+  <img src="https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/product-lifestyle.jpg" alt="DARIMATI — Performance Meets Lifestyle" style="max-height:480px;">
+</div>
 
 <!-- ═══ COLLABORATION 1 ══════════════════ -->
 <section class="section-warm" style="padding-top:80px;padding-bottom:80px;">
@@ -873,6 +930,11 @@ body {
     </div>
   </div>
 </section>
+
+<!-- ═══ CLOSING VISUAL ════════════════════ -->
+<div class="lifestyle-banner">
+  <img src="https://www.darimati.us/cdn/shop/files/05.png?v=1787811727" alt="DARIMATI BR-001 — Ready for Every Court" style="max-height:500px;">
+</div>
 
 <!-- ═══ CTA ════════════════════════════════ -->
 <section class="cta-section">
