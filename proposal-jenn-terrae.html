@@ -8,526 +8,515 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #fff;
-  --bg2: #f8f8f6;
-  --dark: #111;
-  --dark2: #1a1a1a;
+  --bg: #ffffff;
+  --dark: #111111;
   --text: #1a1a1a;
-  --sub: #555;
-  --muted: #999;
+  --sub: #555555;
+  --muted: #999999;
   --red: #c8102e;
-  --red-soft: rgba(200,16,46,0.08);
-  --border: #e5e5e5;
+  --red-soft: rgba(200,16,46,0.07);
+  --border: #e0e0e0;
+  --light-bg: #f6f6f4;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;background:#e8e8e8}
 
-/* ── PAGE (each section = full viewport) ── */
-.page{
-  min-height:100vh;
-  scroll-snap-align:start;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:60px 48px;
+/* ── A4 PAGE ── */
+.a4{
+  width:210mm;
+  min-height:297mm;
+  margin:20px auto;
+  background:#fff;
+  box-shadow:0 2px 20px rgba(0,0,0,0.12);
+  padding:28mm 22mm 20mm;
   position:relative;
-}
-.page-dark{background:var(--dark);color:#fff}
-.page-warm{background:var(--bg2)}
-.page-inner{max-width:920px;width:100%}
-
-/* ── TYPOGRAPHY ── */
-.label{
-  font-size:11px;font-weight:700;letter-spacing:3px;
-  text-transform:uppercase;color:var(--red);margin-bottom:16px;
-}
-.title{
-  font-size:clamp(2rem,4vw,3rem);font-weight:800;
-  line-height:1.15;letter-spacing:-0.5px;margin-bottom:20px;
-}
-.title span{color:var(--red)}
-.desc{
-  font-size:17px;color:var(--sub);max-width:600px;line-height:1.8;
-}
-.page-dark .desc{color:rgba(255,255,255,0.6)}
-
-/* ── PAGE 1: COVER ── */
-.cover{
-  background:var(--dark);
-  flex-direction:column;
-  text-align:center;
   overflow:hidden;
 }
-.cover-bg{
+.a4 + .a4{margin-top:20px}
+
+/* ── PAGE 1 HEADER ── */
+.p1-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:6mm;
+  padding-bottom:4mm;
+  border-bottom:2px solid var(--dark);
+}
+.p1-logo{font-size:22px;font-weight:900;letter-spacing:-0.5px}
+.p1-logo span{color:var(--red)}
+.p1-tag{
+  font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--red);padding:4px 12px;border:1px solid var(--red);border-radius:3px;
+}
+
+/* ── HERO ── */
+.hero{
+  background:var(--dark);
+  color:#fff;
+  border-radius:8px;
+  padding:10mm 8mm;
+  margin-bottom:6mm;
+  position:relative;
+  overflow:hidden;
+}
+.hero-bg{
   position:absolute;inset:0;
   background:url('https://darimati.github.io/influencer-dashboard/br001-editorial-pair.png') center/cover no-repeat;
-  opacity:0.3;
+  opacity:0.2;
 }
-.cover-content{position:relative;z-index:2}
-.cover .badge{
-  display:inline-block;background:var(--red);color:#fff;
-  font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  padding:6px 20px;border-radius:20px;margin-bottom:28px;
+.hero-content{position:relative;z-index:2}
+.hero h1{font-size:32px;font-weight:900;line-height:1.15;margin-bottom:4px}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p{font-size:14px;color:rgba(255,255,255,0.6);font-weight:300}
+
+/* ── SECTION LABELS ── */
+.sec-label{
+  font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--red);margin-bottom:3mm;
 }
-.cover h1{
-  font-size:clamp(2.8rem,6vw,4.5rem);font-weight:900;color:#fff;
-  line-height:1.1;letter-spacing:-1px;margin-bottom:16px;
+.sec-title{font-size:17px;font-weight:800;line-height:1.3;margin-bottom:2mm}
+.sec-desc{font-size:11px;color:var(--sub);line-height:1.7;margin-bottom:3mm}
+
+/* ── ABOUT ROW ── */
+.about-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5mm;
+  margin-bottom:5mm;
 }
-.cover h1 span{color:var(--red)}
-.cover .tagline{
-  font-size:20px;color:rgba(255,255,255,0.6);font-weight:300;
-  max-width:520px;margin:0 auto 48px;
+.about-text{font-size:11px;color:var(--sub);line-height:1.75}
+.about-text strong{color:var(--text)}
+
+/* ── STATS ── */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:3mm;
+  margin-bottom:5mm;
 }
-.scroll-hint{
-  color:rgba(255,255,255,0.35);font-size:12px;font-weight:500;
-  letter-spacing:1.5px;text-transform:uppercase;
+.stat{
+  background:var(--light-bg);
+  border-radius:6px;
+  padding:4mm 3mm;
+  text-align:center;
+}
+.stat-n{font-size:20px;font-weight:800;color:var(--red)}
+.stat-l{font-size:9px;color:var(--sub);font-weight:500;margin-top:1px}
+
+/* ── MAP SECTION ── */
+.global-section{
+  background:var(--dark);
+  border-radius:8px;
+  padding:6mm;
+  color:#fff;
+  margin-bottom:0;
+}
+.global-section .sec-label{color:var(--red)}
+.global-section .sec-title{color:#fff;font-size:15px;margin-bottom:3mm}
+.map-wrap{position:relative;margin-bottom:3mm}
+.map-wrap svg{width:100%;height:auto;display:block}
+.partner-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:2mm;
+}
+.partner-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:500;color:rgba(255,255,255,0.75);
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);
+  padding:3px 8px;border-radius:4px;
+}
+.partner-chip.next{
+  border-color:var(--red);background:rgba(200,16,46,0.2);
+  color:#fff;font-weight:700;
 }
 
-/* ── STATS ROW ── */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px}
-.stat{background:var(--bg2);padding:24px;border-radius:12px;text-align:center}
-.stat-n{font-size:28px;font-weight:800;color:var(--red)}
-.stat-l{font-size:12px;color:var(--sub);font-weight:500;margin-top:4px}
-.page-dark .stat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)}
-.page-dark .stat-l{color:rgba(255,255,255,0.5)}
+/* ═══ PAGE 2 ═══ */
 
-/* ── FLAGS ── */
-.flags{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
-.flag{
-  display:inline-flex;align-items:center;gap:8px;
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-  padding:10px 16px;border-radius:8px;font-size:14px;font-weight:500;
-  color:rgba(255,255,255,0.8);
+/* ── BR-001 SECTION ── */
+.br001-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:3mm;
+  margin-bottom:4mm;
 }
-.flag .e{font-size:18px}
-.flag-next{border-color:var(--red);background:rgba(200,16,46,0.15);color:#fff;font-weight:700}
-
-/* ── IMAGE LAYOUTS ── */
-.img-full{width:100%;border-radius:12px;display:block;margin-top:40px;object-fit:cover;max-height:480px}
-.img-duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:40px}
-.img-duo img{width:100%;border-radius:12px;display:block;object-fit:cover;height:380px}
-.img-trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:40px}
-.img-trio img{width:100%;border-radius:12px;display:block;object-fit:cover;height:320px}
-.img-side{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px;align-items:center}
-.img-side img{width:100%;border-radius:12px;display:block}
-
-/* ── FEATURE LIST ── */
-.features{list-style:none;margin-top:28px}
-.features li{
-  padding:14px 0 14px 24px;border-bottom:1px solid var(--border);
-  font-size:15px;color:var(--sub);position:relative;
+.br001-grid img{
+  width:100%;height:48mm;object-fit:cover;border-radius:6px;display:block;
 }
-.features li::before{
-  content:'';position:absolute;left:0;top:20px;
-  width:8px;height:8px;border-radius:50%;background:var(--red);
+.br001-features{
+  list-style:none;
+  margin-bottom:4mm;
 }
-.features li strong{color:var(--text);font-weight:600}
-
-/* ── COUNTRY CARDS ── */
-.countries{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
-.country{
-  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px;padding:28px 20px;text-align:center;
+.br001-features li{
+  font-size:10px;color:var(--sub);
+  padding:1.5mm 0 1.5mm 4mm;
+  border-left:2px solid var(--red);
+  margin-bottom:1.5mm;
+  line-height:1.5;
 }
-.country .e{font-size:28px;margin-bottom:8px}
-.country h4{font-size:14px;font-weight:700;margin-bottom:6px}
-.country p{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.5}
+.br001-features li strong{color:var(--text);font-weight:600}
 
-/* ── WHY CARDS ── */
-.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
-.why{background:var(--bg2);padding:28px;border-radius:12px;border-left:4px solid var(--red)}
-.why h4{font-size:15px;font-weight:700;margin-bottom:8px}
-.why p{font-size:14px;color:var(--sub);line-height:1.7}
-
-/* ── COLLAB BLOCK ── */
-.collab{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:36px}
-.collab-head{
-  background:var(--dark2);color:#fff;padding:24px 28px;
-  display:flex;align-items:center;gap:14px;
+/* ── PROVEN SECTION ── */
+.proven-section{
+  background:var(--light-bg);
+  border-radius:8px;
+  padding:5mm;
+  margin-bottom:4mm;
 }
-.collab-num{
-  width:36px;height:36px;background:var(--red);border-radius:50%;
+.proven-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4mm;
+  margin-top:3mm;
+}
+.proven-block h4{font-size:11px;font-weight:700;margin-bottom:2mm}
+.proven-block p{font-size:10px;color:var(--sub);line-height:1.6}
+.vid-mini{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:2mm;
+  margin-top:2mm;
+}
+.vid-mini video{width:100%;border-radius:4px;display:block}
+.vid-mini span{font-size:8px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;display:block;margin-top:1px}
+
+.credential{
+  display:flex;align-items:center;gap:3mm;
+  background:#fff;border-radius:6px;padding:3mm;margin-top:2mm;
+}
+.credential-icon{
+  width:10mm;height:10mm;background:var(--dark);border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:800;flex-shrink:0;
+  font-size:14px;flex-shrink:0;
 }
-.collab-head h3{font-size:18px;font-weight:700}
-.collab-body{padding:28px}
-.collab-body ol{list-style:none;counter-reset:s}
-.collab-body li{
-  padding:12px 0 12px 48px;border-bottom:1px solid var(--border);
-  font-size:15px;color:var(--sub);position:relative;line-height:1.6;
+.credential-text{font-size:10px;font-weight:600;color:var(--text);line-height:1.4}
+.credential-text .detail{font-size:9px;color:var(--muted);font-weight:400}
+
+/* ── COLLAB SECTION ── */
+.collab-duo{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:3mm;
+  margin-bottom:4mm;
 }
-.collab-body li:last-child{border-bottom:none}
-.collab-body li::before{
-  counter-increment:s;content:counter(s);
-  position:absolute;left:0;top:12px;
-  width:32px;height:32px;background:var(--red-soft);color:var(--red);
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;
+.collab-card{
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:4mm;
+  position:relative;
 }
-.collab-body li strong{color:var(--text)}
-.collab-note{
-  background:var(--red-soft);border-radius:8px;padding:16px 20px;
-  margin-top:20px;font-size:14px;color:var(--red);font-weight:600;line-height:1.6;
+.collab-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:var(--red);border-radius:6px 0 0 6px;
+}
+.collab-card h4{font-size:12px;font-weight:700;margin-bottom:2mm;padding-left:2mm}
+.collab-card p{font-size:10px;color:var(--sub);line-height:1.6;padding-left:2mm}
+.collab-card .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:5mm;height:5mm;background:var(--red);color:#fff;
+  border-radius:50%;font-size:8px;font-weight:800;margin-right:2mm;
 }
 
-/* ── BRING GRID ── */
-.bring{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
-.bring-card{
-  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px;padding:28px 20px;
+/* ── NEXT STEPS ── */
+.steps-row{
+  display:flex;
+  gap:3mm;
+  margin-bottom:4mm;
 }
-.bring-card .ic{font-size:24px;margin-bottom:12px}
-.bring-card h4{font-size:15px;font-weight:700;margin-bottom:6px}
-.bring-card p{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6}
-
-/* ── TIMELINE ── */
-.timeline{margin-top:40px;padding-left:36px;position:relative}
-.timeline::before{
-  content:'';position:absolute;left:13px;top:0;bottom:0;
-  width:2px;background:var(--border);
+.step{
+  flex:1;
+  text-align:center;
+  padding:3mm 2mm;
+  background:var(--light-bg);
+  border-radius:6px;
 }
-.tl-item{position:relative;padding:20px 0}
-.tl-item::before{
-  content:'';position:absolute;left:-30px;top:26px;
-  width:10px;height:10px;border-radius:50%;
-  background:var(--red);border:3px solid var(--bg);
+.step-num{
+  width:6mm;height:6mm;background:var(--red);color:#fff;
+  border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;margin-bottom:2mm;
 }
-.tl-item h4{font-size:16px;font-weight:700;margin-bottom:4px}
-.tl-item p{font-size:14px;color:var(--sub)}
+.step h5{font-size:10px;font-weight:700;margin-bottom:1mm}
+.step p{font-size:9px;color:var(--sub);line-height:1.5}
 
 /* ── CTA ── */
-.cta{text-align:center;flex-direction:column}
-.cta h2{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;color:#fff;margin-bottom:12px}
-.cta p{font-size:17px;color:rgba(255,255,255,0.45);margin-bottom:36px;max-width:460px}
+.cta-bar{
+  background:var(--dark);
+  border-radius:8px;
+  padding:5mm 6mm;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#fff;
+}
+.cta-bar h3{font-size:16px;font-weight:800}
+.cta-bar p{font-size:10px;color:rgba(255,255,255,0.5);margin-top:1mm}
 .cta-btn{
   display:inline-block;background:var(--red);color:#fff;
-  padding:16px 48px;border-radius:8px;font-size:15px;font-weight:700;
-  text-decoration:none;transition:transform .2s,box-shadow .2s;
+  padding:3mm 6mm;border-radius:5px;font-size:11px;font-weight:700;
+  text-decoration:none;white-space:nowrap;
 }
-.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,16,46,0.3)}
-
-/* ── VIDEO ── */
-.vid-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}
-.vid-cell{border-radius:8px;overflow:hidden;background:#000}
-.vid-cell video{width:100%;display:block}
-.vid-cell span{display:block;padding:8px 10px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.5px}
 
 /* ── FOOTER ── */
-.foot{text-align:center;padding:28px;font-size:11px;color:var(--muted);background:#0a0a0a}
-
-/* ── RESPONSIVE ── */
-@media(max-width:768px){
-  .page{padding:40px 20px;min-height:auto;scroll-snap-align:none}
-  html{scroll-snap-type:none}
-  .stats{grid-template-columns:1fr 1fr}
-  .img-duo,.why-grid{grid-template-columns:1fr}
-  .img-duo img{height:280px}
-  .img-trio{grid-template-columns:1fr}
-  .img-trio img{height:260px}
-  .img-side{grid-template-columns:1fr}
-  .countries,.bring{grid-template-columns:1fr}
-  .vid-row{grid-template-columns:1fr}
+.page-foot{
+  text-align:center;font-size:8px;color:var(--muted);
+  margin-top:4mm;padding-top:3mm;border-top:1px solid var(--border);
 }
+
+/* ── PRINT ── */
+@media print{
+  body{background:#fff}
+  .a4{box-shadow:none;margin:0;padding:20mm 18mm 15mm}
+  .a4{page-break-after:always}
+}
+@page{size:A4;margin:0}
 </style>
 </head>
 <body>
 
-<!-- ═══ PAGE 1 · COVER ═══════════════════ -->
-<section class="page cover page-dark">
-  <div class="cover-bg"></div>
-  <div class="cover-content">
-    <div class="badge">Partnership Proposal</div>
-    <h1>DARIMATI <span>&times;</span> Terrae</h1>
-    <p class="tagline">Growing into Southeast Asia — together.</p>
-    <div class="scroll-hint">Scroll to explore</div>
-  </div>
-</section>
+<!-- ═══════════════════════════════════════════════
+     PAGE 1
+     ═══════════════════════════════════════════════ -->
+<div class="a4">
 
-<!-- ═══ PAGE 2 · WHO WE ARE ══════════════ -->
-<section class="page">
-  <div class="page-inner">
-    <div class="label">Who We Are</div>
-    <h2 class="title">Performance footwear,<br>built from the ground up.</h2>
-    <p class="desc">
-      DARIMATI is a Korea-born performance footwear brand with our own manufacturing line. We design, develop, and produce every pair in-house — full control over quality, speed, and cost.
-    </p>
-    <div class="stats">
-      <div class="stat"><div class="stat-n">218%</div><div class="stat-l">Kickstarter funded</div></div>
-      <div class="stat"><div class="stat-n">MOQ 200</div><div class="stat-l">Production-ready</div></div>
-      <div class="stat"><div class="stat-n">6+</div><div class="stat-l">Countries with partners</div></div>
-      <div class="stat"><div class="stat-n">$129</div><div class="stat-l">Retail (vs $200+)</div></div>
-    </div>
-    <img class="img-full" src="https://chvxkfvimnqmmzsnyqrx.supabase.co/storage/v1/object/public/playbook-data/sourcing/images/lookbook-lifestyle.png" alt="DARIMATI Lifestyle">
+  <!-- HEADER -->
+  <div class="p1-header">
+    <div class="p1-logo">DARIMATI <span>&times;</span> Terrae</div>
+    <div class="p1-tag">Partnership Proposal</div>
   </div>
-</section>
 
-<!-- ═══ PAGE 3 · GLOBAL ══════════════════ -->
-<section class="page page-dark">
-  <div class="page-inner">
-    <div class="label">Global</div>
-    <h2 class="title" style="color:#fff">Already on the ground,<br>across three continents.</h2>
-    <p class="desc">
-      We've built partnerships with coaches, athletes, and retailers in six countries. Southeast Asia is our next committed expansion — and we're looking for the right partner to build it with.
-    </p>
-    <div class="flags">
-      <div class="flag"><span class="e">&#x1F1F0;&#x1F1F7;</span> South Korea</div>
-      <div class="flag"><span class="e">&#x1F1F3;&#x1F1F1;</span> Netherlands</div>
-      <div class="flag"><span class="e">&#x1F1FA;&#x1F1F8;</span> United States</div>
-      <div class="flag"><span class="e">&#x1F1EB;&#x1F1F7;</span> France</div>
-      <div class="flag"><span class="e">&#x1F1EF;&#x1F1F5;</span> Japan</div>
-      <div class="flag"><span class="e">&#x1F1EC;&#x1F1E7;</span> United Kingdom</div>
-      <div class="flag flag-next"><span class="e">&#x1F1F2;&#x1F1FE;</span> Malaysia — Next</div>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1>Growing into Southeast Asia<br>— <em>together.</em></h1>
+      <p>A partnership proposal for Jenn &amp; Terrae, from DARIMATI.</p>
     </div>
   </div>
-</section>
 
-<!-- ═══ PAGE 4 · BR-001 ══════════════════ -->
-<section class="page">
-  <div class="page-inner">
-    <div class="label">Introducing</div>
-    <h2 class="title">BR-001<br>The Hybrid Moment Shoe</h2>
-    <p class="desc">
-      Built for the split-second transitions that define high-intensity sport — run, push, lunge, pivot. We call these <strong>Hybrid Moments</strong>.
-    </p>
-    <div class="img-side">
-      <div>
-        <ul class="features">
-          <li><strong>Bridge Mechanics&trade;</strong> — Rapid direction changes: lateral cuts, forward sprints, backward shuffles</li>
-          <li><strong>A-TPU Cushioning</strong> — Energy return without sacrificing court feel</li>
-          <li><strong>Multi-surface grip</strong> — Indoor courts, gym floors, outdoor terrain</li>
-          <li><strong>Field-proven</strong> — Worn by HYROX coaches and champions in Korea, Thailand, France</li>
-          <li><strong>$129 retail</strong> — vs $200+ from legacy brands</li>
-        </ul>
-      </div>
-      <img src="https://darimati.github.io/influencer-dashboard/br001-female-lunge.png" alt="BR-001 — Hybrid Training">
+  <!-- ABOUT -->
+  <div class="sec-label">Who We Are</div>
+  <div class="about-row">
+    <div class="about-text">
+      <strong>DARIMATI</strong> is a Korea-born performance footwear brand built on strong manufacturing partnerships and end-to-end product development capability. We control quality, speed, and cost through a vertically coordinated supply chain — from material sourcing to finished product.
     </div>
-    <div class="img-trio">
-      <img src="https://darimati.github.io/influencer-dashboard/br001-gym-male.png" alt="BR-001 Gym">
-      <img src="https://darimati.github.io/influencer-dashboard/br001-knee-raise.png" alt="BR-001 Active">
-      <img src="https://darimati.github.io/influencer-dashboard/br001-editorial-pair.png" alt="BR-001 Editorial">
-    </div>
-    <div class="img-duo" style="margin-top:12px">
-      <img src="https://cdn.shopify.com/s/files/1/0775/5956/2452/files/08.png?v=1776313172" alt="Outsole Grip">
-      <img src="https://cdn.shopify.com/s/files/1/0775/5956/2452/files/09.png?v=1776313172" alt="A-TPU Midsole">
+    <div class="about-text">
+      Our flagship <strong>BR-001</strong> was funded at <strong>218% on Kickstarter</strong>, lab-tested by RunRepeat, and is now sold in <strong>13+ countries</strong>. Retail at <strong>$129</strong> (vs $200+ from legacy brands), we offer real performance at the right price point.
     </div>
   </div>
-</section>
 
-<!-- ═══ PAGE 5 · FIELD PROVEN ════════════ -->
-<section class="page page-dark">
-  <div class="page-inner">
-    <div class="label">Field Proven</div>
-    <h2 class="title" style="color:#fff">Coaches and champions<br>already wear BR-001.</h2>
-    <p class="desc">
-      From HYROX to lacrosse — wherever athletes pivot, push, and sprint, BR-001 has been on the ground.
-    </p>
-    <div class="countries">
-      <div class="country">
-        <div class="e">&#x1F1F0;&#x1F1F7;</div>
-        <h4>South Korea</h4>
-        <p>HYROX coaching staff &amp; competitive athletes at national level.</p>
-      </div>
-      <div class="country">
-        <div class="e">&#x1F1F9;&#x1F1ED;</div>
-        <h4>Thailand</h4>
-        <p>Champion-level athletes across indoor hybrid sport disciplines.</p>
-      </div>
-      <div class="country">
-        <div class="e">&#x1F1EB;&#x1F1F7;</div>
-        <h4>France</h4>
-        <p>Professional coaches and Rextream champions in multi-discipline events.</p>
-      </div>
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n">218%</div><div class="stat-l">Kickstarter Funded</div></div>
+    <div class="stat"><div class="stat-n">13+</div><div class="stat-l">Countries Exported</div></div>
+    <div class="stat"><div class="stat-n">$129</div><div class="stat-l">Retail (vs $200+)</div></div>
+  </div>
+
+  <!-- GLOBAL MAP -->
+  <div class="global-section">
+    <div class="sec-label">Global Network</div>
+    <div class="sec-title">Active partners across three continents.</div>
+    <div class="map-wrap">
+      <svg viewBox="0 0 800 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Simplified world map outlines -->
+        <g opacity="0.12" stroke="#fff" stroke-width="0.8" fill="none">
+          <!-- North America -->
+          <path d="M80,60 Q120,40 170,55 Q200,50 220,70 Q230,90 210,110 Q200,130 180,150 Q160,170 140,175 Q110,180 90,160 Q70,140 65,120 Q60,100 70,80 Z"/>
+          <!-- South America -->
+          <path d="M160,200 Q180,190 190,210 Q200,240 195,270 Q185,300 170,310 Q155,315 145,300 Q135,280 130,250 Q135,220 150,205 Z"/>
+          <!-- Europe -->
+          <path d="M340,55 Q360,45 380,50 Q400,55 410,70 Q415,85 405,100 Q395,110 380,115 Q365,118 350,110 Q340,100 335,85 Q332,70 340,55 Z"/>
+          <!-- Africa -->
+          <path d="M350,130 Q370,125 390,135 Q405,150 410,180 Q410,210 400,240 Q385,260 370,265 Q355,260 345,240 Q335,220 335,190 Q335,160 345,140 Z"/>
+          <!-- Asia -->
+          <path d="M430,50 Q470,35 530,40 Q580,45 620,55 Q660,65 680,80 Q700,100 690,120 Q675,135 650,140 Q620,145 590,140 Q560,135 530,130 Q500,125 470,115 Q440,105 425,85 Q420,70 430,50 Z"/>
+          <!-- SEA / Oceania -->
+          <path d="M580,160 Q610,150 640,155 Q660,160 670,175 Q675,190 665,200 Q650,210 630,205 Q610,200 595,190 Q580,180 575,170 Z"/>
+          <path d="M660,230 Q700,220 730,235 Q745,250 740,265 Q725,275 700,270 Q680,260 665,245 Z"/>
+          <!-- Japan -->
+          <path d="M680,80 Q690,70 695,80 Q698,95 690,105 Q682,110 678,100 Q675,90 680,80 Z"/>
+        </g>
+
+        <!-- Connection lines from Korea hub -->
+        <g stroke="rgba(200,16,46,0.3)" stroke-width="1" stroke-dasharray="4,3">
+          <line x1="650" y1="85" x2="175" y2="105"/><!-- US -->
+          <line x1="650" y1="85" x2="370" y2="75"/><!-- Netherlands -->
+          <line x1="650" y1="85" x2="380" y2="85"/><!-- France -->
+          <line x1="650" y1="85" x2="688" y2="90"/><!-- Japan -->
+          <line x1="650" y1="85" x2="365" y2="95"/><!-- UK -->
+          <line x1="650" y1="85" x2="630" y2="170"/><!-- Malaysia -->
+        </g>
+
+        <!-- Partner dots -->
+        <!-- Korea (hub) -->
+        <circle cx="650" cy="85" r="6" fill="#c8102e"/>
+        <circle cx="650" cy="85" r="10" fill="none" stroke="#c8102e" stroke-width="1.5" opacity="0.5"/>
+        <text x="650" y="78" text-anchor="middle" fill="#fff" font-size="7" font-weight="700" opacity="0.6">HQ</text>
+        <!-- US -->
+        <circle cx="175" cy="105" r="4" fill="#c8102e"/>
+        <text x="175" y="120" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="7" font-family="Inter,sans-serif">US</text>
+        <!-- Netherlands -->
+        <circle cx="370" cy="75" r="4" fill="#c8102e"/>
+        <text x="370" y="68" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="7" font-family="Inter,sans-serif">NL</text>
+        <!-- France -->
+        <circle cx="380" cy="85" r="4" fill="#c8102e"/>
+        <text x="392" y="89" fill="rgba(255,255,255,0.5)" font-size="7" font-family="Inter,sans-serif">FR</text>
+        <!-- UK -->
+        <circle cx="365" cy="95" r="4" fill="#c8102e"/>
+        <text x="352" y="103" text-anchor="end" fill="rgba(255,255,255,0.5)" font-size="7" font-family="Inter,sans-serif">UK</text>
+        <!-- Japan -->
+        <circle cx="688" cy="90" r="4" fill="#c8102e"/>
+        <text x="700" y="94" fill="rgba(255,255,255,0.5)" font-size="7" font-family="Inter,sans-serif">JP</text>
+        <!-- Malaysia (NEXT — highlighted) -->
+        <circle cx="630" cy="170" r="5" fill="#c8102e"/>
+        <circle cx="630" cy="170" r="9" fill="none" stroke="#c8102e" stroke-width="1.5">
+          <animate attributeName="r" values="9;13;9" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.6;0.1;0.6" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <text x="630" y="185" text-anchor="middle" fill="#c8102e" font-size="8" font-weight="700" font-family="Inter,sans-serif">MALAYSIA</text>
+        <text x="630" y="194" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="7" font-family="Inter,sans-serif">Next Partner</text>
+      </svg>
     </div>
-    <div style="margin-top:48px">
-      <div class="label">Lab Tested by RunRepeat</div>
-      <div class="vid-row">
-        <div class="vid-cell">
-          <video autoplay loop muted playsinline>
-            <source src="https://cdn.runrepeat.com/storage/gallery/product_content/41215/darimati-br-001-lateral-stability-test.mp4" type="video/mp4">
-          </video>
-          <span>Lateral Stability</span>
-        </div>
-        <div class="vid-cell">
-          <video autoplay loop muted playsinline>
-            <source src="https://cdn.runrepeat.com/storage/gallery/product_content/41215/darimati-br-001-forefoot-traction.mp4" type="video/mp4">
-          </video>
-          <span>Forefoot Traction</span>
-        </div>
-        <div class="vid-cell">
-          <video autoplay loop muted playsinline>
-            <source src="https://cdn.runrepeat.com/storage/gallery/product_content/41215/darimati-br-001-energy-return-heel.mp4" type="video/mp4">
-          </video>
-          <span>Energy Return</span>
-        </div>
-      </div>
+    <div class="partner-list">
+      <span class="partner-chip">&#x1F1F0;&#x1F1F7; South Korea</span>
+      <span class="partner-chip">&#x1F1FA;&#x1F1F8; United States</span>
+      <span class="partner-chip">&#x1F1F3;&#x1F1F1; Netherlands</span>
+      <span class="partner-chip">&#x1F1EB;&#x1F1F7; France</span>
+      <span class="partner-chip">&#x1F1EF;&#x1F1F5; Japan</span>
+      <span class="partner-chip">&#x1F1EC;&#x1F1E7; United Kingdom</span>
+      <span class="partner-chip next">&#x1F1F2;&#x1F1FE; Malaysia — Next</span>
     </div>
   </div>
-</section>
 
-<!-- ═══ PAGE 6 · WHY PICKLEBALL ══════════ -->
-<section class="page">
-  <div class="page-inner">
-    <div class="label">Why Pickleball &times; Why Now</div>
-    <h2 class="title">Same DNA,<br>a new court to own.</h2>
-    <p class="desc">
-      Pickleball demands exactly what BR-001 was built for — quick lateral cuts, explosive first steps, constant transitions. This isn't a pivot; it's a natural extension.
-    </p>
-    <div class="why-grid">
-      <div class="why">
-        <h4>Fastest-growing sport in US &amp; SEA</h4>
-        <p>48M+ players in the US. Malaysia, Thailand, Indonesia seeing rapid court expansion and community growth.</p>
-      </div>
-      <div class="why">
-        <h4>Hybrid Moment = Pickleball DNA</h4>
-        <p>Short dashes, lateral shuffles, split-step pivots. BR-001's Bridge Mechanics&trade; addresses this exact movement pattern.</p>
-      </div>
-      <div class="why">
-        <h4>Underserved market</h4>
-        <p>Most players use running shoes. Purpose-built pickleball footwear starts at $120+. Clear gap for performance at the right price.</p>
-      </div>
-      <div class="why">
-        <h4>Jenn &amp; Terrae = the right partner</h4>
-        <p>Deep SEA market understanding, existing pickleball community, curated shop aesthetic that aligns with DARIMATI.</p>
-      </div>
-    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 2
+     ═══════════════════════════════════════════════ -->
+<div class="a4">
+
+  <!-- BR-001 -->
+  <div class="sec-label">Introducing BR-001</div>
+  <div class="sec-title">The Hybrid Moment Shoe</div>
+  <div class="sec-desc">Built for the split-second transitions that define high-intensity sport — run, push, lunge, pivot. We call these <strong>Hybrid Moments</strong>. The same DNA that powers HYROX athletes fits pickleball's rapid lateral game perfectly.</div>
+
+  <div class="br001-grid">
+    <img src="https://darimati.github.io/influencer-dashboard/br001-female-lunge.png" alt="BR-001 — Active stretch">
+    <img src="https://darimati.github.io/influencer-dashboard/br001-gym-male.png" alt="BR-001 — Gym training">
+    <img src="https://darimati.github.io/influencer-dashboard/br001-knee-raise.png" alt="BR-001 — Knee raise">
+    <img src="https://darimati.github.io/influencer-dashboard/br001-editorial-pair.png" alt="BR-001 — Editorial">
   </div>
-</section>
 
-<!-- ═══ PAGE 7 · COLLABORATION ① ═════════ -->
-<section class="page page-warm">
-  <div class="page-inner">
-    <div class="label">Collaboration ①</div>
-    <h2 class="title">Sales Partnership — BR-001</h2>
-    <p class="desc">
-      We're not looking for a one-off deal. We want a committed partner to build the Southeast Asian market with.
-    </p>
-    <div class="collab">
-      <div class="collab-head">
-        <div class="collab-num">1</div>
-        <h3>How it works</h3>
-      </div>
-      <div class="collab-body">
-        <ol>
-          <li><strong>We send BR-001 samples to Jenn</strong> — try them on court, push them to the limit, form your own take.</li>
-          <li><strong>Jenn connects BR-001 to pickleball &amp; indoor sport</strong> — your audience, your credibility, your local market knowledge.</li>
-          <li><strong>DARIMATI handles bulk international logistics</strong> — supply chain Korea → Malaysia is already built. You sell, we ship.</li>
-          <li><strong>Revenue share</strong> — fair split on every pair. Specific terms discussed together.</li>
-        </ol>
-        <div class="collab-note">
-          BR-001 fits naturally into Terrae's curation — high-quality, purposeful gear for people who take their sport seriously.
+  <ul class="br001-features">
+    <li><strong>Bridge Mechanics&trade;</strong> — Lateral cuts, forward sprints, backward shuffles</li>
+    <li><strong>A-TPU Cushioning</strong> — Energy return without sacrificing court feel</li>
+    <li><strong>Multi-surface grip</strong> — Indoor courts, gym floors, outdoor terrain</li>
+    <li><strong>$129 retail</strong> — vs $200+ from legacy brands, better margins for partners</li>
+  </ul>
+
+  <!-- FIELD PROVEN -->
+  <div class="proven-section">
+    <div class="sec-label">Field Proven</div>
+    <div class="sec-title">Exported to 13+ countries, recognized by global media.</div>
+
+    <div class="proven-row">
+      <div class="proven-block">
+        <h4>RunRepeat Lab Test Coverage</h4>
+        <p>RunRepeat — one of the world's largest shoe review platforms — independently lab-tested and featured BR-001 with detailed performance analysis.</p>
+        <div class="vid-mini">
+          <div>
+            <video autoplay loop muted playsinline>
+              <source src="https://cdn.runrepeat.com/storage/gallery/product_content/41215/darimati-br-001-lateral-stability-test.mp4" type="video/mp4">
+            </video>
+            <span>Lateral Stability</span>
+          </div>
+          <div>
+            <video autoplay loop muted playsinline>
+              <source src="https://cdn.runrepeat.com/storage/gallery/product_content/41215/darimati-br-001-forefoot-traction.mp4" type="video/mp4">
+            </video>
+            <span>Forefoot Traction</span>
+          </div>
+          <div>
+            <video autoplay loop muted playsinline>
+              <source src="https://cdn.runrepeat.com/storage/gallery/product_content/41215/darimati-br-001-energy-return-heel.mp4" type="video/mp4">
+            </video>
+            <span>Energy Return</span>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ PAGE 8 · COLLABORATION ② ═════════ -->
-<section class="page">
-  <div class="page-inner">
-    <div class="label">Collaboration ②</div>
-    <h2 class="title">Long-term — Your Own Line</h2>
-    <p class="desc">
-      Start with BR-001, then build something bigger together.
-    </p>
-    <div class="collab">
-      <div class="collab-head">
-        <div class="collab-num">2</div>
-        <h3>The roadmap</h3>
-      </div>
-      <div class="collab-body">
-        <ol>
-          <li><strong>Start with BR-001</strong> — validate the market, learn what Southeast Asian athletes want.</li>
-          <li><strong>Expand into new models</strong> — pickleball-specific, indoor court, or lifestyle crossover.</li>
-          <li><strong>Private label capability</strong> — MOQ 200. Custom design, materials, colorways for a Terrae-exclusive line.</li>
-          <li><strong>Mutual growth</strong> — we bring manufacturing &amp; logistics, you bring local expertise &amp; community trust.</li>
-        </ol>
-        <div class="collab-note">
-          We have the manufacturing muscle to make a Terrae footwear line real — and we'd love to build it with you.
+      <div class="proven-block">
+        <h4>Global Athlete Validation</h4>
+        <p>Champion athletes and professional coaching staff across three continents have adopted BR-001 as their training shoe of choice.</p>
+        <div class="credential">
+          <div class="credential-icon">&#x1F3C6;</div>
+          <div class="credential-text">
+            REXtream 2025 Champion Shoe
+            <div class="detail">Winners competed and won in DARIMATI</div>
+          </div>
+        </div>
+        <div class="credential">
+          <div class="credential-icon">&#x1F1EB;&#x1F1F7;</div>
+          <div class="credential-text">
+            Paris Louvre CrossFit Coaching Staff
+            <div class="detail">Training shoe of choice — France</div>
+          </div>
+        </div>
+        <div class="credential">
+          <div class="credential-icon">&#x1F4AA;</div>
+          <div class="credential-text">
+            Anytime Fitness Korea
+            <div class="detail">Official coach training shoe — all locations</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</section>
 
-<!-- ═══ PAGE 9 · WHAT WE BRING ═══════════ -->
-<section class="page page-dark">
-  <div class="page-inner">
-    <div class="label">What We Bring</div>
-    <h2 class="title" style="color:#fff">Your partner,<br>not just your supplier.</h2>
-    <div class="bring">
-      <div class="bring-card">
-        <div class="ic">&#x1F3ED;</div>
-        <h4>Own Manufacturing</h4>
-        <p>MOQ 200, custom specs, fast turnaround. No middlemen.</p>
-      </div>
-      <div class="bring-card">
-        <div class="ic">&#x1F30F;</div>
-        <h4>Global Network</h4>
-        <p>Active partners in 6 countries. Your global distribution, already seeded.</p>
-      </div>
-      <div class="bring-card">
-        <div class="ic">&#x1F69A;</div>
-        <h4>Logistics Ready</h4>
-        <p>Korea → SEA bulk shipping set up. You sell, we handle fulfillment.</p>
-      </div>
-      <div class="bring-card">
-        <div class="ic">&#x1F3C6;</div>
-        <h4>Proven Product</h4>
-        <p>Kickstarter 218%. Lab-tested. Champion athletes across three countries.</p>
-      </div>
-      <div class="bring-card">
-        <div class="ic">&#x1F4B0;</div>
-        <h4>Competitive Pricing</h4>
-        <p>$129 vs $200+. Better margins for partners, better value for athletes.</p>
-      </div>
-      <div class="bring-card">
-        <div class="ic">&#x1F91D;</div>
-        <h4>True Partnership</h4>
-        <p>We want Terrae to succeed globally — we'll back your growth with our full infrastructure.</p>
-      </div>
+  <!-- COLLABORATION -->
+  <div class="sec-label">Collaboration</div>
+  <div class="collab-duo">
+    <div class="collab-card">
+      <h4><span class="num">1</span>Sales Partnership</h4>
+      <p>We send BR-001 samples → Jenn connects it to pickleball &amp; indoor sport in Malaysia → DARIMATI handles bulk logistics Korea → SEA → revenue share on every pair sold.</p>
+    </div>
+    <div class="collab-card">
+      <h4><span class="num">2</span>Long-term — Your Own Line</h4>
+      <p>Start with BR-001, validate the market. Expand into new models — pickleball-specific, indoor court, or lifestyle crossover. Custom design, materials, and colorways for a Terrae-exclusive line.</p>
     </div>
   </div>
-</section>
 
-<!-- ═══ PAGE 10 · NEXT STEPS + CTA ═══════ -->
-<section class="page">
-  <div class="page-inner">
-    <div class="label">Next Steps</div>
-    <h2 class="title">Let's get started.</h2>
-    <p class="desc">
-      We'd love to begin the conversation and get BR-001 into your hands.
-    </p>
-    <div class="timeline">
-      <div class="tl-item">
-        <h4>Sample Shipment</h4>
-        <p>BR-001 samples directly to Jenn — no strings attached. Try them, break them in.</p>
-      </div>
-      <div class="tl-item">
-        <h4>Initial Discussion</h4>
-        <p>Align on partnership structure, revenue share, and which channels to target first.</p>
-      </div>
-      <div class="tl-item">
-        <h4>Online Meeting</h4>
-        <p>Face-to-face call for long-term vision, private label opportunities, and mutual growth.</p>
-      </div>
+  <!-- NEXT STEPS -->
+  <div class="sec-label">Next Steps</div>
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h5>Sample Shipment</h5>
+      <p>BR-001 samples directly to Jenn — no strings attached.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h5>Initial Discussion</h5>
+      <p>Align on partnership structure and target channels.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h5>Online Meeting</h5>
+      <p>Long-term vision, private label, and mutual growth plan.</p>
     </div>
   </div>
-</section>
 
-<!-- ═══ CTA ═══════════════════════════════ -->
-<section class="page page-dark cta">
-  <div>
-    <h2>Let's build<br>something together.</h2>
-    <p>We're excited about the possibility of partnering with Jenn and Terrae to bring DARIMATI to Southeast Asia.</p>
+  <!-- CTA -->
+  <div class="cta-bar">
+    <div>
+      <h3>Let's build something together.</h3>
+      <p>We're excited about partnering with Jenn and Terrae to bring DARIMATI to Southeast Asia.</p>
+    </div>
     <a href="mailto:jiun.kim@darimati.us" class="cta-btn">Get in Touch</a>
   </div>
-</section>
 
-<footer class="foot">
-  &copy; 2026 DARIMATI. Confidential — prepared for Jenn &amp; Terrae.
-</footer>
+  <div class="page-foot">&copy; 2026 DARIMATI. Confidential — prepared for Jenn &amp; Terrae.</div>
+
+</div>
 
 </body>
 </html>
